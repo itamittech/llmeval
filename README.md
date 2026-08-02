@@ -92,7 +92,8 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 | | |
 |---|---|
 | ✅ | [Shared event schema](shared/schemas/) — the contract all three stacks emit |
-| ✅ | [Python game engine](projects/ludo/engine-python/) — full rules, 52 tests passing |
+| ✅ | [Python game engine](projects/ludo/engine-python/) — full rules, 60 tests passing |
+| ✅ | [CI](.github/workflows/ci.yml) — tests, conformance, schema, docs. No model calls, no cost. |
 | ✅ | [Cross-engine conformance vectors](shared/conformance/) |
 | ⬜ | Java engine · agent stacks · UI · eval harness |
 

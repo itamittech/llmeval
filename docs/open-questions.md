@@ -60,20 +60,6 @@ Currently `llmeval` locally. Public from the first commit, or after LUDO works?
 
 ---
 
-## 🟡 15. Should deciders get a read-only view of game state?
-
-[ADR-0004](decisions/adr-0004-structural-guardrails.md) claims cheating is structurally impossible. That holds against the **LLM** — it only returns a move choice, and the engine rejects anything illegal.
-
-It is not enforced against the decider *code* wrapping the LLM. `TurnContext.state` is a live reference to the mutable `GameState`, so a decider could simply write `ctx.state.tokens["red"] = [56]*4`. See [engine design](projects/ludo/engine-design.md#one-honest-limit-on-the-guardrail).
-
-That code is ours, so today it's a code-review boundary rather than an enforced one. Three options: leave it and narrow the ADR's wording; hand deciders a read-only view; or defensively copy the state per turn.
-
-Worth settling **before the stacks are written**, since it changes the agent-facing API.
-
-> **Recommendation:** a read-only view. The ADR's claim is one of the more transferable lessons in the project, and it's worth having the code actually back it. A defensive copy per turn is simpler but silently costs an allocation on every decision.
-
----
-
 ## 🟢 11. Does LUDO deploy to AWS?
 
 The brief lists Lambda, API Gateway, AgentCore, and SageMaker. [Architecture](architecture/overview.md#local-first-cloud-when-it-earns-it) and the [roadmap](topics/roadmap.md) assume LUDO runs locally against real model APIs, with deployment as a later project's subject.
@@ -115,6 +101,14 @@ This makes Strands vs. LangGraph a genuinely controlled experiment — same lang
 **Decided: one model runs on both access routes, plus two other families.** One model is invoked via *both* Bedrock and a direct API, so the access route is isolated from the model — without that control, Bedrock-vs-direct differences are uninterpretable. The remaining two seats go to different model families for behavioural variety in alliance dynamics.
 
 Ratified as [ADR-0005](decisions/adr-0005-model-access-control.md). **Concrete model IDs are still to be chosen** — constrained by Bedrock availability for the dual-route model, and by keeping one family in reserve for the [judge](projects/ludo/evaluation.md#judge-bias--and-what-we-do-about-it).
+
+### ✅ 15. Should deciders get a read-only view of game state?
+
+**Decided: yes — implemented as `StateView`**, before the first stack, since it changes the agent-facing API.
+
+`TurnContext.state` is now a `StateView` rather than the live `GameState`. Positions come back as tuples, `board()` returns a fresh dict of tuples, `stats()` returns a copy, and attribute assignment raises. The rejected alternatives were leaving it (and weakening ADR-0004's wording) or copying the whole state each turn — the latter simpler, but silently allocating on every decision.
+
+Deliberately *not* claimed as a hard boundary: Python has no in-process equivalent, and code reaching for the private `_state` still gets through. What it buys is that cheating requires obviously-wrong code rather than a plausible typo. See [engine design](projects/ludo/engine-design.md#one-honest-limit-on-the-guardrail).
 
 ### ✅ 13. Contribution guidelines
 

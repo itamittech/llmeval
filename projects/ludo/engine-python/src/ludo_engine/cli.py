@@ -73,7 +73,12 @@ def cmd_validate(args: argparse.Namespace) -> int:
     validator = Draft202012Validator(json.loads(SCHEMA_PATH.read_text(encoding="utf-8")))
     failures = 0
 
-    for path in args.transcripts:
+    paths = _expand(args.transcripts)
+    if not paths:
+        print(f"no transcripts matched {args.transcripts}", file=sys.stderr)
+        return 2
+
+    for path in paths:
         events = [json.loads(line) for line in Path(path).read_text(encoding="utf-8").splitlines() if line]
         for i, event in enumerate(events):
             for err in validator.iter_errors(event):
@@ -105,6 +110,23 @@ def cmd_conformance(args: argparse.Namespace) -> int:
     VECTORS_PATH.write_text(json.dumps(vectors, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"wrote {VECTORS_PATH} ({len(vectors['vectors'])} vectors)")
     return 0
+
+
+def _expand(patterns: list[str]) -> list[Path]:
+    """Resolve wildcards ourselves.
+
+    PowerShell doesn't glob for native commands at all, and a shell that does
+    expands relative to *its* cwd rather than `uv run --directory`. Handling it
+    here makes one command work identically everywhere, including CI.
+    """
+    found: list[Path] = []
+    for pattern in patterns:
+        if any(ch in pattern for ch in "*?["):
+            base = Path(pattern).parent
+            found.extend(sorted(base.glob(Path(pattern).name)))
+        else:
+            found.append(Path(pattern))
+    return found
 
 
 def _bots(seed: int) -> dict:

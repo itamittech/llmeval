@@ -98,6 +98,17 @@ classDiagram
         +attempt
     }
 
+    class StateView {
+        <<read-only>>
+        +tokens(color) tuple
+        +board() dict
+        +tokens_home(color) int
+        +progress(color) int
+        +has_finished(color) bool
+        +finished() tuple
+        +stats(color) PlayerStats
+    }
+
     class Decider {
         <<Protocol>>
         +choose(ctx) Move
@@ -143,8 +154,9 @@ classDiagram
     GameState *-- PlayerStats : one per colour
     GameState ..> Snapshot : creates and consumes
 
-    TurnContext --> GameState : live reference
+    TurnContext --> StateView : read-only board
     TurnContext --> Move : list of legal
+    StateView --> GameState : wraps, exposes no mutation
 
     Decider <|.. FirstLegal : structural
     Decider <|.. RandomBot : structural
@@ -300,7 +312,7 @@ sequenceDiagram
 Two things this makes obvious that prose does not:
 
 - **`Decider.choose` is the only inbound arrow from outside the engine.** One call, one turn. Everything else is the engine talking to itself.
-- **The agent never touches `GameState`.** Only `moves` and `Game` write to it. That's the structural guardrail of [ADR-0004](../../decisions/adr-0004-structural-guardrails.md) — with the [one caveat](engine-design.md#one-honest-limit-on-the-guardrail) that `TurnContext` hands over a live reference.
+- **The agent never touches `GameState`.** Only `moves` and `Game` write to it; the decider receives a read-only [`StateView`](engine-design.md#one-honest-limit-on-the-guardrail). That's the structural guardrail of [ADR-0004](../../decisions/adr-0004-structural-guardrails.md).
 
 ---
 
@@ -340,6 +352,7 @@ Note `board` is called by everyone and calls nobody — it's leaf-level pure fun
 | `Capture` | dataclass | `moves.py` | frozen | what a move knocked out |
 | `Dice` | plain class | `dice.py` | yes | portable seeded PRNG |
 | `TurnContext` | dataclass | `deciders.py` | frozen | everything an agent may see |
+| `StateView` | plain class | `deciders.py` | read-only | the board, inspectable but not writable |
 | `Decider` | **Protocol** | `deciders.py` | — | the agent contract |
 | `FirstLegal` | plain class | `deciders.py` | no | deterministic, for vectors |
 | `RandomBot` | plain class | `deciders.py` | yes | seeded random, for benchmarks |

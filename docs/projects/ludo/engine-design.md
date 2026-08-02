@@ -138,15 +138,23 @@ Three properties, all of which a port must keep:
 
 ## One honest limit on the guardrail
 
-[ADR-0004](../../decisions/adr-0004-structural-guardrails.md) says cheating is structurally impossible, which lets content guardrails stay lenient. That is true **of the LLM** — it only ever returns a move choice, and the engine rejects anything illegal.
+[ADR-0004](../../decisions/adr-0004-structural-guardrails.md) says cheating is structurally impossible, which lets content guardrails stay lenient. That is unambiguously true **of the LLM** — it only ever returns a move choice, and the engine rejects anything illegal.
 
-It is *not* enforced against the decider code wrapping the LLM. `TurnContext.state` is a live reference to the mutable `GameState`, so a decider could write:
+The decider *code* wrapping the LLM used to be a different story. `TurnContext.state` was a live reference to the mutable `GameState`, so a decider could simply write the board:
 
 ```python
-ctx.state.tokens["red"] = [56, 56, 56, 56]     # nothing stops this
+ctx.state.tokens["red"] = [56, 56, 56, 56]     # once possible; no longer
 ```
 
-That code is ours, so today this is a code-review boundary rather than an enforced one. Closing it would mean handing deciders a read-only view. Tracked as [open question 15](../../open-questions.md).
+**Closed** by handing deciders a `StateView` instead ([open question 15](../../open-questions.md)). Collections come back as tuples, attribute assignment raises, and `stats()` returns a copy:
+
+```python
+ctx.state.tokens("red")      # -> (0, 5, -1, 56)   a tuple; item assignment fails
+ctx.state.board()            # -> a fresh dict of tuples
+ctx.state.tokens = {}        # -> AttributeError
+```
+
+**Still honest about what this is.** It stops mistakes, not determined attackers. Python offers no hard in-process boundary, and code reaching for the private `_state` still gets through. What changed is that cheating now requires obviously-wrong code a reviewer will spot, rather than a plausible-looking typo. The guarantee that carries the real weight is unchanged: the LLM can only return a move choice, and the engine validates it regardless.
 
 ## Porting to Java
 

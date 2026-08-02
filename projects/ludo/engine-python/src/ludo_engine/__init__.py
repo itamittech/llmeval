@@ -6,7 +6,7 @@ is the only variable between them (ADR-0002).
 """
 
 from .board import COLORS, HOME, BASE, Color, to_square
-from .deciders import Decider, FirstLegal, RandomBot, TurnContext
+from .deciders import Decider, FirstLegal, RandomBot, StateView, TurnContext
 from .dice import Dice
 from .events import EventSink, JsonlSink, ListSink, TeeSink
 from .game import ENGINE_VERSION, Game, GameConfig, Outcome
@@ -17,7 +17,7 @@ __version__ = ENGINE_VERSION
 
 __all__ = [
     "BASE", "COLORS", "HOME", "Color", "to_square",
-    "Decider", "FirstLegal", "RandomBot", "TurnContext",
+    "Decider", "FirstLegal", "RandomBot", "StateView", "TurnContext",
     "Dice",
     "EventSink", "JsonlSink", "ListSink", "TeeSink",
     "ENGINE_VERSION", "Game", "GameConfig", "Outcome",

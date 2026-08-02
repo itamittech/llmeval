@@ -48,7 +48,7 @@ The **shared event schema** and the **Python engine** are built and tested. No a
 | Component | State |
 |---|---|
 | `shared/schemas/` — event contract | ✅ Built |
-| `projects/ludo/engine-python/` | ✅ Built, 52 tests passing |
+| `projects/ludo/engine-python/` | ✅ Built, 60 tests passing |
 | `shared/conformance/` — cross-engine vectors | ✅ 20 vectors |
 | `engine-java`, `stack-*`, `ui/`, `eval/` | ❌ Not started |
 

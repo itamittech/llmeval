@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from .board import COLORS, HOME, Color, to_square
-from .deciders import Decider, TurnContext
+from .deciders import Decider, StateView, TurnContext
 from .dice import Dice
 from .events import EventSink
 from .moves import Move, apply_move, legal_moves
@@ -152,9 +152,10 @@ class Game:
     ) -> Move | None:
         """Ask for a move, rejecting illegal ones rather than correcting them."""
         allowed = set(moves)
+        view = StateView(self.state)      # agents inspect, they do not mutate
 
         for attempt in range(1, MOVE_ATTEMPTS + 1):
-            ctx = TurnContext(self.state, color, die, list(moves), self.turn, attempt)
+            ctx = TurnContext(view, color, die, list(moves), self.turn, attempt)
             try:
                 move = decider.choose(ctx)
             except Exception as exc:  # a broken agent forfeits; it does not crash the game
