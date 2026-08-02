@@ -114,6 +114,16 @@ classDiagram
         +choose(ctx) Move
     }
 
+    class Negotiator {
+        <<Protocol, optional>>
+        +negotiate(start) None
+    }
+
+    class Reflector {
+        <<Protocol, optional>>
+        +reflect(end) None
+    }
+
     class FirstLegal {
         +name
         +choose(ctx) Move
@@ -148,7 +158,9 @@ classDiagram
     Game o-- EventSink : injected
     Game ..> Outcome : returns
     Game ..> TurnContext : builds per attempt
-    Game ..> Decider : calls choose
+    Game ..> Decider : calls choose, per ROLL
+    Game ..> Negotiator : calls negotiate, per TURN
+    Game ..> Reflector : calls reflect, per TURN
     Game ..> Move : validates
 
     GameState *-- PlayerStats : one per colour
@@ -269,6 +281,10 @@ sequenceDiagram
     participant E as EventSink
 
     G->>E: emit turn_started
+    opt decider implements Negotiator
+        G->>A: negotiate(TurnStart)
+        Note over G,A: once per TURN, before any roll
+    end
     G->>S: snapshot()
     S-->>G: Snapshot
 
@@ -307,11 +323,18 @@ sequenceDiagram
 
         G->>E: emit extra_roll_granted
     end
+
+    G->>E: emit turn_ended
+    opt decider implements Reflector
+        G->>A: reflect(TurnEnd)
+        Note over G,A: once per TURN, after it resolves
+    end
 ```
 
-Two things this makes obvious that prose does not:
+Three things this makes obvious that prose does not:
 
-- **`Decider.choose` is the only inbound arrow from outside the engine.** One call, one turn. Everything else is the engine talking to itself.
+- **`Decider.choose` is the only inbound arrow that changes the game.** The two optional hooks sit *outside* the roll loop and return nothing — they exist so a harness can talk and remember at the right moments, and everything they produce reaches the world as events rather than as state.
+- **The loop is where per-roll and per-turn diverge.** `choose` is inside it, `negotiate` and `reflect` are outside. A six or a capture re-enters the loop; if negotiation were inside, an agent on a hot streak would get a free multiplier on influence and cost.
 - **The agent never touches `GameState`.** Only `moves` and `Game` write to it; the decider receives a read-only [`StateView`](engine-design.md#one-honest-limit-on-the-guardrail). That's the structural guardrail of [ADR-0004](../../decisions/adr-0004-structural-guardrails.md).
 
 ---
@@ -323,7 +346,8 @@ Method-level, engine only.
 | Caller | Calls | For |
 |---|---|---|
 | `Game.play` | `Game._emit_start`, `_next_player`, `_play_turn` · `standings()` · `EventSink.emit` · `Outcome()` | the outer loop |
-| `Game._play_turn` | `Dice.roll` · `GameState.snapshot`/`restore`/`has_finished` · `legal_moves()` · `Game._decide`/`_apply`/`_end_turn` · `EventSink.emit` | one turn |
+| `Game._play_turn` | `StateView()` · **`Negotiator.negotiate`** · `Game._roll_loop` · **`Reflector.reflect`** · `EventSink.emit` | one turn, with the optional hooks around the roll loop |
+| `Game._roll_loop` | `Dice.roll` · `GameState.snapshot`/`restore`/`has_finished` · `legal_moves()` · `Game._decide`/`_apply` · `EventSink.emit` | roll, decide, resolve — repeating on a six or capture. Returns the end reason so the turn has one exit and `reflect` can't be skipped |
 | `Game._decide` | `TurnContext()` · **`Decider.choose`** · `EventSink.emit` | ask the agent, validate |
 | `Game._apply` | `apply_move()` · `to_square()` · `EventSink.emit` | move and report |
 | `Game._next_player` | `GameState.has_finished` | rotate, skipping finishers |
@@ -351,9 +375,13 @@ Note `board` is called by everyone and calls nobody — it's leaf-level pure fun
 | `Move` | dataclass | `moves.py` | frozen | must be hashable for `set` |
 | `Capture` | dataclass | `moves.py` | frozen | what a move knocked out |
 | `Dice` | plain class | `dice.py` | yes | portable seeded PRNG |
-| `TurnContext` | dataclass | `deciders.py` | frozen | everything an agent may see |
+| `TurnStart` | dataclass | `deciders.py` | frozen | handed to `negotiate`, before the first roll |
+| `TurnContext` | dataclass | `deciders.py` | frozen | everything an agent may see when choosing |
+| `TurnEnd` | dataclass | `deciders.py` | frozen | handed to `reflect`: end reason + the turn's engine events |
 | `StateView` | plain class | `deciders.py` | read-only | the board, inspectable but not writable |
-| `Decider` | **Protocol** | `deciders.py` | — | the agent contract |
+| `Decider` | **Protocol** | `deciders.py` | — | the agent contract — `choose`, required |
+| `Negotiator` | **Protocol** | `deciders.py` | — | optional `negotiate` hook, once per turn |
+| `Reflector` | **Protocol** | `deciders.py` | — | optional `reflect` hook, once per turn |
 | `FirstLegal` | plain class | `deciders.py` | no | deterministic, for vectors |
 | `RandomBot` | plain class | `deciders.py` | yes | seeded random, for benchmarks |
 | `EventSink` | base class | `events.py` | yes | sequence numbering |

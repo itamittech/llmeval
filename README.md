@@ -95,7 +95,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 | | |
 |---|---|
 | ✅ | [Shared event schema](shared/schemas/) — the contract all three stacks emit |
-| ✅ | [Python game engine](projects/ludo/engine-python/) — full rules, 60 tests passing |
+| ✅ | [Python game engine](projects/ludo/engine-python/) — full rules + agent hooks, 68 tests passing |
 | ✅ | [Shared prompts](shared/prompts/README.md) + [model config](shared/models.yaml) — identical across all three stacks, invariants enforced in CI |
 | ✅ | [CI](.github/workflows/ci.yml) — tests, conformance, schema, docs, prompt invariants. No model calls, no cost. |
 | ✅ | [Cross-engine conformance vectors](shared/conformance/) |

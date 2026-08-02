@@ -42,6 +42,11 @@ class MyAgent:
 
     def choose(self, ctx):          # ctx.legal_moves is already validated
         return ctx.legal_moves[0]
+
+    # Both optional. Called once per TURN — `choose` runs once per ROLL, and a
+    # six or a capture earns another roll.
+    def negotiate(self, start): ...   # before the first roll
+    def reflect(self, end): ...       # after the turn resolves
 ```
 
 A complete worked version — a heuristic bot playing against random bots — is in
@@ -97,7 +102,7 @@ Every edge case listed in [game-rules.md](../../../docs/projects/ludo/game-rules
 | `moves.py` | The rulebook: legal move generation and application |
 | `dice.py` | Portable seeded PRNG |
 | `game.py` | Turn loop, extra rolls, three-sixes cancellation, turn cap |
-| `deciders.py` | `Decider` protocol, `FirstLegal`, `RandomBot` |
+| `deciders.py` | `Decider` protocol (+ optional `Negotiator` / `Reflector` hooks), `StateView`, `FirstLegal`, `RandomBot` |
 | `events.py` | Event sinks and canonical serialisation |
 | `conformance.py` | Cross-engine vector generation and checking |
 | `cli.py` | `play`, `bench`, `validate`, `conformance` |

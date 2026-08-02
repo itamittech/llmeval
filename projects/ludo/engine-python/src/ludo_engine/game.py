@@ -9,7 +9,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from .board import COLORS, HOME, Color, to_square
-from .deciders import Decider, StateView, TurnContext
+from .deciders import (
+    Decider, Negotiator, Reflector, StateView, TurnContext, TurnEnd, TurnStart,
+)
 from .dice import Dice
 from .events import EventSink
 from .moves import Move, apply_move, legal_moves
@@ -53,6 +55,8 @@ class Game:
         self.dice = Dice(config.seed)
         self.turn = 0
         self._rotation = -1
+        #: Engine events emitted during the current turn, handed to `reflect`.
+        self._turn_events: list[dict] = []
 
     # -- public ----------------------------------------------------------
 
@@ -77,8 +81,37 @@ class Game:
     # -- turn ------------------------------------------------------------
 
     def _play_turn(self, color: Color, decider: Decider) -> None:
+        """One turn, with the two optional agent hooks around the roll loop.
+
+        Neither hook is wrapped in try/except, unlike `choose`. The engine
+        absorbs a failure only when it has a defined in-game meaning — a bad
+        `choose` forfeits the turn, which is a real outcome. A model provider
+        erroring mid-negotiation has no such meaning, so it belongs to the
+        harness that made the call. Swallowing it here would produce a
+        transcript that lies about what happened.
+        """
+        self._turn_events = []
         self._emit("turn_started", {"player": color})
 
+        # One view for the whole turn: agents inspect, they do not mutate.
+        view = StateView(self.state)
+
+        if isinstance(decider, Negotiator):
+            decider.negotiate(TurnStart(view, color, self.turn))
+
+        reason = self._roll_loop(color, decider, view)
+        self._emit("turn_ended", {"player": color, "reason": reason})
+
+        if isinstance(decider, Reflector):
+            decider.reflect(
+                TurnEnd(view, color, self.turn, reason, tuple(self._turn_events))
+            )
+
+    def _roll_loop(self, color: Color, decider: Decider, view: StateView) -> str:
+        """Roll, decide, resolve — repeating on a six or a capture.
+
+        Returns the reason the turn ended, which the caller emits.
+        """
         before = self.state.snapshot()
         sixes = 0
         roll_index = 0
@@ -92,19 +125,16 @@ class Game:
             if sixes == SIX_LIMIT:
                 # Cancel the whole turn, including movement and captures.
                 self.state.restore(before)
-                self._end_turn(color, "three_sixes")
-                return
+                return "three_sixes"
 
             moves = legal_moves(self.state, color, die)
             if not moves:
-                self._end_turn(color, "no_legal_move")
-                return
+                return "no_legal_move"
 
-            move = self._decide(color, decider, die, moves)
+            move = self._decide(color, decider, die, moves, view)
             if move is None:
                 self.state.stats[color].turns_forfeited += 1
-                self._end_turn(color, "illegal_move")
-                return
+                return "illegal_move"
 
             captured = self._apply(color, move)
 
@@ -113,8 +143,7 @@ class Game:
                 self._emit("player_finished", {
                     "player": color, "rank": len(self.state.finished),
                 })
-                self._end_turn(color, "moved")
-                return
+                return "moved"
 
             if die == 6 or captured:
                 self._emit("extra_roll_granted", {
@@ -122,8 +151,7 @@ class Game:
                 })
                 continue
 
-            self._end_turn(color, "moved")
-            return
+            return "moved"
 
     def _apply(self, color: Color, move: Move) -> bool:
         captures = apply_move(self.state, color, move)
@@ -148,11 +176,11 @@ class Game:
         return bool(captures)
 
     def _decide(
-        self, color: Color, decider: Decider, die: int, moves: list[Move]
+        self, color: Color, decider: Decider, die: int, moves: list[Move],
+        view: StateView,
     ) -> Move | None:
         """Ask for a move, rejecting illegal ones rather than correcting them."""
         allowed = set(moves)
-        view = StateView(self.state)      # agents inspect, they do not mutate
 
         for attempt in range(1, MOVE_ATTEMPTS + 1):
             ctx = TurnContext(view, color, die, list(moves), self.turn, attempt)
@@ -187,10 +215,10 @@ class Game:
 
     # -- emission --------------------------------------------------------
 
-    def _end_turn(self, color: Color, reason: str) -> None:
-        self._emit("turn_ended", {"player": color, "reason": reason})
-
     def _emit(self, type_: str, payload: dict) -> None:
+        # Also buffered for the turn, so `reflect` gets what happened without
+        # the harness having to reconstruct it from the sink.
+        self._turn_events.append({"type": type_, "payload": payload})
         self.sink.emit(type_, payload, turn=self.turn)
 
     def _emit_start(self, deciders: dict[Color, Decider]) -> None:

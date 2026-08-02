@@ -4,12 +4,26 @@ The engine knows nothing about LLMs. It asks a `Decider` to pick from the moves
 it has already validated as legal — which is what lets agents plug in without
 the engine ever importing a model SDK, and what makes cheating structurally
 impossible (ADR-0004).
+
+Three call sites, only the middle one required:
+
+    negotiate(TurnStart)   once per turn, before the first roll   optional
+    choose(TurnContext)    once per ROLL                          required
+    reflect(TurnEnd)       once per turn, after it resolves       optional
+
+The per-turn / per-roll distinction is load-bearing. A six or a capture earns
+another roll, so `choose` may run several times in one turn; if negotiation ran
+with it, an agent on a hot streak would get a free multiplier on both influence
+and cost. See the harness contract, docs/projects/ludo/harness-contract.md.
+
+Optional so that bot deciders with no model behind them stay valid — which is
+what keeps the engine fast to test and `examples/turn_order.py` runnable.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 from .board import Color
 from .dice import Dice
@@ -71,6 +85,15 @@ class StateView:
 
 
 @dataclass(frozen=True)
+class TurnStart:
+    """Handed to `negotiate`, once per turn, before the first roll."""
+
+    state: StateView
+    color: Color
+    turn: int
+
+
+@dataclass(frozen=True)
 class TurnContext:
     """Everything a decider is allowed to see when choosing a move."""
 
@@ -83,8 +106,40 @@ class TurnContext:
     attempt: int = 1
 
 
+@dataclass(frozen=True)
+class TurnEnd:
+    """Handed to `reflect`, once per turn, after it resolves."""
+
+    state: StateView
+    color: Color
+    turn: int
+    #: Same value as the `turn_ended` event: moved, no_legal_move,
+    #: illegal_move, or three_sixes.
+    reason: str
+    #: Every engine event emitted during this turn, `turn_started` through
+    #: `turn_ended`. Agent-layer events are not here — an agent already knows
+    #: what it said.
+    events: tuple[dict, ...]
+
+
 class Decider(Protocol):
+    """The whole required agent interface: pick from moves already validated."""
+
     def choose(self, ctx: TurnContext) -> Move: ...
+
+
+@runtime_checkable
+class Negotiator(Protocol):
+    """Optional. The engine calls this once per turn, before rolling."""
+
+    def negotiate(self, start: TurnStart) -> None: ...
+
+
+@runtime_checkable
+class Reflector(Protocol):
+    """Optional. The engine calls this once per turn, after it resolves."""
+
+    def reflect(self, end: TurnEnd) -> None: ...
 
 
 class FirstLegal:

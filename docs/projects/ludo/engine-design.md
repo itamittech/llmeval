@@ -10,9 +10,9 @@ The engine defines 17 classes, which sounds like a lot. Only three of them are c
 
 | Kind | Classes | What they're for |
 |---|---|---|
-| **Records** | `Move` `Capture` `Snapshot` `TurnContext` `PlayerStats` `GameConfig` `Outcome` | Named bundles of fields. No behaviour. |
+| **Records** | `Move` `Capture` `Snapshot` `TurnStart` `TurnContext` `TurnEnd` `PlayerStats` `GameConfig` `Outcome` | Named bundles of fields. No behaviour. |
 | **Stateful objects** | `GameState` `Dice` `Game` | Own something that changes over time. |
-| **Extension points** | `Decider` `FirstLegal` `RandomBot` · `EventSink` `ListSink` `JsonlSink` `TeeSink` | Where other code plugs in. |
+| **Extension points** | `Decider` `Negotiator` `Reflector` `FirstLegal` `RandomBot` · `EventSink` `ListSink` `JsonlSink` `TeeSink` | Where other code plugs in. |
 
 ## Records
 
@@ -88,6 +88,32 @@ This is the whole reason the engine stays dependency-free. The Strands agent and
 
 The tests demonstrate it — `Cheater` and `Broken` in [`test_game.py`](../../../projects/ludo/engine-python/tests/test_game.py) are plain classes with one method and no relationship to `Decider`.
 
+#### Two optional siblings
+
+An agent harness also needs to talk to other players and to write memory, and neither belongs inside `choose`. Two further Protocols mark those call sites:
+
+```python
+@runtime_checkable
+class Negotiator(Protocol):
+    def negotiate(self, start: TurnStart) -> None: ...
+
+@runtime_checkable
+class Reflector(Protocol):
+    def reflect(self, end: TurnEnd) -> None: ...
+```
+
+| Hook | Frequency | Required |
+|---|---|---|
+| `negotiate` | once per **turn**, before the first roll | no |
+| `choose` | once per **roll** | **yes** |
+| `reflect` | once per **turn**, after it resolves | no |
+
+**The per-turn / per-roll split is the point.** A six or a capture earns another roll, so `choose` can run several times in one turn. If negotiation ran with it, an agent on a hot streak would get a free multiplier on both influence and cost — see the [harness contract](harness-contract.md).
+
+`runtime_checkable` makes `isinstance(decider, Negotiator)` a method-presence check, which is how the engine decides whether to call. Optional matters: `RandomBot` and `GreedyBot` have no model behind them, and keeping them valid is what keeps the engine fast to test and [`turn_order.py`](../../../projects/ludo/engine-python/examples/turn_order.py) runnable.
+
+**Neither hook is wrapped in try/except, unlike `choose`.** The engine absorbs a failure only where it has a defined in-game meaning: a bad `choose` forfeits the turn, and a forfeit is a real outcome that gets recorded and scored. A provider erroring mid-negotiation has no such meaning, so it belongs to the harness that made the call — swallowing it here would produce a transcript that lies about what happened.
+
 ### `EventSink` — the one real inheritance hierarchy
 
 A template method. The base class owns sequence numbering; subclasses choose only a destination:
@@ -112,21 +138,27 @@ class EventSink:
 ```
 Game._play_turn(color, decider)
   ├─ emit turn_started
-  ├─ snapshot = state.snapshot()          ← for possible three-sixes rollback
-  └─ loop:
-       ├─ die = dice.roll()               ← engine controls this, never the agent
-       ├─ emit dice_rolled
-       ├─ if third consecutive six → state.restore(snapshot); emit turn_ended; STOP
-       ├─ moves = legal_moves(state, color, die)
-       ├─ if none → emit turn_ended(no_legal_move); STOP
-       ├─ move = decider.choose(ctx)      ← the ONLY point an agent influences anything
-       │    └─ not in legal set? emit illegal_move_rejected, retry once, else forfeit
-       ├─ apply_move → emit move_made [+ token_captured] [+ token_home]
-       ├─ if six or capture → emit extra_roll_granted; CONTINUE
-       └─ emit turn_ended(moved); STOP
+  ├─ decider.negotiate(TurnStart)         ← optional; ONCE per turn, before any roll
+  └─ Game._roll_loop(color, decider, view)
+     ├─ snapshot = state.snapshot()       ← for possible three-sixes rollback
+     └─ loop:
+          ├─ die = dice.roll()            ← engine controls this, never the agent
+          ├─ emit dice_rolled
+          ├─ if third consecutive six → state.restore(snapshot); RETURN three_sixes
+          ├─ moves = legal_moves(state, color, die)
+          ├─ if none → RETURN no_legal_move
+          ├─ move = decider.choose(ctx)   ← the ONLY point an agent influences the GAME
+          │    └─ not in legal set? emit illegal_move_rejected, retry once, else forfeit
+          ├─ apply_move → emit move_made [+ token_captured] [+ token_home]
+          ├─ if six or capture → emit extra_roll_granted; CONTINUE
+          └─ RETURN moved
+  ├─ emit turn_ended(reason)
+  └─ decider.reflect(TurnEnd)             ← optional; ONCE per turn, after it resolves
 ```
 
-The agent's entire influence is one line: choosing from a list the engine already validated.
+The agent's entire influence over the *game* is still one line: choosing from a list the engine already validated. `negotiate` and `reflect` change nothing on the board — they exist so a harness can talk and remember at the right moments, and everything they produce reaches the world as events, not as state.
+
+`_roll_loop` returns the reason rather than emitting `turn_ended` itself, so the turn has exactly one exit and `reflect` cannot be skipped down some branch. That restructure is behaviour-preserving: the regenerated seed-7 transcript is byte-identical to the committed sample.
 
 ## What makes replay work
 
@@ -188,7 +220,7 @@ One `>>` instead of `>>>` and every conformance vector fails — which is precis
 ## Related
 
 - [Class design](class-design.md) — the same structure as diagrams: object graph, call flow, module layering
-- [Harness contract](harness-contract.md) — what an agent stack must do around this engine. **§2.1 specifies an extension to `Decider`** (optional `negotiate` / `reflect` hooks) that the agent turn protocol needs and the engine does not yet have
+- [Harness contract](harness-contract.md) — what an agent stack must do around this engine. The `negotiate` / `reflect` hooks above exist because that spec requires them; the Java engine must match before `stack-springai`
 - [Engine README](../../../projects/ludo/engine-python/README.md) — usage and module map
 - [Game rules](game-rules.md) — the normative spec, including resolved edge cases
 - [Event schema](../../../shared/schemas/README.md) — the output contract

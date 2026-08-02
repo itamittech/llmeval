@@ -58,7 +58,8 @@ The **shared event schema**, the **Python engine**, and the **shared prompt set 
 | Component | State |
 |---|---|
 | `shared/schemas/` — event contract | ✅ Built |
-| `projects/ludo/engine-python/` | ✅ Built, 60 tests passing |
+| `projects/ludo/engine-python/` | ✅ Built, 68 tests passing |
+| `docs/projects/ludo/harness-contract.md` | ✅ Spec written; no stack implements it yet |
 | `shared/prompts/ludo/` — prompts all stacks send | ✅ 7 templates |
 | `shared/models.yaml` — seats, routes, profiles | ✅ Built; **model IDs still `TBD`** |
 | `shared/conformance/` — cross-engine vectors | ✅ 20 vectors |

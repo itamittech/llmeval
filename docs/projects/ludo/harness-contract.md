@@ -41,11 +41,11 @@ observe → negotiate → [roll → decide → resolve]+ → reflect
 
 **Reflect.** The harness MUST offer the agent one memory-write opportunity per turn, after the turn resolves.
 
-### 2.1 The engine does not currently support this
+### 2.1 The hooks the engine provides
 
-`Game.play(deciders)` runs the whole match; `_play_turn` is private and there is no hook before the first roll or after the turn ends. A harness therefore **cannot place negotiation and reflection where this spec requires** without reimplementing turn order, extra rolls, and three-sixes cancellation itself — which would duplicate rule logic across three stacks and defeat [ADR-0002](../../decisions/adr-0002-engine-per-language.md).
+Writing this spec surfaced that the engine could not support it. `Game.play(deciders)` ran the whole match, `_play_turn` was private, and there was no hook before the first roll or after the turn ended — so a harness could not place negotiation and reflection where this section requires without reimplementing turn order, extra rolls, and three-sixes cancellation itself. That would have duplicated rule logic across three stacks and defeated [ADR-0002](../../decisions/adr-0002-engine-per-language.md).
 
-The fix is to extend the `Decider` protocol with two optional methods the engine calls at the named points:
+**Built in the Python engine.** The `Decider` protocol now has two optional siblings the engine calls at the named points:
 
 | Method | Called | Optional |
 |---|---|---|
@@ -53,9 +53,13 @@ The fix is to extend the `Decider` protocol with two optional methods the engine
 | `choose(ctx)` | Once per roll | **Required** |
 | `reflect(ctx)` | Once per turn, after it resolves | Yes |
 
-Optional because the engine must keep working with bot deciders that have no model behind them — which is also what keeps the engine testable at speed and keeps [`turn_order.py`](../../../projects/ludo/engine-python/examples/turn_order.py) runnable. In Python this is a `hasattr` check against the Protocol; in Java, default interface methods.
+Optional because the engine must keep working with bot deciders that have no model behind them — which is also what keeps the engine testable at speed and keeps [`turn_order.py`](../../../projects/ludo/engine-python/examples/turn_order.py) runnable. In Python these are `runtime_checkable` Protocols, so the engine's check is method presence; in Java, default interface methods.
 
-**This engine change is a prerequisite for the first stack, and it is not yet made.** It lands with `stack-strands`, and the Java engine must match it before `stack-springai`.
+`negotiate` receives a `TurnStart`, `reflect` a `TurnEnd` carrying the turn's end reason and every engine event it emitted — so a harness can render `{{turn_summary}}` without reconstructing the turn from the sink.
+
+**A harness MUST NOT let an exception escape either hook.** The engine deliberately does not catch them: it absorbs a failure only where one has a defined in-game meaning, and a forfeit is a real outcome while a provider error mid-negotiation is not. Handling it belongs to the code that made the call, and a harness that lets one propagate takes the whole run down.
+
+**The Java engine must match this before `stack-springai`.**
 
 ## 3. Event obligations
 
