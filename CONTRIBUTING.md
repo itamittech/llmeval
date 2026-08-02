@@ -98,7 +98,9 @@ Agents lie deliberately — that's the experiment. Anything derived from a trans
 - **Explain on first use.** If you introduce a term, either define it inline or add it to the [glossary](docs/glossary.md).
 - **Teach from the problem.** The pattern that works well here is: the problem → what you'd write first → what breaks → the fix → the name. [Section 7 of class-design](docs/projects/ludo/class-design.md#7-design-patterns-from-the-problem-up) is the model.
 - **Non-obvious, expensive-to-reverse decisions get an [ADR](docs/decisions/README.md)** — with the costs written down, not just the benefits.
-- **Mermaid diagrams** render on GitHub natively. Locally you'll need a preview extension.
+- **Mermaid diagrams** render on GitHub natively; locally you'll need a preview extension. Two traps worth knowing:
+  - **Node IDs must avoid Mermaid's reserved words** — `call`, `click`, `class`, `classDef`, `style`, `linkStyle`, `graph`, `subgraph`, `end`, `direction`, `href`, `default`. A node named `call` parses as a click-callback directive and the whole diagram fails. This has already bitten us once.
+  - **Balanced braces are not proof it parses.** Only the real parser knows. After pushing, **look at the file on GitHub** — a broken diagram shows "Unable to render rich display" with a parse error instead of the picture. GitHub renders Mermaid inside a cross-origin iframe, so scripted checks against the page will not see the failure.
 
 ## Code conventions
 
