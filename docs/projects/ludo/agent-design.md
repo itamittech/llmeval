@@ -76,7 +76,7 @@ When history exceeds its budget, older turns are **compacted** — summarised in
 
 ## Prompts
 
-All prompts live in `shared/prompts/`, versioned, shared verbatim by all three stacks. If Strands and Spring AI ran different prompts, the comparison would be meaningless.
+All prompts will live in `shared/prompts/`, versioned, shared verbatim by all three stacks. *(Not created yet — it's a prerequisite for the first stack, since whichever stack is written first would otherwise set the de facto prompt.)* If Strands and Spring AI ran different prompts, the comparison would be meaningless.
 
 Each agent gets the same base prompt, differing only in colour identity and access route. **We do not hand-code personalities** — no "you are the aggressive one." Whether distinct playing styles emerge from identical prompts and different models is one of the more interesting things to watch, and pre-assigning personas would destroy that observation.
 

@@ -95,7 +95,7 @@ Recorded as [ADR-0002](../decisions/adr-0002-engine-per-language.md).
 
 ## Model access is configuration, not code
 
-A single `models.yaml` maps logical agent identities to concrete providers:
+A single `shared/models.yaml` will map logical agent identities to concrete providers. **Not created yet** — it lands with the first stack:
 
 ```yaml
 agents:

@@ -62,7 +62,7 @@ These aren't style preferences. Each one, broken, quietly invalidates something 
 
 ### 1. Parity is the whole point
 
-The three implementations must differ **only** in the agent framework. Same rules, same prompts (they live in `shared/prompts/` and are shared verbatim), same schema, same retry behaviour.
+The three implementations must differ **only** in the agent framework. Same rules, same prompts (destined for `shared/prompts/`, shared verbatim — not created yet), same schema, same retry behaviour.
 
 *Why:* if the LangGraph version gets a slightly better prompt, every measured difference becomes meaningless. We'd be comparing our own inconsistency. → [architecture overview](docs/architecture/overview.md)
 

@@ -115,7 +115,7 @@ First project: **LUDO**, four LLM agents playing the Indian board game, two invo
 
 ## Constraints that are easy to violate
 
-**Parity is the point.** The three implementations must differ *only* in the agent framework. Anything that lets one stack diverge — a different prompt, a tweaked rule, an extra retry — invalidates the comparison. Prompts live in `shared/prompts/` and are shared verbatim.
+**Parity is the point.** The three implementations must differ *only* in the agent framework. Anything that lets one stack diverge — a different prompt, a tweaked rule, an extra retry — invalidates the comparison. Prompts will live in `shared/prompts/`, shared verbatim — **that directory does not exist yet** and must be created before the first stack, not after.
 
 **Capability gaps are deliverables, not bugs.** When a framework can't do something (e.g. Spring AI lacking a harness primitive the Python stacks get free), record it in [the capability matrix](docs/architecture/stack-comparison.md) and surface it in the UI. Never quietly hand-roll a substitute and imply parity.
 
