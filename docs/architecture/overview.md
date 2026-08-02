@@ -1,5 +1,7 @@
 # Architecture Overview
 
+> Unfamiliar term? The [glossary](../glossary.md) defines everything this repo uses as shorthand — *parity*, *stack*, *event stream*, *harness*, *conformance vector*, and the rest.
+
 ## The core problem
 
 We build every project three times — Strands, LangChain/LangGraph, Spring AI — and compare the results. That comparison is worthless unless the three implementations differ **only** in the agent framework.

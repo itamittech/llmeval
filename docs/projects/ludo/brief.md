@@ -4,6 +4,8 @@
 
 This is the repo's first project and its template: whatever we learn about structuring a three-stack comparison here carries into everything after.
 
+> New to any of this vocabulary — *swarm*, *harness*, *guardrail*, *LLM-as-judge*? The [glossary](../../glossary.md) explains every term in plain English.
+
 ## What it demonstrates
 
 | Topic | How it shows up |

@@ -1,5 +1,7 @@
 # LUDO — Agent Design
 
+> Terms like *swarm*, *harness*, *context compaction*, and *prompt injection* are all defined in the [glossary](../../glossary.md).
+
 ## Swarm shape
 
 Four peer agents, no coordinator. Each owns one colour, sees the same public board, and acts only on its own turn. There is no manager agent deciding who moves — the engine's turn order does that, and the agents are otherwise autonomous peers.

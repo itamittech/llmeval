@@ -28,13 +28,40 @@ The agents don't just roll dice. They can **form alliances**, gang up on whoever
 
 The game may not even finish — there's a turn cap, and we evaluate **mid-game position** with an LLM-as-judge to decide who actually played best.
 
-Along the way it demonstrates: agent swarm architecture, agent memory, context compaction, prompt caching, token and cost monitoring, observability, and LLM-based evaluation.
+Along the way it demonstrates the machinery that turns a language model into an agent:
+
+| | |
+|---|---|
+| **Agent swarm** | four peers with their own goals, negotiating, no coordinator |
+| **Agent memory** | what each agent recalls about the others between turns — including things it was lied to about |
+| **Context compaction** | the transcript outgrows what the model can read; something has to be summarised away |
+| **Prompt caching** | reusing the unchanged part of a prompt to cut cost and latency |
+| **Token & cost monitoring** | per agent, per turn, with enforced budgets |
+| **Observability** | a full trace of every decision, so behaviour can be explained afterwards |
+| **LLM-as-judge** | scoring the quality of play that no simple metric captures |
+
+Not sure what some of those mean? That's expected — **[the glossary](docs/glossary.md) explains every term this repo uses**, in plain English.
 
 → **[Read the LUDO project brief](docs/projects/ludo/brief.md)**
 
 ## Documentation
 
-**Start here**
+**[📖 Glossary](docs/glossary.md)** — every term this repo uses, in plain English. Start here if anything above was unfamiliar.
+
+### Where to start, depending on who you are
+
+| If you're… | Read, in this order |
+|---|---|
+| **New to LLM engineering** | [Glossary](docs/glossary.md) → [Vision](docs/vision.md) → [LUDO brief](docs/projects/ludo/brief.md) |
+| **Here for the framework comparison** | [Architecture overview](docs/architecture/overview.md) → [Capability matrix](docs/architecture/stack-comparison.md) |
+| **New to Python** | [learning/python](learning/python/) → [`Game` walkthrough](learning/python/01-walkthrough-game.md) |
+| **Curious about design patterns** | [Class design §7](docs/projects/ludo/class-design.md#7-design-patterns-from-the-problem-up) — each one taught from the problem up |
+| **About to write code** | [Engine design](docs/projects/ludo/engine-design.md) → [Class design](docs/projects/ludo/class-design.md) → [Open questions](docs/open-questions.md) |
+| **Just want to see it run** | the [command below](#status) — no keys, no cost |
+
+### Everything else
+
+**Foundations**
 - [Vision & teaching philosophy](docs/vision.md) — what this repo is for and how it's written
 - [Architecture overview](docs/architecture/overview.md) — the parity model that makes comparison possible
 - [Open questions](docs/open-questions.md) — decisions still on the table

@@ -59,6 +59,7 @@ Some foundational decisions are still open — read [docs/open-questions.md](doc
 
 Read in this order:
 
+0. [docs/glossary.md](docs/glossary.md) — the repo's vocabulary; keep it to hand
 1. [docs/vision.md](docs/vision.md) — what this repo is for
 2. [docs/architecture/overview.md](docs/architecture/overview.md) — **the most important doc**; the parity model everything else follows from
 3. [docs/projects/ludo/brief.md](docs/projects/ludo/brief.md) — the first project
