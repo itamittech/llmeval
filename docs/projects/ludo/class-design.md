@@ -404,9 +404,25 @@ No arrow ever points back up, and nothing in the engine points at an agent frame
 
 ## 7. Design patterns, from the problem up
 
-If you haven't met design patterns before, the usual way they're taught is backwards: here is a name, here is a diagram, here is a definition. But a pattern is an **answer**, and an answer only makes sense once you've felt the question.
+### First — what *is* a design pattern?
 
-So each one below starts with a problem this engine actually had. It shows the code you'd reasonably write first, shows what goes wrong, and only then names the thing. If you already know the patterns, skip to the [recap](#78-recap).
+A design pattern is **a named solution to a problem that keeps coming back**. Not a library, not a rule you must follow — a description of a shape that has repeatedly turned out to work.
+
+The idea didn't start in software. In 1977 the architect **Christopher Alexander** published *A Pattern Language*, cataloguing recurring solutions in building design: "light on two sides of every room", "a six-foot balcony". His argument was that good design is rarely invention — it's recognising a situation you've seen before and remembering what worked.
+
+In 1994 four authors — universally called the **Gang of Four** — did the same for object-oriented software and catalogued 23 patterns. Strategy, Template Method, Memento and Composite below all come from that book. **Value Object** is later, from Eric Evans's *Domain-Driven Design* (2003). **Ports and Adapters** is Alistair Cockburn's (2005).
+
+Two things worth knowing before you read on.
+
+**The names are most of the value.** Saying "make that a Strategy" replaces three paragraphs of explanation between two people who both know the word. The code shapes themselves are things a good programmer often arrives at anyway — the shared vocabulary is what you're really gaining.
+
+**Patterns are descriptions, not prescriptions.** The Gang of Four catalogued what already worked; they didn't hand out a checklist. Reaching for a pattern *because it's in the book* is one of the reliable ways to make a codebase unreadable. Everything below is here because a concrete problem pushed us into it — and [section 8](#8-patterns-deliberately-not-used) lists the ones we deliberately didn't use, which is just as instructive.
+
+### How each one below is laid out
+
+The usual way patterns get taught is backwards: here's a name, here's a definition, here's a diagram. But a pattern is an **answer**, and an answer means nothing until you've felt the question. So each one starts with a problem this engine actually hit, shows the code you'd reasonably write first, shows what breaks — and only then names the thing, explains where that odd name comes from, and gives you a rule of thumb for spotting the situation again.
+
+Already know the patterns? Skip to the [recap](#79-recap).
 
 ---
 
@@ -475,9 +491,13 @@ flowchart TB
     end
 ```
 
-**The name.** This is **Strategy** (Gang of Four, behavioural): *define a family of algorithms, encapsulate each one, make them interchangeable.* `Game` is the "context", `Decider` is the strategy interface, each agent is a concrete strategy.
+**Where the name comes from.** A *strategy* is a plan of action. The insight the name captures: make the plan a **separate, swappable object** rather than logic baked into whoever executes it. The general doesn't change; the battle plan does.
 
-The payoff isn't theoretical. It's why the *same* engine runs deterministically under `FirstLegal` for conformance vectors and non-deterministically under an LLM for a real game — with no code difference at all.
+**The everyday version.** A power drill with swappable bits. The drill's job — spin — never changes. What you attach decides whether you're drilling masonry or driving a screw. The drill needs to know nothing about the bit beyond "it fits the chuck." `choose(ctx) -> Move` is our chuck.
+
+**Reach for it when** you have an `if`/`elif` branching on a *kind of thing*, where every branch does the same job a different way. That's a Strategy waiting to be extracted.
+
+**Don't when** there's only ever going to be one implementation. An interface with a single implementer is ceremony, not design.
 
 ---
 
@@ -526,9 +546,38 @@ flowchart LR
     hole -.-> ts["TeeSink<br/>hand to children"]
 ```
 
-**The name.** **Template Method** (GoF, behavioural): *define the skeleton of an algorithm in a base class, deferring specific steps to subclasses.* The skeleton is `emit`; the deferred step is `_write`.
+**Where the name comes from.** "Template" in the everyday sense — a form with blanks. The base class writes the form; subclasses fill in the blanks. "Method" because the template *is* a method (`emit`), not a class or a file.
 
-Note the difference from Strategy. Strategy swaps out the *whole* algorithm; Template Method keeps the algorithm fixed and swaps out one *step*. Choosing between them is really a question of how much you want to vary.
+**The everyday version.** A recipe that reads: *preheat oven, season **your choice of protein**, roast 40 minutes, rest 10 minutes.* Four steps fixed, one is yours. Crucially, nobody can accidentally skip the resting step — the recipe owns it. That's exactly what stops a subclass breaking `seq`.
+
+**Reach for it when** two or more methods are ~90% identical and differ in one step. Hoist the sameness into a base class, leave a hole.
+
+**Don't when** the shared skeleton is trivial. If two lines are common and ten differ, inheritance costs more than the duplication did.
+
+#### Easily confused: Strategy vs Template Method
+
+These trip up almost everyone, because both are "some behaviour varies."
+
+```mermaid
+flowchart LR
+    subgraph strat["STRATEGY — composition"]
+        direction TB
+        ctx["Game"] -->|holds a| sif["Decider"]
+        sif -.-> s2["RandomBot"]
+        sif -.-> s3["StrandsAgent"]
+        sn["the WHOLE algorithm<br/>is replaced"]
+    end
+
+    subgraph tmpl["TEMPLATE METHOD — inheritance"]
+        direction TB
+        base["EventSink.emit<br/>fixed skeleton"] --> step{{"_write<br/>ONE step"}}
+        step -.-> t1["ListSink"]
+        step -.-> t2["JsonlSink"]
+        tn["the skeleton is FIXED,<br/>one step varies"]
+    end
+```
+
+**The mnemonic:** Template Method uses **inheritance** and varies **one step inside a fixed algorithm**. Strategy uses **composition** and varies **the whole algorithm**. If you find yourself asking which you need, ask instead: *how much is allowed to change?*
 
 ---
 
@@ -587,15 +636,15 @@ sequenceDiagram
     Note over S: token back in base,<br/>green's token back on the board,<br/>capture counters back to zero
 ```
 
-**The name.** **Memento** (GoF, behavioural): *capture an object's internal state so it can be restored later, without violating encapsulation.* All three roles are present and genuinely distinct:
+**Where the name comes from.** A *memento* is a keepsake — a ticket stub or a pebble you keep to remember a day by. You don't take the day apart and store its pieces; you keep one small token that can bring the whole thing back. That is precisely what `Snapshot` is, and why the pattern isn't called "Undo" or "Backup": the emphasis is on the **opaque token**, not the restoring.
 
-| Role | Class | Job |
-|---|---|---|
-| Originator | `GameState` | makes the memento, accepts it back |
-| Memento | `Snapshot` | the sealed, frozen copy |
-| Caretaker | `Game` | holds it, never inspects it |
+**The everyday version.** A save point in a video game. You have no idea how the game serialises its world, and you don't need to — you have "the save", and you can load it. If the game later adds weather, your save still works, because the game owns the format.
 
-That "without violating encapsulation" clause is the entire point — and it is precisely what Attempt B gets wrong.
+**Reach for it when** you need to restore a previous state **and** the undo logic would otherwise leak into whoever is calling. The second half matters: if the caller can already see all the state legitimately, you may just need a copy.
+
+**Don't when** you need fine-grained, step-by-step undo — that's *Command* with an `undo()` per action. Memento restores a whole moment, not one step. Ludo cancels the entire turn, so Memento fits; a text editor's Ctrl-Z does not.
+
+**The trap.** The memento must be a genuine **copy**, not a reference to live state. Get that wrong and `restore()` appears to work while doing nothing. See [example 04](../../../learning/python/examples/04_mutability_and_copying.py).
 
 ---
 
@@ -633,7 +682,13 @@ flowchart TB
     g -.- n
 ```
 
-**The name.** **Composite** (GoF, structural): *compose objects into tree structures, and let clients treat individual objects and compositions uniformly.* Nesting works too — a `TeeSink` of `TeeSink`s is valid, and `Game` still can't tell.
+**Where the name comes from.** "Composite" simply means *made up of parts*. The whole point of the name is the bit people miss: the composite is **the same kind of thing as its parts**. A group of sinks isn't a new concept called "sink group" — it's just a sink. That sameness is what lets the caller stop caring.
+
+**The everyday version.** A folder on your computer. It contains files, and other folders. But you copy, move, rename, or delete a folder in exactly the same way you do a single file — the operations don't change shape as the tree gets deeper. (Moving house works the same: a box of boxes is still just a box you carry.)
+
+**Reach for it when** the caller keeps having to ask "is this one, or many?" Make many *be* one.
+
+**Don't when** parts and wholes genuinely behave differently. Forcing a uniform interface then leaves you with methods that are meaningless for half the tree — the classic symptom is a `leaf.add_child()` that throws.
 
 ---
 
@@ -668,9 +723,15 @@ allowed = set(moves)
 if move in allowed: ...
 ```
 
-**The name.** A **Value Object** (Domain-Driven Design): *no identity, equality by content, immutable.* `Move`, `Capture`, `Snapshot`, and `TurnContext` are all value objects.
+**Where the name comes from.** From Domain-Driven Design, where things divide into **values** and **entities**. A value is defined entirely by *what it is*; an entity by *which one it is*. The name is doing real work — it's telling you identity is irrelevant.
 
-Contrast `Game` and `GameState`, which are **entities** — identity matters. Two `GameState`s holding identical tokens are still two different games.
+**The everyday version.** A £10 note is a value: any £10 note is as good as any other, and you'd never demand *your specific* note back from a shopkeeper. Your passport is an entity: a perfect copy with identical details is emphatically **not** the same passport.
+
+In this engine, `Move` and `Snapshot` are £10 notes. `Game` and `GameState` are passports — two `GameState`s holding identical tokens are still two different games.
+
+**Reach for it when** you can answer "no" to: *if I swapped this for an identical-looking one, would anyone care?*
+
+**Don't when** identity genuinely matters, or the object is large and copied constantly — immutability means every change allocates a new one.
 
 ---
 
@@ -694,7 +755,7 @@ flowchart LR
     subgraph core["engine core — imports nothing from outside"]
         direction TB
         game[Game]
-        state[GameState]
+        gstate[GameState]
         moves[moves]
         board[board]
         dice[Dice]
@@ -724,25 +785,25 @@ flowchart LR
     eport -.-> ls
     eport -.-> js
     eport -.-> ts
-
-    style agents stroke-dasharray: 5 5
 ```
 
 **Reading it.** Adapters on the **left** are *driving* — they call into the engine. Adapters on the **right** are *driven* — the engine calls out to them. The distinction is just direction of control.
 
-**Why it matters here.** Two ports is the *entire* outside surface of the engine. That single fact is why:
+**Where the name comes from.** The metaphor is a physical device. A **port** is a socket of a defined shape that the device owns; an **adapter** is whatever plugs into it. You'll also see this called **Hexagonal Architecture** — Cockburn drew a hexagon purely so he could show several different ports around one core without implying a top-to-bottom stack. **The number six means nothing.** He later said he wished he'd led with "ports and adapters", because people kept asking why six.
 
-- the engine has no LLM dependency, and can't acquire one by accident;
-- the UI and eval harness consume recorded games without importing a single engine class;
-- the Java engine can be a straight port, because there's nothing framework-specific to translate.
+**The everyday version.** Your laptop's USB-C port. The laptop defines the socket's shape and the protocol. It has no idea whether you'll plug in a monitor, a drive, or a charger — and it doesn't need to. Adding a new kind of peripheral never requires opening the laptop.
 
-**The name.** **Ports and Adapters**, also known as Hexagonal Architecture (Alistair Cockburn). The "hexagon" is just a drawing convention for the core — the number of sides means nothing.
+**Reach for it when** you have a rule of the form "X must never depend on Y." Turn the dependency into a port that X owns, and the rule stops being aspirational and starts being structural.
+
+**Don't when** the program is small and each port will only ever have one adapter. Then it's indirection with nothing behind it.
+
+**Why it matters here.** Two ports is the *entire* outside surface of the engine. That single fact is why the engine has no LLM dependency and can't acquire one by accident; why the UI and eval harness consume recorded games without importing a single engine class; and why the Java engine can be a straight port, with nothing framework-specific to translate.
 
 ---
 
 ### 7.7 The principles underneath
 
-The five patterns above aren't five unrelated inventions. They're applications of a smaller set of ideas, usually taught as **SOLID**. Checked honestly against this engine:
+The six patterns above aren't six unrelated inventions. They're applications of a smaller set of ideas, usually taught as **SOLID**. Checked honestly against this engine:
 
 | Principle | Plain English | Here |
 |---|---|---|
@@ -752,7 +813,7 @@ The five patterns above aren't five unrelated inventions. They're applications o
 | **I**nterface Segregation | small interfaces beat big ones | ✅ `Decider` has exactly one method |
 | **D**ependency Inversion | depend on abstractions, not concretions | ✅ `Game` depends on `Decider`, never on `RandomBot` |
 
-Notice that Strategy, Template Method, and Ports & Adapters are all really the *same two principles* — Open/Closed and Dependency Inversion — applied at different scales. That's more useful to remember than the individual names.
+**The thing worth actually remembering:** Strategy, Template Method and Ports & Adapters are all the *same two principles* — Open/Closed and Dependency Inversion — applied at different scales. One method, one class, one whole subsystem. If you internalise "depend on the shape, not the thing", you'll reinvent all three without needing the names.
 
 **Where it's bent.** One genuine violation, left in deliberately:
 
@@ -760,25 +821,42 @@ Notice that Strategy, Template Method, and Ports & Adapters are all really the *
 self.state.stats[color].turns_forfeited += 1        # game.py
 ```
 
-Four levels of reaching through another object's internals. This breaks the **Law of Demeter** ("only talk to your immediate neighbours"), and "tell, don't ask" would put a `record_forfeit(color)` method on `GameState` instead. It's small enough to have been left alone — but if `Game` starts poking at more of `GameState`'s internals, that's the signal to fix it.
+Four levels of reaching through another object's internals. This breaks the **Law of Demeter** — "only talk to your immediate neighbours" — and "tell, don't ask" would put a `record_forfeit(color)` method on `GameState` instead. It's small enough to have been left alone, but if `Game` starts poking at more of `GameState`'s internals, that's the signal to fix it.
 
 ---
 
-### 7.8 Recap
+### 7.8 Rules of thumb, collected
 
-| Pattern | Source | Fit | The problem it solved here |
-|---|---|---|---|
-| **Strategy** | GoF behavioural | textbook | Four kinds of player, one turn loop |
-| **Template Method** | GoF behavioural | textbook | One numbering rule, three destinations |
-| **Memento** | GoF behavioural | textbook | Undo a whole turn without exposing state |
-| **Composite** | GoF structural | textbook | Write to file and memory as if to one place |
-| **Value Object** | DDD | textbook | Compare moves by content, not identity |
-| **Ports & Adapters** | Cockburn | textbook | Keep LLM SDKs structurally out of the engine |
-| **Dependency Injection** | — | textbook | `Game` is handed its sink rather than choosing one |
-| **Facade** | GoF structural | *approximate* | `Game.play` is one call over the subsystem — but it hides nothing you're forbidden to touch |
-| **Event Sourcing** | Fowler | *approximate* | Consumers rebuild from the log — but the engine keeps authoritative state too |
+If you remember nothing else:
 
-"Textbook" means all the pattern's roles are present and doing their job. "Approximate" means the shape rubs off but calling it the pattern would be a stretch. Most "patterns in our codebase" documents skip this distinction and over-claim; every dictionary becomes a Registry, every function a Factory.
+| Pattern | The everyday version | Reach for it when… |
+|---|---|---|
+| **Strategy** | swappable drill bits | an `if`/`elif` branches on a *kind of thing*, each branch doing the same job differently |
+| **Template Method** | a recipe with one step left to you | two methods are ~90% identical and differ in one step |
+| **Memento** | a video-game save point | you need to restore a past state without the undo logic leaking to the caller |
+| **Composite** | a folder holding files and folders | the caller keeps asking "is this one, or many?" |
+| **Value Object** | a £10 note (vs a passport) | you'd never care *which* copy you got |
+| **Ports & Adapters** | a USB-C socket | you have a rule "X must never depend on Y" and want it enforced, not hoped for |
+
+And the one anti-rule: **if you can't name the problem that pushed you to it, you don't need the pattern.**
+
+---
+
+### 7.9 Recap
+
+| Pattern | Source | Fit |
+|---|---|---|
+| **Strategy** | GoF behavioural | textbook |
+| **Template Method** | GoF behavioural | textbook |
+| **Memento** | GoF behavioural | textbook |
+| **Composite** | GoF structural | textbook |
+| **Value Object** | Evans, DDD | textbook |
+| **Ports & Adapters** | Cockburn | textbook |
+| **Dependency Injection** | — | textbook — `Game` is handed its sink rather than choosing one |
+| **Facade** | GoF structural | *approximate* — `Game.play` is one call over the subsystem, but hides nothing you're forbidden to touch |
+| **Event Sourcing** | Fowler | *approximate* — consumers rebuild from the log, but the engine keeps authoritative state too |
+
+"Textbook" means all the pattern's roles are present and doing their job. "Approximate" means the shape rubs off but calling it the pattern would be a stretch. Most "patterns in our codebase" documents skip this distinction and over-claim — every dictionary becomes a Registry, every function a Factory.
 
 ## 8. Patterns deliberately not used
 
