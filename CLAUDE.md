@@ -2,6 +2,45 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+---
+
+## ⚠️ Rule #1 — docs ship with the change
+
+**This overrides every other priority in this repo, including finishing the code.**
+
+This project exists to teach. A doc describing code that no longer exists is *worse than no doc*: it misleads the reader who trusted it, and it costs us the thread of our own reasoning. Stale docs don't degrade this repo gradually — they defeat its purpose outright.
+
+**Documentation updates land in the SAME commit as the change they describe.** Not "after", not "in a follow-up PR", not "once it settles". There is no after.
+
+### Before any task is done, walk this map
+
+| If you changed… | You must update |
+|---|---|
+| Game rules or engine behaviour | [game-rules.md](docs/projects/ludo/game-rules.md) **first** (it's the normative spec), then the engines, then regenerate conformance vectors |
+| Engine classes, methods, or structure | [engine-design.md](docs/projects/ludo/engine-design.md) · [class-design.md](docs/projects/ludo/class-design.md) — the **diagrams AND** the class-reference and who-calls-what tables · the engine README module map |
+| The event schema | [shared/schemas/README.md](shared/schemas/README.md) · [ADR-0003](docs/decisions/adr-0003-shared-event-stream.md) if the contract itself changed · every stack that emits |
+| Dependencies, tooling, environment layout | [environment-strategy.md](docs/architecture/environment-strategy.md) · [repository-layout.md](docs/architecture/repository-layout.md) · [learning/python/03](learning/python/03-environments-and-packaging.md) |
+| Introduced any term a reader might not know | [glossary.md](docs/glossary.md) — no exceptions; this is how the repo stays readable |
+| Settled an open question | Move it to **Answered** in [open-questions.md](docs/open-questions.md) with the outcome; write an [ADR](docs/decisions/) if it was expensive to reverse |
+| Learned what a framework can or can't do | [stack-comparison.md](docs/architecture/stack-comparison.md) — with a link to the code that proves it |
+| Started or finished a component | Status tables in [README.md](README.md) **and** this file · [repository-layout.md](docs/architecture/repository-layout.md) |
+| A project claimed a topic | [topics/roadmap.md](docs/topics/roadmap.md) |
+| Added a new doc | Link it from [README.md](README.md) and from the Related section of any sibling doc |
+
+### Then verify
+
+```bash
+python scripts/check_docs.py
+```
+
+Checks links, anchors, and Mermaid syntax across every markdown file. **It cannot check whether the prose is still true** — that part is on you. Re-read every section that touches what you changed.
+
+### If you can't fix a doc in the same commit
+
+Say so explicitly in your response, naming the file and what's now wrong. An acknowledged gap is recoverable; a silent one is not.
+
+---
+
 ## Repository status
 
 The **shared event schema** and the **Python engine** are built and tested. No agent stack, UI, or eval harness exists yet.

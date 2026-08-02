@@ -46,5 +46,10 @@ bench games="500":
 validate:
     uv run --directory {{ENGINE_PY}} python -m ludo_engine.cli validate ../games/*.jsonl
 
+# Verify docs still hang together: links, anchors, mermaid syntax.
+# Checks structure, not truth — re-read what you changed. See CLAUDE.md Rule #1.
+docs:
+    python scripts/check_docs.py
+
 # Everything CI runs. No model calls, no cost.
-check: test conformance validate
+check: test conformance validate docs

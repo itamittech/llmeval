@@ -42,7 +42,21 @@ The project is early: the engine and the shared schema exist, no agent stack doe
 
 ---
 
-## Six rules that are easy to break by accident
+## Rule zero: docs ship with the change
+
+Documentation updates land in the **same commit** as the change they describe. Not after, not in a follow-up.
+
+This repo exists to teach. A doc describing code that no longer exists is worse than no doc — it misleads the reader who trusted it. A PR that changes behaviour without changing the docs that describe it is incomplete, however good the code is.
+
+[CLAUDE.md](CLAUDE.md) opens with the map of which docs move with which kind of change. Then:
+
+```bash
+python scripts/check_docs.py
+```
+
+That validates links, anchors, and Mermaid syntax across every markdown file. **It cannot tell whether the prose is still true** — re-read what you touched. Status tables, counts, and worked examples go stale silently and no tool catches them.
+
+## Six more rules that are easy to break by accident
 
 These aren't style preferences. Each one, broken, quietly invalidates something the project depends on.
 

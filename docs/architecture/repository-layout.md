@@ -35,6 +35,9 @@ llmeval/
 │       ├── ui/
 │       └── games/                # recorded event streams (sample matches)
 │
+├── scripts/
+│   └── check_docs.py             # links, anchors, mermaid — see CLAUDE.md Rule #1
+│
 ├── platform/                     # code that graduated out of a project
 │   └── (empty for now)
 │
