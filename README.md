@@ -80,6 +80,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 - [learning/python/](learning/python/) — runnable examples and a line-by-line walkthrough of the engine's densest class. Standalone; no dependencies.
 
 **Other**
+- [Contributing](CONTRIBUTING.md) — setup, and the six rules that are easy to break by accident
 - [Topic roadmap](docs/topics/roadmap.md) — the 17 topics and which project covers each
 - [Architecture decisions (ADRs)](docs/decisions/) — what we chose and why
 - [docs/roughidea.txt](docs/roughidea.txt) — the original napkin sketch everything grew from

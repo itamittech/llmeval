@@ -88,12 +88,6 @@ Should be chosen from what LUDO's [capability matrix](architecture/stack-compari
 
 ---
 
-## 🟢 13. Contribution guidelines and code of conduct
-
-Not yet written. A public repo whose demo transcripts contain deliberate AI deception should probably say something about that up front.
-
----
-
 ## 🟢 14. Rule variants as config flags
 
 [Game rules](projects/ludo/game-rules.md) fixes one ruleset and lists rejected variants. Making them toggleable would enable a genuinely interesting eval: *do agents adapt when the rules change mid-experiment?*
@@ -121,6 +115,16 @@ This makes Strands vs. LangGraph a genuinely controlled experiment — same lang
 **Decided: one model runs on both access routes, plus two other families.** One model is invoked via *both* Bedrock and a direct API, so the access route is isolated from the model — without that control, Bedrock-vs-direct differences are uninterpretable. The remaining two seats go to different model families for behavioural variety in alliance dynamics.
 
 Ratified as [ADR-0005](decisions/adr-0005-model-access-control.md). **Concrete model IDs are still to be chosen** — constrained by Bedrock availability for the dual-route model, and by keeping one family in reserve for the [judge](projects/ludo/evaluation.md#judge-bias--and-what-we-do-about-it).
+
+### ✅ 13. Contribution guidelines
+
+**Written: [CONTRIBUTING.md](../CONTRIBUTING.md).**
+
+Built around the six rules that are easy to break by accident — parity, no LLM SDK in the engine, never regenerating conformance vectors to silence a failure, never sharing a Python environment between stacks, evidence-cited matrix ratings, and treating agent claims as claims. Each states *why*, because a rule without a reason gets worked around.
+
+It also carries the content note this repo needs: recorded transcripts contain deliberate AI-generated deception, presented without correction, as in-fiction moves in a board game.
+
+A separate code of conduct is **not** included yet — worth adding if the project attracts outside contributors.
 
 ### ✅ 9. License
 
