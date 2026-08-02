@@ -194,7 +194,12 @@ def check_models() -> None:
 
 
 def check_control(profile: str, seats: list[dict]) -> None:
-    """ADR-0005: one model must sit on both routes, or the route is confounded."""
+    """ADR-0005: one model must sit on both routes, or the route is confounded.
+
+    Bedrock spells the same model with a provider prefix (`anthropic.claude-opus-5`
+    vs `claude-opus-5`), so compare with it stripped — otherwise a correct control
+    pair looks broken.
+    """
     by_route: dict[str, set] = {"bedrock": set(), "direct": set()}
     unpinned = False
     for seat in seats:
@@ -202,6 +207,8 @@ def check_control(profile: str, seats: list[dict]) -> None:
         if model in (None, "TBD"):
             unpinned = True
             model = f"{seat.get('provider')}:*"
+        else:
+            model = model.split(".", 1)[-1] if "." in model else model
         by_route.setdefault(seat.get("access"), set()).add((seat.get("provider"), model))
 
     shared = by_route["bedrock"] & by_route["direct"]

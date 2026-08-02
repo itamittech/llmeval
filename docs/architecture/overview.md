@@ -113,7 +113,9 @@ One model deliberately occupies **both** access routes. Holding the model consta
 
 **Two profiles**, `dev` and `headline`, differing in model tier and budget. A cheap shakedown run and a real result are then impossible to confuse, because the profile name is recorded in the transcript. All three stacks always run the same profile — the profile varies per *experiment*, never per stack.
 
-Three things are pinned explicitly rather than left to the frameworks: temperature, top-p, and max output tokens. Strands, LangGraph and Spring AI do not share defaults, and an unpinned sampling parameter is a parity break that never announces itself. Families are settled; **concrete model IDs are still [open](../open-questions.md)**.
+Inference settings are pinned explicitly rather than left to the frameworks — an unpinned sampling parameter is a parity break that never announces itself. They are pinned **per provider**, because the families genuinely differ: the Claude 5 models reject `temperature`/`top_p` and use an `effort` level instead, while Nova and DeepSeek do the opposite. That asymmetry is a recorded [capability-matrix finding](stack-comparison.md#finding-inference-settings-are-not-uniformly-pinnable), not a hole in the control — seats 1 and 3 remain identically configured, which is what ADR-0005 actually rests on.
+
+Families are settled and the Anthropic pair is pinned; **Nova, DeepSeek, and judge IDs are still [open](../open-questions.md)**.
 
 ## Cross-cutting concerns
 

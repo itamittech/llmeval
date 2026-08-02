@@ -121,7 +121,9 @@ Ratified as [ADR-0005](decisions/adr-0005-model-access-control.md).
 
 An earlier draft seated GPT and DeepSeek on the direct side with no dual-route model, which would have confounded route with model exactly as the ADR warns; GPT moved to the judge seat, which also removed the self-scoring problem. The trade taken knowingly: **three playing families instead of four**, spending one seat on the control.
 
-**Concrete model IDs are still to be chosen** — the only thing here still open. They should be *dated snapshots*, not floating aliases: an alias changes under you and a transcript stops being reproducible. Marked `TBD` in the file; [`check_prompts.py`](../scripts/check_prompts.py) verifies the control by provider until they're pinned, and by exact ID afterwards.
+**The Anthropic pair is pinned** — `claude-sonnet-5` on `dev`, `claude-opus-5` on `headline`, each spelled `anthropic.`-prefixed on the Bedrock seat. Nova, DeepSeek, and the OpenAI judge remain `TBD`; [`check_prompts.py`](../scripts/check_prompts.py) verifies the control by provider until every ID is pinned, and by exact ID afterwards, comparing with the Bedrock prefix stripped.
+
+**A correction worth keeping.** This entry previously said model IDs must be *dated snapshots, not floating aliases*. That is wrong for the current Claude family: `claude-opus-5` and `claude-sonnet-5` are complete IDs with no dated variant, and appending a date returns a 404. The underlying goal — a transcript that names exactly what produced it — is served instead by **recording the model the API actually served** in `game_started`, which is stronger than pinning a string in config because it cannot drift from reality.
 
 ### ✅ 15. Should deciders get a read-only view of game state?
 
