@@ -650,9 +650,9 @@ sequenceDiagram
 
 ### 7.4 Record to a file *and* keep events in memory → **Composite**
 
-**The problem.** The CLI needs both: stream the transcript to disk *and* keep the events around to print a summary at the end.
+**The problem.** The CLI needs both at once: stream the transcript to disk *and* keep the events in memory to print a summary when the game ends.
 
-**What you'd write first.** Make `Game` accept a list:
+**What you'd write first.** Let `Game` hold a list of sinks:
 
 ```python
 # NOT what the engine does
@@ -660,37 +660,162 @@ def __init__(self, config, sinks: list[EventSink]):
     self.sinks = sinks
 ...
 for sink in self.sinks:
-    sink.emit(...)        # each assigns its OWN seq — they now disagree
+    sink.emit(...)
 ```
 
-**What breaks.** `Game` grows a second code path, and the sequence numbers diverge because each sink counts independently. The file and the in-memory copy stop agreeing about what event #7 was.
+**What breaks.** Two things, and the second is nastier.
 
-**The fix.** Build a sink that *is* a sink and *contains* sinks:
+*`Game` now has two shapes to handle.* Every caller has to know whether it's holding one sink or several:
 
 ```python
-sink = TeeSink(ListSink(), JsonlSink(fh))   # Game can't tell this from a single sink
+if isinstance(sink, list):
+    for s in sink:
+        s.emit(type_, payload, turn)
+else:
+    sink.emit(type_, payload, turn)
 ```
 
-`TeeSink` inherits `emit`, so there's one shared counter; its `_write` hands the finished event to each child.
+*The sequence numbers diverge.* Each sink owns its own `_seq` counter, so calling `emit` on three sinks produces three independent numberings. The file and the in-memory copy stop agreeing about what event #7 was — and the [schema](../../../shared/schemas/README.md) requires one contiguous sequence.
+
+---
+
+#### The fix, and the shape that makes it work
+
+Build a sink that **is** a sink and **contains** sinks:
+
+```python
+class TeeSink(EventSink):              # IS-A: usable anywhere a sink is
+    def __init__(self, *sinks):
+        self._sinks = sinks            # HAS-A: holds other sinks
+
+    def _write(self, event):
+        for sink in self._sinks:
+            sink._write(event)         # pass the FINISHED event down
+```
+
+Two facts, and it's the **combination** that makes the pattern:
+
+```mermaid
+classDiagram
+    class EventSink {
+        <<the common type>>
+        +emit(type, payload, turn)
+        -_write(event)
+    }
+    class ListSink {
+        <<leaf>>
+        -_write(event)
+    }
+    class JsonlSink {
+        <<leaf>>
+        -_write(event)
+    }
+    class TeeSink {
+        <<composite>>
+        -_sinks
+        -_write(event)
+    }
+
+    EventSink <|-- ListSink : is-a
+    EventSink <|-- JsonlSink : is-a
+    EventSink <|-- TeeSink : is-a
+    TeeSink o--> EventSink : has-many
+
+    note for TeeSink "TeeSink IS an EventSink, and HOLDS EventSinks.<br/>That loop back to its own base type is the entire pattern."
+```
+
+A class that is-a `X` *and* has-many `X` is an unusual shape, and it's worth pausing on — **that self-reference is Composite.** Everything else follows from it.
+
+#### Why the loop buys you nesting for free
+
+`TeeSink` accepts *any* `EventSink`. And `TeeSink` **is** an `EventSink`. So a `TeeSink` can hold a `TeeSink` — without anyone writing a line of code to allow it:
+
+```python
+sink = TeeSink(
+    ListSink(),                                  # a leaf
+    TeeSink(                                     # a composite INSIDE a composite
+        JsonlSink(open("game.jsonl", "w")),
+        JsonlSink(open("backup.jsonl", "w")),
+    ),
+)
+
+game = Game(config, sink)      # Game's code does not change. At all.
+```
+
+```mermaid
+flowchart TD
+    game["Game<br/>holds exactly ONE sink"] --> t1["TeeSink<br/>composite"]
+
+    t1 --> l1["ListSink<br/>leaf"]
+    t1 --> t2["TeeSink<br/>composite again"]
+
+    t2 --> j1["JsonlSink<br/>leaf"]
+    t2 --> j2["JsonlSink<br/>leaf"]
+
+    note1["Game's code is byte-identical whether it was<br/>handed the whole tree or a single ListSink"]
+    game -.- note1
+```
+
+Depth is unlimited, and no code anywhere counts levels. Recursion falls out of the type structure rather than being programmed.
+
+#### You already know this shape
 
 ```mermaid
 flowchart TB
-    g["Game<br/>holds ONE sink"] --> t["TeeSink<br/>is an EventSink"]
-    t --> l["ListSink<br/>in memory"]
-    t --> j["JsonlSink<br/>on disk"]
-    n["Game never learns whether it is<br/>writing to one place or five"]
-    g -.- n
+    subgraph fs["A file system — the shape you already know"]
+        direction TB
+        d1["Documents — folder"] --> f1["notes.txt — file"]
+        d1 --> d2["Projects — folder"]
+        d2 --> f2["main.py — file"]
+        d2 --> d3["tests — folder"]
+        d3 --> f3["test_main.py — file"]
+    end
+
+    subgraph sinks["This engine — the same shape"]
+        direction TB
+        s1["TeeSink — composite"] --> s2["ListSink — leaf"]
+        s1 --> s3["TeeSink — composite"]
+        s3 --> s4["JsonlSink — leaf"]
+        s3 --> s5["JsonlSink — leaf"]
+    end
 ```
 
-**Where the name comes from.** "Composite" simply means *made up of parts*. The whole point of the name is the bit people miss: the composite is **the same kind of thing as its parts**. A group of sinks isn't a new concept called "sink group" — it's just a sink. That sameness is what lets the caller stop caring.
+A folder **contains** files and folders, and a folder **is** a file-system entry. That's the same is-a/has-a loop. It's why you can copy, move, rename, zip, or delete a folder using exactly the same command as a single file — and why nobody had to write a special "copy a folder five levels deep" feature.
 
-**The everyday version.** A folder on your computer. It contains files, and other folders. But you copy, move, rename, or delete a folder in exactly the same way you do a single file — the operations don't change shape as the tree gets deeper. (Moving house works the same: a box of boxes is still just a box you carry.)
+#### One call, the whole tree
 
-**Reach for it when** the caller keeps having to ask "is this one, or many?" Make many *be* one.
+`Game` calls `emit` **once**. It has no idea how far the event travels:
 
-**Don't when** parts and wholes genuinely behave differently. Forcing a uniform interface then leaves you with methods that are meaningless for half the tree — the classic symptom is a `leaf.add_child()` that throws.
+```mermaid
+sequenceDiagram
+    autonumber
+    participant G as Game
+    participant T1 as TeeSink outer
+    participant L as ListSink
+    participant T2 as TeeSink inner
+    participant J1 as JsonlSink game
+    participant J2 as JsonlSink backup
+
+    G->>T1: emit move_made
+    Note over T1: assigns seq ONCE<br/>then delegates
+    T1->>L: _write(event)
+    T1->>T2: _write(event)
+    T2->>J1: _write(event)
+    T2->>J2: _write(event)
+    Note over G: Game made one call and is done.<br/>Four destinations, one sequence number.
+```
+
+Note the detail that makes it correct: children receive `_write`, not `emit`. `emit` is where `seq` is assigned, so routing through it would let every child renumber independently — reintroducing exactly the bug the list version had.
 
 ---
+
+**Where the name comes from.** "Composite" simply means *made up of parts*. The bit people miss is what the name is really asserting: the composite is **the same kind of thing as its parts**. A group of sinks isn't a new concept called "sink group" — it's just a sink. That sameness is what lets every caller stop caring.
+
+**The everyday version.** A folder, as above. Also a moving box: a box of boxes is still just a box you pick up. And a company org chart — a department contains people and departments, and "headcount" works the same on either.
+
+**Reach for it when** the caller keeps having to ask *"is this one, or many?"* — especially when you see `isinstance` checks or two parallel code paths that do the same thing at different arities. Make many *be* one.
+
+**Don't when** parts and wholes genuinely behave differently. Forcing a uniform interface then produces methods that are meaningless for half the tree; the classic symptom is a leaf's `add_child()` that exists only to raise an exception.
 
 ### 7.5 "Is this one of the moves I allowed?" → **Value Object**
 
