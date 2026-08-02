@@ -467,11 +467,11 @@ flowchart TB
 
     subgraph after["AFTER — Game knows one method"]
         direction TB
-        g2["Game._decide"] --> call["decider.choose(ctx)"]
-        call -.-> a1["RandomBot"]
-        call -.-> a2["FirstLegal"]
-        call -.-> a3["StrandsAgent"]
-        call -.-> a4["LangGraphAgent"]
+        g2["Game._decide"] --> ask["decider.choose(ctx)"]
+        ask -.-> a1["RandomBot"]
+        ask -.-> a2["FirstLegal"]
+        ask -.-> a3["StrandsAgent"]
+        ask -.-> a4["LangGraphAgent"]
     end
 ```
 
