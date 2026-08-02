@@ -1,0 +1,707 @@
+{
+  "schema": "ludo-conformance/1",
+  "engine_version": "0.1.0",
+  "note": "Regenerate only when the rules change deliberately. An unexpected diff here is a bug, not a refresh.",
+  "vectors": [
+    {
+      "seed": 1,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "completed",
+      "turns_played": 382,
+      "events": 1639,
+      "standings": [
+        {
+          "player": "yellow",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "blue",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "red",
+          "rank": 3,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "green",
+          "rank": 4,
+          "tokens_home": 3,
+          "progress": 225
+        }
+      ],
+      "digest": "fe2007d1fd004434f084336b93ba235ac00e997e3d9e6ddc8665ea28ac27e405"
+    },
+    {
+      "seed": 2,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "completed",
+      "turns_played": 311,
+      "events": 1373,
+      "standings": [
+        {
+          "player": "blue",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "red",
+          "rank": 4,
+          "tokens_home": 3,
+          "progress": 171
+        }
+      ],
+      "digest": "a9f32b76e971ff290c0edd2361444f5e3c41b9174a04c06b70bae496eff67743"
+    },
+    {
+      "seed": 3,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "turn_cap",
+      "turns_played": 400,
+      "events": 1670,
+      "standings": [
+        {
+          "player": "yellow",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "blue",
+          "rank": 2,
+          "tokens_home": 3,
+          "progress": 225
+        },
+        {
+          "player": "red",
+          "rank": 3,
+          "tokens_home": 3,
+          "progress": 209
+        },
+        {
+          "player": "green",
+          "rank": 4,
+          "tokens_home": 2,
+          "progress": 167
+        }
+      ],
+      "digest": "6379c563e7ff8846746e7fe1615f2015a974e5699c61a9b450aaeaf18e6a7891"
+    },
+    {
+      "seed": 4,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "turn_cap",
+      "turns_played": 400,
+      "events": 1722,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "blue",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "green",
+          "rank": 3,
+          "tokens_home": 3,
+          "progress": 227
+        },
+        {
+          "player": "yellow",
+          "rank": 4,
+          "tokens_home": 3,
+          "progress": 171
+        }
+      ],
+      "digest": "dd45dd0c58b58852662a8f3e181598caa776526af75a700d54f7a981a4ea284c"
+    },
+    {
+      "seed": 5,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "completed",
+      "turns_played": 314,
+      "events": 1375,
+      "standings": [
+        {
+          "player": "green",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "yellow",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "blue",
+          "rank": 3,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "red",
+          "rank": 4,
+          "tokens_home": 2,
+          "progress": 127
+        }
+      ],
+      "digest": "35429b59598f02622721262cda1d54c7b66ed686fb881447f7cb84dc90c47cd7"
+    },
+    {
+      "seed": 6,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "completed",
+      "turns_played": 302,
+      "events": 1352,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "yellow",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "green",
+          "rank": 3,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "tokens_home": 2,
+          "progress": 166
+        }
+      ],
+      "digest": "339e19efebe1a519030de11d9435a4ad3cee0c73931077dceb2768e1ac380df7"
+    },
+    {
+      "seed": 7,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "completed",
+      "turns_played": 328,
+      "events": 1404,
+      "standings": [
+        {
+          "player": "green",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "yellow",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "blue",
+          "rank": 3,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "red",
+          "rank": 4,
+          "tokens_home": 2,
+          "progress": 114
+        }
+      ],
+      "digest": "87f9ace1dc4b453ca423981b4439f5d982d04f47c397d513bf3b51f93a7ef8e3"
+    },
+    {
+      "seed": 8,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "completed",
+      "turns_played": 320,
+      "events": 1409,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "yellow",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "green",
+          "rank": 3,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "tokens_home": 3,
+          "progress": 227
+        }
+      ],
+      "digest": "d614b63a8e4b15547fbcc67451549011ceb76045407f6132be641a9a49f919a8"
+    },
+    {
+      "seed": 9,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "completed",
+      "turns_played": 374,
+      "events": 1588,
+      "standings": [
+        {
+          "player": "blue",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "yellow",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "green",
+          "rank": 3,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "red",
+          "rank": 4,
+          "tokens_home": 3,
+          "progress": 210
+        }
+      ],
+      "digest": "1f887c11aeacb49506647022ac2e3e82f40e74425191c29d72bbf95ca43aa392"
+    },
+    {
+      "seed": 10,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "turn_cap",
+      "turns_played": 400,
+      "events": 1745,
+      "standings": [
+        {
+          "player": "green",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "yellow",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "blue",
+          "rank": 3,
+          "tokens_home": 3,
+          "progress": 171
+        },
+        {
+          "player": "red",
+          "rank": 4,
+          "tokens_home": 2,
+          "progress": 174
+        }
+      ],
+      "digest": "42e774dbc80ac42f81b1037a799d4922ff0a6e00d2be7ef39520beac45339607"
+    },
+    {
+      "seed": 11,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "completed",
+      "turns_played": 388,
+      "events": 1691,
+      "standings": [
+        {
+          "player": "blue",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "red",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "green",
+          "rank": 4,
+          "tokens_home": 3,
+          "progress": 177
+        }
+      ],
+      "digest": "2c56da44882ff00436ca7b7852ddc1d77d46b1b87ce0852733dc2596424bb896"
+    },
+    {
+      "seed": 12,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "completed",
+      "turns_played": 367,
+      "events": 1530,
+      "standings": [
+        {
+          "player": "blue",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "red",
+          "rank": 3,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "yellow",
+          "rank": 4,
+          "tokens_home": 3,
+          "progress": 221
+        }
+      ],
+      "digest": "792b5cfb7d58bb509c613c0e3e51a216164a2534feabbb2805483849f952484e"
+    },
+    {
+      "seed": 13,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "completed",
+      "turns_played": 352,
+      "events": 1509,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "yellow",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "green",
+          "rank": 3,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "tokens_home": 3,
+          "progress": 223
+        }
+      ],
+      "digest": "dd59bf71637eb7f87fc8975cf25ca37a4e8f98af4e4d7c5677b3323037678474"
+    },
+    {
+      "seed": 14,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "completed",
+      "turns_played": 364,
+      "events": 1626,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "blue",
+          "rank": 3,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "yellow",
+          "rank": 4,
+          "tokens_home": 3,
+          "progress": 227
+        }
+      ],
+      "digest": "2801c61721dbf5e40db5de160ae24420432861ad1a5bd01e047c81ce6971ed5b"
+    },
+    {
+      "seed": 15,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "completed",
+      "turns_played": 382,
+      "events": 1610,
+      "standings": [
+        {
+          "player": "green",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "yellow",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "red",
+          "rank": 3,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "tokens_home": 2,
+          "progress": 215
+        }
+      ],
+      "digest": "7d16bc6ef788145182721e8a31c2742c6fbed5c279654cf5f99d1a134c167a9e"
+    },
+    {
+      "seed": 16,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "completed",
+      "turns_played": 333,
+      "events": 1531,
+      "standings": [
+        {
+          "player": "blue",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "yellow",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "green",
+          "rank": 3,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "red",
+          "rank": 4,
+          "tokens_home": 3,
+          "progress": 211
+        }
+      ],
+      "digest": "75a50e836edf942f409013aea00a3e9876fccf010a1f9effaee02404932258ac"
+    },
+    {
+      "seed": 17,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "turn_cap",
+      "turns_played": 400,
+      "events": 1733,
+      "standings": [
+        {
+          "player": "green",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "red",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "blue",
+          "rank": 3,
+          "tokens_home": 3,
+          "progress": 227
+        },
+        {
+          "player": "yellow",
+          "rank": 4,
+          "tokens_home": 3,
+          "progress": 171
+        }
+      ],
+      "digest": "5884311a8285f750236f4b181d8e4049d9ad9fbb6caab22a5c39f9c07af934aa"
+    },
+    {
+      "seed": 18,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "completed",
+      "turns_played": 399,
+      "events": 1742,
+      "standings": [
+        {
+          "player": "blue",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "red",
+          "rank": 3,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "yellow",
+          "rank": 4,
+          "tokens_home": 3,
+          "progress": 225
+        }
+      ],
+      "digest": "2652b2b1ac8fbc549ec68c471d03946bcde148e5b15df58c29e0758ba69d259a"
+    },
+    {
+      "seed": 19,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "completed",
+      "turns_played": 338,
+      "events": 1503,
+      "standings": [
+        {
+          "player": "green",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "blue",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "red",
+          "rank": 3,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "yellow",
+          "rank": 4,
+          "tokens_home": 2,
+          "progress": 114
+        }
+      ],
+      "digest": "6e501ea52e6773b184ee3eab433cdc703b66e6bd4e676919180acfbb7205d779"
+    },
+    {
+      "seed": 20,
+      "max_turns": 400,
+      "decider": "first-legal",
+      "reason": "completed",
+      "turns_played": 352,
+      "events": 1584,
+      "standings": [
+        {
+          "player": "blue",
+          "rank": 1,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "red",
+          "rank": 2,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "tokens_home": 4,
+          "progress": 228
+        },
+        {
+          "player": "green",
+          "rank": 4,
+          "tokens_home": 3,
+          "progress": 227
+        }
+      ],
+      "digest": "ea5659c4edd9ba2216aa180c4b9ca00a571e2e1af30753c838d2f413179c98c6"
+    }
+  ]
+}

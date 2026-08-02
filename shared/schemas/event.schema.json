@@ -1,0 +1,327 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/llmeval/llmeval/shared/schemas/event.schema.json",
+  "title": "LUDO Event",
+  "description": "One event in a LUDO game transcript. A transcript is a JSON Lines file: one event object per line, ordered by seq. This schema is the sole integration contract between the three stack implementations, the UI, and the evaluation harness (ADR-0003).",
+  "type": "object",
+  "required": ["seq", "type", "payload"],
+  "additionalProperties": false,
+
+  "properties": {
+    "seq": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Monotonic index within the transcript, starting at 0. Gaps are an error."
+    },
+    "turn": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Turn number this event belongs to. 0 before the first turn starts."
+    },
+    "type": { "$ref": "#/$defs/eventType" },
+    "ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional wall-clock timestamp. Deliberately NOT emitted by the engine: transcripts from the same seed must diff cleanly, and timestamps would defeat that. Agent-layer events may set it."
+    },
+    "payload": { "type": "object" }
+  },
+
+  "allOf": [
+    { "if": { "properties": { "type": { "const": "game_started" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/gameStarted" } } } },
+    { "if": { "properties": { "type": { "const": "turn_started" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/turnStarted" } } } },
+    { "if": { "properties": { "type": { "const": "dice_rolled" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/diceRolled" } } } },
+    { "if": { "properties": { "type": { "const": "move_made" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/moveMade" } } } },
+    { "if": { "properties": { "type": { "const": "token_captured" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/tokenCaptured" } } } },
+    { "if": { "properties": { "type": { "const": "token_home" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/tokenHome" } } } },
+    { "if": { "properties": { "type": { "const": "extra_roll_granted" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/extraRollGranted" } } } },
+    { "if": { "properties": { "type": { "const": "illegal_move_rejected" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/illegalMoveRejected" } } } },
+    { "if": { "properties": { "type": { "const": "turn_ended" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/turnEnded" } } } },
+    { "if": { "properties": { "type": { "const": "player_finished" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/playerFinished" } } } },
+    { "if": { "properties": { "type": { "const": "game_ended" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/gameEnded" } } } },
+    { "if": { "properties": { "type": { "const": "agent_reasoning" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/agentReasoning" } } } },
+    { "if": { "properties": { "type": { "const": "message_sent" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/messageSent" } } } },
+    { "if": { "properties": { "type": { "const": "memory_write" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/memoryWrite" } } } },
+    { "if": { "properties": { "type": { "const": "context_compacted" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/contextCompacted" } } } },
+    { "if": { "properties": { "type": { "const": "llm_call" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/llmCall" } } } },
+    { "if": { "properties": { "type": { "const": "guardrail_triggered" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/guardrailTriggered" } } } }
+  ],
+
+  "$defs": {
+    "eventType": {
+      "description": "Engine events are emitted by engine-python / engine-java. Agent events are emitted by the stack implementations. The UI and eval harness consume both.",
+      "enum": [
+        "game_started", "turn_started", "dice_rolled", "move_made", "token_captured",
+        "token_home", "extra_roll_granted", "illegal_move_rejected", "turn_ended",
+        "player_finished", "game_ended",
+        "agent_reasoning", "message_sent", "memory_write", "context_compacted",
+        "llm_call", "guardrail_triggered"
+      ]
+    },
+
+    "color": { "enum": ["red", "green", "yellow", "blue"] },
+
+    "token": {
+      "type": "integer", "minimum": 0, "maximum": 3,
+      "description": "Index of one of a player's four tokens."
+    },
+
+    "position": {
+      "type": "integer", "minimum": -1, "maximum": 56,
+      "description": "Colour-relative position. -1 = base; 0 = start square; 0-50 = main circuit; 51-55 = home column; 56 = home triangle."
+    },
+
+    "square": {
+      "type": ["integer", "null"], "minimum": 0, "maximum": 51,
+      "description": "Absolute square on the shared 52-square circuit. Null when the token is in a base, home column, or home."
+    },
+
+    "access": {
+      "enum": ["bedrock", "direct"],
+      "description": "How the model was invoked. The Bedrock-vs-direct comparison (ADR-0005) depends on this being recorded per call."
+    },
+
+    "gameStarted": {
+      "type": "object",
+      "required": ["seed", "max_turns", "players", "engine"],
+      "additionalProperties": false,
+      "properties": {
+        "seed": { "type": "integer", "description": "Dice RNG seed. Same seed + same decisions replays the game exactly." },
+        "max_turns": { "type": "integer", "minimum": 1, "description": "Turn cap. Reaching it is a normal outcome, scored on mid-game position." },
+        "ruleset": { "type": "string", "default": "baseline", "description": "Named rule variant, per game-rules.md." },
+        "engine": {
+          "type": "object",
+          "required": ["language", "version"],
+          "properties": {
+            "language": { "enum": ["python", "java"] },
+            "version": { "type": "string" }
+          }
+        },
+        "stack": {
+          "enum": ["strands", "langgraph", "springai", "none"],
+          "description": "Which agent framework drove this game. 'none' for engine-only runs such as random-bot calibration."
+        },
+        "players": {
+          "type": "array", "minItems": 4, "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["color"],
+            "properties": {
+              "color": { "$ref": "#/$defs/color" },
+              "agent": { "type": "string", "description": "Human-readable agent identity, e.g. 'random-bot' or a model label." },
+              "model": { "type": "string" },
+              "access": { "$ref": "#/$defs/access" }
+            }
+          }
+        }
+      }
+    },
+
+    "turnStarted": {
+      "type": "object", "required": ["player"], "additionalProperties": false,
+      "properties": { "player": { "$ref": "#/$defs/color" } }
+    },
+
+    "diceRolled": {
+      "type": "object", "required": ["player", "value", "roll_index"], "additionalProperties": false,
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "value": { "type": "integer", "minimum": 1, "maximum": 6 },
+        "roll_index": { "type": "integer", "minimum": 0, "description": "Which roll within this turn. Incremented by extra rolls; 3 consecutive sixes forfeits." }
+      }
+    },
+
+    "moveMade": {
+      "type": "object", "required": ["player", "token", "from", "to"], "additionalProperties": false,
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "token": { "$ref": "#/$defs/token" },
+        "from": { "$ref": "#/$defs/position" },
+        "to": { "$ref": "#/$defs/position" },
+        "from_square": { "$ref": "#/$defs/square" },
+        "to_square": { "$ref": "#/$defs/square" }
+      }
+    },
+
+    "tokenCaptured": {
+      "type": "object", "required": ["captor", "victim", "victim_token"], "additionalProperties": false,
+      "properties": {
+        "captor": { "$ref": "#/$defs/color" },
+        "captor_token": { "$ref": "#/$defs/token" },
+        "victim": { "$ref": "#/$defs/color" },
+        "victim_token": { "$ref": "#/$defs/token" },
+        "square": { "$ref": "#/$defs/square" }
+      }
+    },
+
+    "tokenHome": {
+      "type": "object", "required": ["player", "token"], "additionalProperties": false,
+      "properties": { "player": { "$ref": "#/$defs/color" }, "token": { "$ref": "#/$defs/token" } }
+    },
+
+    "extraRollGranted": {
+      "type": "object", "required": ["player", "reason"], "additionalProperties": false,
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "reason": { "enum": ["six", "capture"] }
+      }
+    },
+
+    "illegalMoveRejected": {
+      "type": "object", "required": ["player", "reason"], "additionalProperties": false,
+      "description": "The engine rejects rather than corrects. This is the structural guardrail of ADR-0004 doing its job, and repeated rejections count against an agent in evaluation.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "token": { "type": ["integer", "null"], "minimum": 0, "maximum": 3 },
+        "requested_to": { "type": ["integer", "null"] },
+        "reason": { "type": "string" },
+        "attempt": { "type": "integer", "minimum": 1, "description": "1 = first try, 2 = retry after being told why." }
+      }
+    },
+
+    "turnEnded": {
+      "type": "object", "required": ["player", "reason"], "additionalProperties": false,
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "reason": {
+          "enum": ["moved", "no_legal_move", "three_sixes", "illegal_move", "timeout", "error"],
+          "description": "'three_sixes' also reverts all movement made earlier in the turn."
+        }
+      }
+    },
+
+    "playerFinished": {
+      "type": "object", "required": ["player", "rank"], "additionalProperties": false,
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "rank": { "type": "integer", "minimum": 1, "maximum": 4 }
+      }
+    },
+
+    "gameEnded": {
+      "type": "object", "required": ["reason", "turns_played", "standings"], "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "enum": ["completed", "turn_cap", "aborted"],
+          "description": "'turn_cap' is a normal outcome, not a failure — most LLM games are expected to end this way."
+        },
+        "turns_played": { "type": "integer", "minimum": 0 },
+        "standings": {
+          "type": "array", "minItems": 4, "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["player", "rank", "tokens_home", "progress"],
+            "properties": {
+              "player": { "$ref": "#/$defs/color" },
+              "rank": { "type": "integer", "minimum": 1, "maximum": 4 },
+              "tokens_home": { "type": "integer", "minimum": 0, "maximum": 4 },
+              "progress": { "type": "integer", "minimum": 0, "description": "Sum of steps travelled by all four tokens. Max 4 x 57 = 228." },
+              "finished": { "type": "boolean" },
+              "captures_made": { "type": "integer", "minimum": 0 },
+              "captures_suffered": { "type": "integer", "minimum": 0 },
+              "turns_forfeited": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+
+    "agentReasoning": {
+      "type": "object", "required": ["player", "text"], "additionalProperties": false,
+      "description": "The agent's stated reasoning for its move. Private to that agent — other agents never see it. Shown to the viewer in the UI, and read by the judge to check reasoning integrity.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "text": { "type": "string" }
+      }
+    },
+
+    "messageSent": {
+      "type": "object", "required": ["player", "to", "text"], "additionalProperties": false,
+      "description": "Table talk or alliance negotiation. Agents may lie here; nothing in the system treats message content as fact.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "to": {
+          "oneOf": [{ "$ref": "#/$defs/color" }, { "type": "null" }],
+          "description": "Null = public broadcast to all players. A colour = private direct message, visible only to that recipient (and to the viewer in the UI)."
+        },
+        "text": { "type": "string" }
+      }
+    },
+
+    "memoryWrite": {
+      "type": "object", "required": ["player", "kind", "text"], "additionalProperties": false,
+      "description": "Memory is private and deliberately unreliable: it records what the agent believes, including things it was successfully deceived about. Never corrected.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "kind": { "enum": ["opponent_model", "commitment", "strategy", "observation"] },
+        "about": { "oneOf": [{ "$ref": "#/$defs/color" }, { "type": "null" }] },
+        "text": { "type": "string" }
+      }
+    },
+
+    "contextCompacted": {
+      "type": "object", "required": ["player", "tokens_before", "tokens_after"], "additionalProperties": false,
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "tokens_before": { "type": "integer", "minimum": 0 },
+        "tokens_after": { "type": "integer", "minimum": 0 },
+        "turns_summarised": { "type": "integer", "minimum": 0 },
+        "summary": { "type": "string" }
+      }
+    },
+
+    "llmCall": {
+      "type": "object", "required": ["player", "model", "access", "tokens"], "additionalProperties": false,
+      "description": "One model invocation. The unit of cost, latency, and cache accounting for the whole project.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "model": { "type": "string" },
+        "model_version": { "type": "string", "description": "Recorded per call: Bedrock and a direct API may serve different revisions of the same model, which would silently break the ADR-0005 control." },
+        "access": { "$ref": "#/$defs/access" },
+        "purpose": { "enum": ["move", "negotiate", "reflect", "compact", "judge"] },
+        "tokens": {
+          "type": "object",
+          "required": ["input", "output"],
+          "properties": {
+            "input": { "type": "integer", "minimum": 0 },
+            "output": { "type": "integer", "minimum": 0 },
+            "cache_read": { "type": "integer", "minimum": 0 },
+            "cache_write": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "latency_ms": { "type": "number", "minimum": 0 },
+        "cost_usd": { "type": "number", "minimum": 0 },
+        "retries": { "type": "integer", "minimum": 0 }
+      }
+    },
+
+    "guardrailTriggered": {
+      "type": "object", "required": ["player", "rule", "action"], "additionalProperties": false,
+      "description": "Content guardrails only fire on out-of-fiction attacks. In-game deception is permitted and must never appear here (ADR-0004).",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "rule": { "type": "string" },
+        "action": { "enum": ["blocked", "flagged", "rewritten"] },
+        "source": { "enum": ["bedrock_guardrails", "harness"] },
+        "detail": { "type": "string" }
+      }
+    }
+  }
+}

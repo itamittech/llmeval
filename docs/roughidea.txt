@@ -1,0 +1,74 @@
+Context:
+In this project we will doing interesting and fun experiment around LLM Evals and other LLM feature comparison. The idea and core theme will be always gamification.
+The important part about this is teaching the community as well how such implementation is done. This will be a public github project which can be used by anyone.
+
+Technical:
+For a better clarity on understanding of differnt stack we will be using three stacks as below
+
+1.Strands SDK by AWS with python as language
+2. Langchain and Langgraph with Python as the language
+3. Spring AI by Java
+
+For cloud we will be using
+
+1. AWS Bedrock 
+2. AWS Agent Core
+3. AWS Lambda
+4. AWS API Gateway
+5. AWS Sage Maker
+
+Topics:
+We will try to cover many different topic but not necessarily in single fun project we will cover everything. Topic LIST
+
+1. LLM Invocation
+2. LLM Comparison
+3. Guardrails
+4. Cost analysis
+5. Inference Analysis
+6. Observability and Monitoring
+7. Prompt tuning best practices - Prompt templates etc
+8. Agentic AI
+9. Various Agentic Architecture like - Edge Agent, Agent as Tool, Graph Agents, Agent swarm
+10. Voice Agents
+11. RAG
+12. Various RAG Architecture
+13. AWS Bedrock related features
+14. AWS Sagemaker related features
+15. LLM Fine tuning
+16. Continued Pre training
+17. LLM Evals
+
+Note the list can be more exhaustive
+
+Goal:
+1. Code should be clear concise well documented so that reader understands and most important not overly verbose 
+2. Clean coding principle to be followed
+3. Well packaged code so that the repository is well maintained
+4. Well documented code so that it is easy to understand thing like architecture etc.
+5. We will do three version of same task one using Spring AI, other using Langchain and Langgraph and then Using strands SDK
+6. It needs to be seen how the environment is well maintained and free of conflict as we are using three different technical things to arrive at same problem
+7. It is also important to follow production best practices.
+
+Project
+1. LUDO Game: LUDO is game played in India, which can involve 4 team with different colour, they throw the dice and based on the rules game is played, Research web to know more about
+              the game. In this project we will have 4 different agent 2 via bedrock and 2 via direct API call present. These agents will be playing game together and will try to win
+			  In this game the agents can be forming alliance in sceario to defeat a player and it is all about proving intelligence.
+			  Technically we will try to cover following
+			  1. Calling agent in Bedrock vs direct API call
+			  2. We will use Agent Swarm architecture (I hope this is correct architecture otherwise you are free to update here), and each agent will play in turn
+			  3. We will keep maximum turns in game and will see how the game has progressed and evaluate the winner based on that. Need not be game has finished we can evaluate mid game progress.
+			  4. We will use LLM as Judge Eval here
+			  5. Observability and Monitoring
+			  7. Caching practices
+			  8. Token Monitoring
+			  9. We will have a UI which can be simple I would like you to select a framework which is light either react or something else.
+			  10. The UI should be neat and clean and at any point should be able to tell what happened in game , how agent were interacting , playing thought process etc.
+			  11. We need to show harness engineering like Agent Memory, Chat context compression/compact etc.
+			  12. Note After the game finishes we should clearly show the well presented summary to the user.
+			  13. If any framework suppose Spring AI doesnt have the corresponding harness functionality that should be also higlighted.
+			  14. The elarning from this project will be carry forwarded to other projects.
+			  15. We need to make guardrails but leninet enough as there will be cunningness and cleverlness which agent can show.
+			  16. In UI then we need to explain all the corresponding architecture that was followed in this project. Remember teaching community is one of the biggest aim keep things fun at the same time.
+			  
+			  
+

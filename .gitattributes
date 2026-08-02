@@ -1,0 +1,9 @@
+# Normalise line endings to LF in the repository.
+# Set before the first commit — retrofitting this later rewrites every file
+# and produces a diff that hides real changes.
+* text=auto eol=lf
+
+# Generated: exclude from diffs and language statistics.
+projects/*/games/*.jsonl   linguist-generated
+shared/conformance/*.json  linguist-generated
+*.lock                     linguist-generated
