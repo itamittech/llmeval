@@ -65,7 +65,20 @@ Because `__init__.py` re-exports those names, you can write:
 from ludo_engine import Game, RandomBot, COLORS
 ```
 
-The `__all__` list in that file is the package's **public API** — it says "these are the names I intend people to use", and everything else is an internal detail that might move.
+**This is re-exporting, not aliasing.** An alias gives something a *different* name (`import numpy as np`). Re-exporting makes the *same* name reachable by a *shorter path* — and it really is the same object, not a copy:
+
+```python
+>>> from ludo_engine import Game
+>>> from ludo_engine.game import Game as GameViaModule
+>>> Game is GameViaModule
+True
+>>> Game.__module__
+'ludo_engine.game'
+```
+
+The class is defined once, in `game.py`. `__init__.py` just puts a second signpost to it at the package's front door. Nothing is duplicated, and there's no performance cost.
+
+The `__all__` list in that file is the package's **public API** — 24 names saying "these are what I intend you to use". Everything else is an internal detail that may move without warning. It also controls what `from ludo_engine import *` brings in.
 
 **Why `tests/` has no `__init__.py`.** Deliberate. Test folders generally shouldn't be packages: pytest finds files by their `test_` prefix, not by importing a package. Adding one changes how pytest resolves imports and is a common source of confusing failures. If you see a repo with `tests/__init__.py`, it usually has a specific reason.
 
@@ -151,6 +164,65 @@ That's the entire reason every documented command in this repo uses `python -m`.
 
 ## `if __name__ == "__main__":`
 
+Python sets a variable called `__name__` inside **every** module. Its value depends entirely on *how that file got loaded*:
+
+| How the file was loaded | `__name__` is |
+|---|---|
+| You **ran** it (`python greeter.py`) | `"__main__"` |
+| Something **imported** it (`import greeter`) | `"greeter"` — its module name |
+
+So the line reads: **"only do this if I'm the program being run, not if someone imported me."**
+
+### See it happen
+
+Two tiny files:
+
+```python
+# greeter.py
+print(f"[greeter.py] loading.  __name__ is {__name__!r}")
+
+def greet():
+    return "hello from greeter"
+
+if __name__ == "__main__":
+    print("[greeter.py]   -> I am the program being RUN. Doing work:", greet())
+else:
+    print("[greeter.py]   -> I was IMPORTED. Defining things only, running nothing.")
+```
+
+```python
+# app.py
+print(f"[app.py]     loading.  __name__ is {__name__!r}")
+import greeter
+print("[app.py]     calling greeter.greet() ->", greeter.greet())
+```
+
+Run `greeter.py` directly and it's the program:
+
+```
+$ python greeter.py
+[greeter.py] loading.  __name__ is '__main__'
+[greeter.py]   -> I am the program being RUN. Doing work: hello from greeter
+```
+
+Run `app.py` instead, and `greeter` is now a library:
+
+```
+$ python app.py
+[app.py]     loading.  __name__ is '__main__'
+[greeter.py] loading.  __name__ is 'greeter'
+[greeter.py]   -> I was IMPORTED. Defining things only, running nothing.
+[app.py]     calling greeter.greet() -> hello from greeter
+```
+
+Three things that output makes obvious:
+
+1. **`greeter.py` ran either way.** Importing a module *executes it top to bottom* — that's how `def` and `class` statements come into existence. The guard doesn't stop the file running; it stops the guarded block.
+2. **`__name__` changed** from `'__main__'` to `'greeter'` purely because of how it was loaded.
+3. **`app.py` is now the `'__main__'` one.** The name always belongs to whichever file you launched.
+
+### Why it matters here
+
 At the bottom of [`cli.py`](../../projects/ludo/engine-python/src/ludo_engine/cli.py):
 
 ```python
@@ -158,11 +230,76 @@ if __name__ == "__main__":
     raise SystemExit(main())
 ```
 
-Python sets the variable `__name__` in every module. It's `"__main__"` when the file is the one being *run*, and the module's real name when it's being *imported*.
+Without the guard, `from ludo_engine import cli` — or anything that imported it indirectly — would **start playing a game of Ludo**. With it, importing gives you the functions and nothing more.
 
-So this block means **"only do this if I'm the program, not if someone imported me."** Without it, merely importing `cli` would start a game.
+The pattern is so common that "main guard" is just what people call it.
 
 ---
+
+## How another project uses this package
+
+`ludo_engine` is a **library**. It isn't an application — it has no server, no entry point anyone runs in production. Other projects depend on it and call into it.
+
+### Step 1 — declare the dependency
+
+A consumer names it in its own `pyproject.toml`. Here, the agent stacks will point at the folder rather than a published release:
+
+```toml
+# projects/ludo/stack-strands/pyproject.toml   (not written yet)
+[project]
+dependencies = ["ludo-engine"]
+
+[tool.uv.sources]
+ludo-engine = { path = "../engine-python", editable = true }
+```
+
+`editable = true` links rather than copies, so editing `moves.py` is picked up immediately with no reinstall. If the engine were published to PyPI instead, the `[tool.uv.sources]` block would simply disappear and `uv add ludo-engine` would fetch it — nothing else about the consumer would change.
+
+Note the two spellings: the **distribution** is `ludo-engine` (hyphen, what you install) and the **package** is `ludo_engine` (underscore, what you import). Different things, and they're allowed to differ.
+
+### Step 2 — import and use it
+
+```python
+from ludo_engine import COLORS, Game, GameConfig, ListSink, RandomBot
+
+sink = ListSink()
+outcome = Game(GameConfig(seed=7, max_turns=300), sink).play(
+    {c: RandomBot(seed=i) for i, c in enumerate(COLORS)}
+)
+print(outcome.winner, len(sink.events))
+```
+
+### Step 3 — plug in your own behaviour
+
+The engine asks exactly one question — *"what's your move?"* — so a consumer supplies an object with a `choose` method. **No base class, no import of `Decider`, no registration:**
+
+```python
+class GreedyBot:
+    name = "greedy-bot"
+
+    def choose(self, ctx):
+        for move in ctx.legal_moves:          # already validated by the engine
+            if would_capture(ctx.state, ctx.color, move):
+                return move
+        return max(ctx.legal_moves, key=lambda m: m.to)
+```
+
+A complete, runnable version is committed at
+[`examples/custom_agent.py`](../../projects/ludo/engine-python/examples/custom_agent.py):
+
+```bash
+uv run --directory projects/ludo/engine-python python examples/custom_agent.py
+```
+
+```
+reason=completed  turns=501  events=2311
+  1. red     home=4 progress=228 captures=12  <- heuristic
+  2. yellow  home=4 progress=228 captures=8
+  3. blue    home=4 progress=228 captures=7
+  4. green   home=3 progress=227 captures=3
+```
+
+**That file is the template every agent stack will follow.** A stack replaces the body of `choose` with an LLM call and keeps everything around it. The engine never learns the difference — which is the [Strategy pattern](../../docs/projects/ludo/class-design.md#71-four-players-four-different-brains--strategy) doing its job.
 
 ## Naming conventions
 

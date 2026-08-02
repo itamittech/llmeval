@@ -44,6 +44,14 @@ class MyAgent:
         return ctx.legal_moves[0]
 ```
 
+A complete worked version — a heuristic bot playing against random bots — is in
+[`examples/custom_agent.py`](examples/custom_agent.py). It's the template each
+agent stack will follow:
+
+```bash
+uv run --directory projects/ludo/engine-python python examples/custom_agent.py
+```
+
 ## Commands
 
 Play one random-bot game and record it:
