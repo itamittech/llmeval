@@ -115,5 +115,6 @@ Still open in [open-questions.md](../../open-questions.md): concrete model IDs, 
 ## Related
 
 - [Game rules](game-rules.md) · [Brief](brief.md) · [Evaluation](evaluation.md)
+- [Harness contract](harness-contract.md) — this design turned into a normative spec: what every stack MUST do, event by event
 - [Engine design](engine-design.md) — the `Decider` protocol an agent implements, and how one turn executes
 - [Architecture overview](../../architecture/overview.md) — the tool contract these agents bind to

@@ -75,6 +75,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 
 **Project: LUDO**
 - [Brief](docs/projects/ludo/brief.md) · [Game rules](docs/projects/ludo/game-rules.md) · [Agent design](docs/projects/ludo/agent-design.md) · [Evaluation](docs/projects/ludo/evaluation.md)
+- [Harness contract](docs/projects/ludo/harness-contract.md) — the normative spec all three agent stacks implement
 - [Engine design](docs/projects/ludo/engine-design.md) — how the built engine is structured, and what a Java port must preserve
 - [Class design](docs/projects/ludo/class-design.md) — diagrams: the object graph, a turn traced as calls, module layering
 

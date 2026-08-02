@@ -188,6 +188,7 @@ One `>>` instead of `>>>` and every conformance vector fails — which is precis
 ## Related
 
 - [Class design](class-design.md) — the same structure as diagrams: object graph, call flow, module layering
+- [Harness contract](harness-contract.md) — what an agent stack must do around this engine. **§2.1 specifies an extension to `Decider`** (optional `negotiate` / `reflect` hooks) that the agent turn protocol needs and the engine does not yet have
 - [Engine README](../../../projects/ludo/engine-python/README.md) — usage and module map
 - [Game rules](game-rules.md) — the normative spec, including resolved edge cases
 - [Event schema](../../../shared/schemas/README.md) — the output contract
