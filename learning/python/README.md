@@ -14,6 +14,8 @@ Each script prints its own explanation as it runs. Editing them and re-running i
 
 ## Suggested order
 
+**0. [What all these files and folders are for](00-files-and-folders.md)** — if a Python repo looks like unexplained clutter, start here. `__init__.py`, `__pycache__`, `src/`, why commands use `python -m`. Numbered `00` because it comes first; no code required.
+
 **1. Run the examples** in numerical order. About 5 minutes each.
 
 | | File | Covers |
@@ -30,6 +32,8 @@ Each script prints its own explanation as it runs. Editing them and re-running i
 **3. Keep [the concept index](02-concept-index.md) open** while reading the rest of the engine. Look up any syntax, see what it does and where the project uses it.
 
 **4. Read [environments and packaging](03-environments-and-packaging.md)** when you want to know what `uv`, `.venv`, `pyproject.toml`, and `uv.lock` actually are — and why this repo needs three separate Python environments. Tooling rather than language; readable at any point.
+
+> The numbering is file order, not difficulty. `00` and `03` are about *tooling* — what the files are and how environments work. `01` and `02` are about the *language*. Read the pair that matches what's confusing you.
 
 ## Three things that surprise people from other languages
 

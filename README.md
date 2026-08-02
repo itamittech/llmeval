@@ -54,7 +54,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 |---|---|
 | **New to LLM engineering** | [Glossary](docs/glossary.md) → [Vision](docs/vision.md) → [LUDO brief](docs/projects/ludo/brief.md) |
 | **Here for the framework comparison** | [Architecture overview](docs/architecture/overview.md) → [Capability matrix](docs/architecture/stack-comparison.md) |
-| **New to Python** | [learning/python](learning/python/) → [`Game` walkthrough](learning/python/01-walkthrough-game.md) |
+| **New to Python** | [What the files and folders are](learning/python/00-files-and-folders.md) → [learning/python](learning/python/) → [`Game` walkthrough](learning/python/01-walkthrough-game.md) |
 | **Curious about design patterns** | [Class design §7](docs/projects/ludo/class-design.md#7-design-patterns-from-the-problem-up) — each one taught from the problem up |
 | **About to write code** | [Engine design](docs/projects/ludo/engine-design.md) → [Class design](docs/projects/ludo/class-design.md) → [Open questions](docs/open-questions.md) |
 | **Just want to see it run** | the [command below](#status) — no keys, no cost |

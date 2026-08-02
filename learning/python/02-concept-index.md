@@ -16,7 +16,9 @@ Look up a piece of syntax, see what it means, and jump to where the project uses
 | `x: int = 5` | Type annotation with default. **Not enforced at runtime.** | [06](examples/06_type_hints_and_errors.py) | every signature |
 | `-> Move \| None` | Returns a `Move` or `None`. | [06](examples/06_type_hints_and_errors.py) | `Game._decide` |
 | `dict[Color, Decider]` | A dict with `Color` keys and `Decider` values. | [06](examples/06_type_hints_and_errors.py) | `Game.play` |
-| `from .board import X` | Leading dot = the module *next to this one*. | — | every module |
+| `from .board import X` | Leading dot = the module *next to this one*. Why commands need `python -m`. | [00](00-files-and-folders.md) | every module |
+| `__init__.py` | Marks a folder as an importable package; ours re-exports the public API. | [00](00-files-and-folders.md) | `ludo_engine/` |
+| `if __name__ == "__main__"` | "Only run this if I'm the program, not if I was imported." | [00](00-files-and-folders.md) | `cli.py` |
 | `from __future__ import annotations` | Store hints as strings. Modern boilerplate. | [06](examples/06_type_hints_and_errors.py) | most modules |
 
 ## Control flow
