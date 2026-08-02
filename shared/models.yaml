@@ -1,0 +1,88 @@
+# Which model sits in which seat, and how it is reached.
+#
+# NO SECRETS. This file is public and committed. It names environment
+# variables; it never contains their values.
+#
+# Seats are numbered, not coloured, because the seat -> colour assignment
+# rotates between games (ADR-0006). Turn order in Ludo is an advantage, and a
+# fixed mapping would bake it permanently into the model comparison.
+#
+# The control: seats 1 and 3 run the SAME model over DIFFERENT routes, so any
+# difference between them is attributable to the route rather than the model
+# (ADR-0005). check_prompts.py fails if that pairing is ever broken.
+
+version: 1
+
+# Pinned explicitly, because Strands, LangGraph and Spring AI do not share
+# defaults. Leaving these to the framework would be a silent parity break —
+# exactly the kind this repo exists to avoid.
+inference:
+  temperature: 0.7
+  top_p: 1.0
+  max_output_tokens: 700
+
+credentials:
+  bedrock: [AWS_REGION, AWS_PROFILE]
+  anthropic: [ANTHROPIC_API_KEY]
+  deepseek: [DEEPSEEK_API_KEY]
+  openai: [OPENAI_API_KEY]
+
+profiles:
+  # Cheap and fast. For proving the harness works end to end — which will take
+  # many runs before it takes one good one.
+  dev:
+    budgets:
+      max_turns: 40
+      max_messages_per_turn: 1
+      max_message_chars: 240
+      max_tokens_per_game: 150000
+    seats:
+      - seat: 1
+        access: bedrock
+        provider: anthropic
+        model: TBD          # small Anthropic model, Bedrock model id
+      - seat: 2
+        access: bedrock
+        provider: amazon
+        model: TBD          # Amazon Nova, small tier
+      - seat: 3
+        access: direct
+        provider: anthropic
+        model: TBD          # SAME model as seat 1, direct API id  <- the control
+      - seat: 4
+        access: direct
+        provider: deepseek
+        model: TBD
+    judge:
+      access: direct
+      provider: openai
+      model: TBD            # reasoning model; must not be a family that played
+
+  # The run people actually watch.
+  headline:
+    budgets:
+      max_turns: 60
+      max_messages_per_turn: 2
+      max_message_chars: 400
+      max_tokens_per_game: 600000
+    seats:
+      - seat: 1
+        access: bedrock
+        provider: anthropic
+        model: TBD
+      - seat: 2
+        access: bedrock
+        provider: amazon
+        model: TBD
+      - seat: 3
+        access: direct
+        provider: anthropic
+        model: TBD          # SAME model as seat 1  <- the control
+      - seat: 4
+        access: direct
+        provider: deepseek
+        model: TBD
+    judge:
+      access: direct
+      provider: openai
+      model: TBD

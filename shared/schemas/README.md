@@ -38,6 +38,10 @@ The split matters: an engine-only run (random bots, no models) produces a valid 
 
 **Agent claims are not facts.** `message_sent` content may be deliberately false. Nothing downstream — UI, summaries, eval — may treat it as ground truth.
 
+**A colour is not a stable identity.** The seat→colour mapping rotates between games ([ADR-0006](../../docs/decisions/adr-0006-seat-rotation.md)). `game_started.players[]` carries both `color` and `seat` for that game; anything comparing models across transcripts must read it rather than assume red is who red was last time. A UI that colour-codes by model and skips this produces a chart that looks fine and is false.
+
+**Every game records what produced it.** `game_started` carries `profile` (which model tier and budget, from `shared/models.yaml`) and `prompt_set` (version plus hash). Prompts and models change; without these, two transcripts are silently incomparable. Both are absent on engine-only runs, which send no prompts at all.
+
 ## Changing the schema
 
 Adding an event type or an optional field is cheap. **Changing or removing anything is a breaking change** that all three stacks must land together, and it invalidates previously recorded transcripts.

@@ -1,0 +1,44 @@
+# The prompt set every stack loads. Data, not code — see repository-layout.md.
+#
+# A stack reads this file, concatenates the `system` templates in order to build
+# the system prompt, and renders one `turn` template per step of the turn
+# protocol. Substitution is literal `{{name}}` replacement; there is no template
+# logic, deliberately (see README.md).
+#
+# `variables` is the contract: check_prompts.py fails if a template uses a
+# variable not listed here, or lists one it never uses.
+
+version: 1
+game: ludo
+
+# Concatenated in this order, once per game. Never varies within a game, which
+# is what makes it prompt-cacheable.
+system:
+  - file: system/identity.md
+    variables: [color]
+
+  - file: system/rules.md
+    variables: []
+
+  - file: system/negotiation.md
+    variables: [max_messages_per_turn, max_message_chars]
+
+# Rendered fresh each time. Never cached.
+turn:
+  negotiate:
+    file: turn/negotiate.md
+    variables: [turn, color, board, standings, inbox, memory, messages_remaining]
+
+  decide:
+    file: turn/decide.md
+    variables: [turn, color, die, board, legal_moves, recent_events, memory]
+
+  # Sent only after the engine rejects a move. The engine allows two attempts
+  # before forfeiting the turn (MOVE_ATTEMPTS), so this fires at most once.
+  retry:
+    file: turn/retry.md
+    variables: [reason, rejected, legal_moves]
+
+  reflect:
+    file: turn/reflect.md
+    variables: [turn, color, turn_summary, memory]

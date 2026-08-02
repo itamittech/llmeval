@@ -60,7 +60,9 @@ Two agents are invoked through Bedrock, two through direct provider APIs, and th
 
 **One model runs on both routes** — occupying one Bedrock seat and one direct seat — so route differences can't be confused with model differences ([ADR-0005](../../decisions/adr-0005-model-access-control.md)). The other two seats go to different model families, to keep the alliance dynamics interesting.
 
-Assignment is config, not code — see `shared/models.yaml` in the [architecture overview](../../architecture/overview.md). Concrete model IDs are still an [open question](../../open-questions.md).
+The families are settled: **Anthropic on both routes** as the control, **Amazon Nova** on the remaining Bedrock seat, **DeepSeek** on the remaining direct seat, and an **OpenAI** reasoning model as the judge — which is why OpenAI does not play. A judge scoring its own family is the first thing a reader would attack.
+
+Assignment is config, not code — [`shared/models.yaml`](../../../shared/models.yaml), and the seat→colour mapping [rotates between games](../../decisions/adr-0006-seat-rotation.md). Concrete model IDs are still an [open question](../../open-questions.md).
 
 ## Scoring and the turn cap
 

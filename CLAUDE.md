@@ -20,6 +20,7 @@ This project exists to teach. A doc describing code that no longer exists is *wo
 | Engine classes, methods, or structure | [engine-design.md](docs/projects/ludo/engine-design.md) · [class-design.md](docs/projects/ludo/class-design.md) — the **diagrams AND** the class-reference and who-calls-what tables · the engine README module map |
 | The event schema | [shared/schemas/README.md](shared/schemas/README.md) · [ADR-0003](docs/decisions/adr-0003-shared-event-stream.md) if the contract itself changed · every stack that emits |
 | Dependencies, tooling, environment layout | [environment-strategy.md](docs/architecture/environment-strategy.md) · [repository-layout.md](docs/architecture/repository-layout.md) · [learning/python/03](learning/python/03-environments-and-packaging.md) |
+| Prompts, `models.yaml`, or anything in `shared/` | [shared/prompts/README.md](shared/prompts/README.md) · [agent-design.md](docs/projects/ludo/agent-design.md) · re-run `check_prompts.py` · a rule-number change means [game-rules.md](docs/projects/ludo/game-rules.md) first |
 | Introduced any term a reader might not know | [glossary.md](docs/glossary.md) — no exceptions; this is how the repo stays readable |
 | Settled an open question | Move it to **Answered** in [open-questions.md](docs/open-questions.md) with the outcome; write an [ADR](docs/decisions/) if it was expensive to reverse |
 | Learned what a framework can or can't do | [stack-comparison.md](docs/architecture/stack-comparison.md) — with a link to the code that proves it |
@@ -35,6 +36,14 @@ python scripts/check_docs.py
 
 Checks links, anchors, and Mermaid syntax across every markdown file. **It cannot check whether the prose is still true** — that part is on you. Re-read every section that touches what you changed.
 
+If you touched anything in `shared/`, also:
+
+```bash
+uv run scripts/check_prompts.py
+```
+
+Checks the invariants that make the comparison mean anything — no template logic, declared variables match used ones, prompt rule numbers match the engine's constants, one model on both access routes, judge not seated, no secrets in `models.yaml`. Every one of these fails *silently* if unchecked.
+
 ### If you can't fix a doc in the same commit
 
 Say so explicitly in your response, naming the file and what's now wrong. An acknowledged gap is recoverable; a silent one is not.
@@ -43,14 +52,17 @@ Say so explicitly in your response, naming the file and what's now wrong. An ack
 
 ## Repository status
 
-The **shared event schema** and the **Python engine** are built and tested. No agent stack, UI, or eval harness exists yet.
+The **shared event schema**, the **Python engine**, and the **shared prompt set + model config** are built and tested. No agent stack, UI, or eval harness exists yet.
 
 | Component | State |
 |---|---|
 | `shared/schemas/` — event contract | ✅ Built |
 | `projects/ludo/engine-python/` | ✅ Built, 60 tests passing |
+| `shared/prompts/ludo/` — prompts all stacks send | ✅ 7 templates |
+| `shared/models.yaml` — seats, routes, profiles | ✅ Built; **model IDs still `TBD`** |
 | `shared/conformance/` — cross-engine vectors | ✅ 20 vectors |
 | `engine-java`, `stack-*`, `ui/`, `eval/` | ❌ Not started |
+| Judge prompt | ❌ Waits for the eval harness |
 
 ## Commands
 
@@ -90,9 +102,9 @@ No linter or formatter is configured yet. Nothing above makes a model call or co
 
 Some foundational decisions are still open — read [docs/open-questions.md](docs/open-questions.md) before proposing or writing code.
 
-**Settled:** three parallel games (each stack runs its own full 4-agent game); two engines, one per language ([ADR-0002](docs/decisions/adr-0002-engine-per-language.md)); one model invoked via *both* Bedrock and direct API as a control ([ADR-0005](docs/decisions/adr-0005-model-access-control.md)); React + Vite for the UI; Maven for the Java stack.
+**Settled:** three parallel games (each stack runs its own full 4-agent game); two engines, one per language ([ADR-0002](docs/decisions/adr-0002-engine-per-language.md)); one model invoked via *both* Bedrock and direct API as a control ([ADR-0005](docs/decisions/adr-0005-model-access-control.md)); seat→colour rotates between games ([ADR-0006](docs/decisions/adr-0006-seat-rotation.md)); React + Vite for the UI; Maven for the Java stack; Apache-2.0; **Python 3.12** for both stacks; model *families* (Anthropic ×2 routes, Amazon Nova, DeepSeek; OpenAI judges and therefore does not play); negotiation uses both channels, active-agent-driven, no cross-reading of reasoning.
 
-**Still open:** concrete model IDs, Python version pin for the stacks, turn/token budgets, license. ADRs 0001, 0003, and 0004 remain **Proposed** — they encode reasoning from the brief but haven't been explicitly confirmed.
+**Still open:** concrete model IDs (families are fixed; the IDs must be *dated snapshots*, not floating aliases), turn/token budgets — provisional values sit in `shared/models.yaml` and get replaced by measured ones after the first stack runs. ADRs 0001, 0003, and 0004 remain **Proposed** — they encode reasoning from the brief but haven't been explicitly confirmed.
 
 ## Orientation
 
@@ -115,7 +127,7 @@ First project: **LUDO**, four LLM agents playing the Indian board game, two invo
 
 ## Constraints that are easy to violate
 
-**Parity is the point.** The three implementations must differ *only* in the agent framework. Anything that lets one stack diverge — a different prompt, a tweaked rule, an extra retry — invalidates the comparison. Prompts will live in `shared/prompts/`, shared verbatim — **that directory does not exist yet** and must be created before the first stack, not after.
+**Parity is the point.** The three implementations must differ *only* in the agent framework. Anything that lets one stack diverge — a different prompt, a tweaked rule, an extra retry, an unpinned sampling parameter — invalidates the comparison. Prompts live in [`shared/prompts/`](shared/prompts/README.md) and are sent verbatim; no stack may edit them for itself. Templates use literal `{{name}}` substitution with **no conditionals or loops**, because two languages would implement template logic differently and the disagreements would be silent.
 
 **Capability gaps are deliverables, not bugs.** When a framework can't do something (e.g. Spring AI lacking a harness primitive the Python stacks get free), record it in [the capability matrix](docs/architecture/stack-comparison.md) and surface it in the UI. Never quietly hand-roll a substitute and imply parity.
 

@@ -39,7 +39,7 @@ jobs:
         run: uv run --directory projects/ludo/engine-python python -m ludo_engine.cli validate "../games/*.jsonl"
 
   docs:
-    name: Documentation
+    name: Docs and shared contracts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,7 +48,19 @@ jobs:
         with:
           python-version: "3.12"
 
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
       - name: Links, anchors, mermaid syntax
         # Structure only. Whether the prose is still TRUE is on the author —
         # see Rule #1 in CLAUDE.md.
         run: python scripts/check_docs.py
+
+      - name: Prompt set and model config invariants
+        # Guards ADR-0005 (one model on both routes) and the parity rules that
+        # make the three-stack comparison mean anything. Every check here
+        # protects something that fails SILENTLY — no crash, just a result that
+        # quietly isn't what it claims. uv resolves pyyaml from the script's
+        # own PEP 723 header; nothing to install.
+        run: uv run scripts/check_prompts.py

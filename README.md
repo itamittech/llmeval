@@ -56,6 +56,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 | **Here for the framework comparison** | [Architecture overview](docs/architecture/overview.md) → [Capability matrix](docs/architecture/stack-comparison.md) |
 | **New to Python** | [What the files and folders are](learning/python/00-files-and-folders.md) → [learning/python](learning/python/) → [`Game` walkthrough](learning/python/01-walkthrough-game.md) |
 | **Curious about design patterns** | [Class design §7](docs/projects/ludo/class-design.md#7-design-patterns-from-the-problem-up) — each one taught from the problem up |
+| **Interested in experiment design** | [ADR-0005](docs/decisions/adr-0005-model-access-control.md) → [ADR-0006](docs/decisions/adr-0006-seat-rotation.md) — how to keep a comparison from quietly meaning nothing |
 | **About to write code** | [Engine design](docs/projects/ludo/engine-design.md) → [Class design](docs/projects/ludo/class-design.md) → [Open questions](docs/open-questions.md) |
 | **Just want to see it run** | the [command below](#status) — no keys, no cost |
 
@@ -68,6 +69,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 
 **Architecture**
 - [Repository layout](docs/architecture/repository-layout.md)
+- [Shared prompts](shared/prompts/README.md) — the prompts all three stacks send, and why the template language has no `if`
 - [Environment strategy](docs/architecture/environment-strategy.md) — how two Python stacks and a JVM coexist
 - [Stack capability matrix](docs/architecture/stack-comparison.md) — the running scoreboard of framework gaps
 
@@ -93,7 +95,8 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 |---|---|
 | ✅ | [Shared event schema](shared/schemas/) — the contract all three stacks emit |
 | ✅ | [Python game engine](projects/ludo/engine-python/) — full rules, 60 tests passing |
-| ✅ | [CI](.github/workflows/ci.yml) — tests, conformance, schema, docs. No model calls, no cost. |
+| ✅ | [Shared prompts](shared/prompts/README.md) + [model config](shared/models.yaml) — identical across all three stacks, invariants enforced in CI |
+| ✅ | [CI](.github/workflows/ci.yml) — tests, conformance, schema, docs, prompt invariants. No model calls, no cost. |
 | ✅ | [Cross-engine conformance vectors](shared/conformance/) |
 | ⬜ | Java engine · agent stacks · UI · eval harness |
 

@@ -8,16 +8,6 @@ Resolved questions move to [Answered](#answered) at the bottom, with their outco
 
 ---
 
-## 🟡 6. Alliance channel design
-
-[Agent design](projects/ludo/agent-design.md) proposes **public broadcast + private direct messages**, with the viewer seeing everything and agents seeing only what's addressed to them.
-
-Private messages are what make deception possible — an agent can tell red and green contradictory things, invisible in-game but visible to the viewer. Public-only makes betrayal trivially detectable and much less interesting.
-
-> **Recommendation: hybrid, as documented.** Confirm the viewer-omniscience choice explicitly — it's what turns the UI into a good story.
-
----
-
 ## 🟡 7. Turn cap, negotiation budget, and game length
 
 Needs real numbers: maximum turns, messages per turn, max message length, per-agent and per-game token ceilings.
@@ -42,13 +32,7 @@ Strong agents should finish faster than random bots, but not by the order of mag
 
 > **Recommendation:** set the cap from a per-game token budget rather than from game length — decide what a game may cost, then derive the cap. Needs a measured per-turn token cost, so it stays open until the first stack runs.
 
----
-
-## 🟡 8. Python version
-
-Both Python stacks must pin the *same* version so the interpreter isn't a variable. Constrained by whatever Strands and LangChain both support.
-
-> **Recommendation:** newest version both frameworks fully support — verify at setup time rather than guessing now.
+**Provisional numbers are now in [`shared/models.yaml`](../shared/models.yaml)** so the negotiation prompt has something to render — 40 turns and 1 message per turn on the `dev` profile, 60 and 2 on `headline`. These are guesses, deliberately placed in config rather than in the prompt so that tuning them is a one-line edit and not a prompt change. Replace them with measured values after the first stack runs.
 
 ---
 
@@ -84,6 +68,29 @@ Should be chosen from what LUDO's [capability matrix](architecture/stack-compari
 
 ## Answered
 
+### ✅ 6. Alliance channel design
+
+**Decided: both channels, active-agent-driven, no cross-reading of reasoning.** Implemented in [`shared/prompts/ludo/system/negotiation.md`](../shared/prompts/ludo/system/negotiation.md).
+
+- **Public and private both exist.** Private messages are what make deception observable: an agent can tell two players contradictory things, invisible in-game and perfectly visible to the viewer.
+- **Spectators see everything; players see only what's addressed to them.** Confirmed explicitly — it's what turns the UI into a story rather than a board animation.
+- **Only the active agent opens a conversation.** An agent that receives a direct message may reply once; nobody broadcasts on someone else's turn. The alternative — all four free to speak every turn — costs roughly 4× the negotiation tokens and lets negotiation swamp play.
+- **No agent sees another's reasoning.** Reading an opponent's private deliberation would make deception meaningless.
+
+The consequence worth knowing: **an alliance takes at least two turns to form** — one to propose, one to accept. The prompt says so, so agents can plan around it.
+
+### ✅ 8. Python version
+
+**Decided: 3.12**, pinned identically for both Python stacks.
+
+Matches what the engine already builds against, supported by both Strands and LangChain, and mature enough that transitive dependencies are unlikely to lag. 3.13 offered nothing this project needs in exchange for a higher chance of a dependency without wheels. To be verified against both frameworks at stack setup rather than trusted.
+
+### ✅ 16. Does the seat-to-colour mapping stay fixed?
+
+**Decided: it rotates**, recorded per game. [ADR-0006](decisions/adr-0006-seat-rotation.md).
+
+Notable for how it was settled: the ADR was drafted asserting a first-mover advantage, that assumption was **measured across 4000 games and found to be false** (χ² = 3.56 and 1.54, against a 5% critical value of 7.81), and the decision was kept on different grounds — colour-linked effects in *prompts*, which bot games cannot detect at all. Reproduce it with [`examples/turn_order.py`](../projects/ludo/engine-python/examples/turn_order.py).
+
 ### ✅ 1. Three parallel games, or one mixed game?
 
 **Decided: three parallel games.** Each stack runs its own complete 4-agent game (2 Bedrock + 2 direct API); the three games are compared against each other. Matches goal #5 of the brief and keeps "which stack is better" separable from "which model played better".
@@ -100,7 +107,21 @@ This makes Strands vs. LangGraph a genuinely controlled experiment — same lang
 
 **Decided: one model runs on both access routes, plus two other families.** One model is invoked via *both* Bedrock and a direct API, so the access route is isolated from the model — without that control, Bedrock-vs-direct differences are uninterpretable. The remaining two seats go to different model families for behavioural variety in alliance dynamics.
 
-Ratified as [ADR-0005](decisions/adr-0005-model-access-control.md). **Concrete model IDs are still to be chosen** — constrained by Bedrock availability for the dual-route model, and by keeping one family in reserve for the [judge](projects/ludo/evaluation.md#judge-bias--and-what-we-do-about-it).
+Ratified as [ADR-0005](decisions/adr-0005-model-access-control.md).
+
+**Families settled**, in [`shared/models.yaml`](../shared/models.yaml):
+
+| Seat | Family | Route |
+|---|---|---|
+| 1 | Anthropic | Bedrock |
+| 2 | Amazon Nova | Bedrock |
+| 3 | Anthropic | direct ← control pair with seat 1 |
+| 4 | DeepSeek | direct |
+| judge | OpenAI reasoning | direct — not seated |
+
+An earlier draft seated GPT and DeepSeek on the direct side with no dual-route model, which would have confounded route with model exactly as the ADR warns; GPT moved to the judge seat, which also removed the self-scoring problem. The trade taken knowingly: **three playing families instead of four**, spending one seat on the control.
+
+**Concrete model IDs are still to be chosen** — the only thing here still open. They should be *dated snapshots*, not floating aliases: an alias changes under you and a transcript stops being reproducible. Marked `TBD` in the file; [`check_prompts.py`](../scripts/check_prompts.py) verifies the control by provider until they're pinned, and by exact ID afterwards.
 
 ### ✅ 15. Should deciders get a read-only view of game state?
 

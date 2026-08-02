@@ -52,7 +52,15 @@ Definitions are short on purpose — each links to the doc that goes deeper.
 
 **Context compaction** — summarising older conversation into something shorter so the important parts survive when history outgrows the context window. Also called compression or summarisation. Watching an agent play worse after compaction is a genuine, visible failure mode.
 
-**Prompt caching** — reusing the model's processing of an unchanged prompt prefix across calls, cutting cost and latency. It works best when a large stable part (the rules) sits ahead of a small changing part (the board).
+**Prompt caching** — reusing the model's processing of an unchanged prompt prefix across calls, cutting cost and latency. It works best when a large stable part (the rules) sits ahead of a small changing part (the board). [`shared/prompts/`](../shared/prompts/) is split into `system/` and `turn/` for exactly this reason.
+
+**Prompt set** — the whole collection of prompts a game was played with, versioned and hashed together. The hash is recorded in `game_started`, because prompts change and two transcripts recorded under different prompts are not comparable — nothing else about a JSONL file would reveal that. → [shared/prompts](../shared/prompts/README.md)
+
+**Seat** — a numbered player slot (1–4) with a fixed model and access route. Distinct from **colour**, which is the in-game identity. The seat→colour mapping rotates between games so no model permanently occupies one colour. → [ADR-0006](decisions/adr-0006-seat-rotation.md)
+
+**Profile** — a named set of models and budgets in [`shared/models.yaml`](../shared/models.yaml): `dev` for cheap harness shakedown runs, `headline` for real ones. All three stacks always run the same profile; it varies per experiment, never per stack.
+
+**Confounding** — when two things change together, so a measured difference can't be attributed to either one. Running different models on different access routes would confound model with route: if the Bedrock agents did better, you could never say why. Most of this repo's odder-looking decisions exist to prevent it. → [ADR-0005](decisions/adr-0005-model-access-control.md)
 
 **Guardrail** — a check on what a model may say or do. Here they're deliberately **lenient**: in-game lying and betrayal are permitted because they're the phenomenon being studied. Only out-of-fiction attacks are blocked. → [ADR-0004](decisions/adr-0004-structural-guardrails.md)
 

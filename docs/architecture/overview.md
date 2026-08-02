@@ -95,19 +95,25 @@ Recorded as [ADR-0002](../decisions/adr-0002-engine-per-language.md).
 
 ## Model access is configuration, not code
 
-A single `shared/models.yaml` will map logical agent identities to concrete providers. **Not created yet** — it lands with the first stack:
+[`shared/models.yaml`](../../shared/models.yaml) maps numbered seats to concrete providers. All three stacks read it:
 
 ```yaml
-agents:
-  red:    { access: bedrock, model: <model-X> }   # ─┐ same model,
-  yellow: { access: direct,  model: <model-X> }   # ─┘ two routes  ← the control
-  green:  { access: bedrock, model: <model-Y> }
-  blue:   { access: direct,  model: <model-Z> }
+seats:
+  - { seat: 1, access: bedrock, provider: anthropic, model: … }  # ─┐ same model,
+  - { seat: 3, access: direct,  provider: anthropic, model: … }  # ─┘ two routes  ← the control
+  - { seat: 2, access: bedrock, provider: amazon,   model: … }
+  - { seat: 4, access: direct,  provider: deepseek, model: … }
 ```
 
-All three stacks read this file. Swapping a player from Bedrock to a direct API is a config edit, not a code change — which is what makes the **Bedrock vs. direct API** comparison (auth, latency, cost accounting, guardrail availability, observability hooks) cleanly measurable.
+Swapping a player from Bedrock to a direct API is a config edit, not a code change — which is what makes the **Bedrock vs. direct API** comparison (auth, latency, cost accounting, guardrail availability, observability hooks) cleanly measurable.
 
-One model deliberately occupies **both** access routes. Holding the model constant is what makes route differences attributable to the route rather than to the model — see [ADR-0005](../decisions/adr-0005-model-access-control.md). Concrete model IDs are still an [open question](../open-questions.md).
+**Seats, not colours.** Which colour a seat plays rotates between games and is recorded per game in `game_started` ([ADR-0006](../decisions/adr-0006-seat-rotation.md)). Nothing may assume red is the same model it was last transcript.
+
+One model deliberately occupies **both** access routes. Holding the model constant is what makes route differences attributable to the route rather than to the model — see [ADR-0005](../decisions/adr-0005-model-access-control.md).
+
+**Two profiles**, `dev` and `headline`, differing in model tier and budget. A cheap shakedown run and a real result are then impossible to confuse, because the profile name is recorded in the transcript. All three stacks always run the same profile — the profile varies per *experiment*, never per stack.
+
+Three things are pinned explicitly rather than left to the frameworks: temperature, top-p, and max output tokens. Strands, LangGraph and Spring AI do not share defaults, and an unpinned sampling parameter is a parity break that never announces itself. Families are settled; **concrete model IDs are still [open](../open-questions.md)**.
 
 ## Cross-cutting concerns
 

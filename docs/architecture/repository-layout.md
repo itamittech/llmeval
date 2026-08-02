@@ -20,9 +20,13 @@ llmeval/
 │
 ├── shared/                       # stack-neutral, language-neutral contracts
 │   ├── schemas/                  # JSON Schema: events, transcripts, eval results
-│   ├── prompts/                  # versioned prompt templates
+│   ├── prompts/
+│   │   └── ludo/
+│   │       ├── manifest.yaml     # what to load, and each file's variables
+│   │       ├── system/           # stable within a game  → prompt-cacheable
+│   │       └── turn/             # rebuilt every turn     → never cached
 │   ├── conformance/              # golden vectors both engines must reproduce
-│   └── models.yaml               # logical agent → provider/model mapping
+│   └── models.yaml               # seat → provider/model/route, plus profiles
 │
 ├── projects/
 │   └── ludo/
@@ -47,6 +51,8 @@ llmeval/
 ## Conventions
 
 **`shared/` is a contract, not a library.** It holds schemas, prompts, and test vectors — data, not executable code. Anything in here that changes is a coordinated change across all three stacks. Nothing in `shared/` imports from `projects/`.
+
+That constraint is why prompt templates use literal `{{name}}` substitution with **no conditionals or loops**: template logic would have to be implemented twice, in two languages, and the places they disagreed would be invisible parity breaks. If a section needs logic, the stack renders it and passes the result in as one variable. See [shared/prompts/README.md](../../shared/prompts/README.md); [`check_prompts.py`](../../scripts/check_prompts.py) enforces it.
 
 **Stack directories are self-contained and independently runnable.** `stack-strands/` must build, test, and run a game without `stack-langgraph/` present. Each owns its dependency manifest and lockfile. They never import each other — a shortcut between stacks would destroy the comparison.
 

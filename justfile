@@ -51,5 +51,15 @@ validate:
 docs:
     python scripts/check_docs.py
 
+# Verify shared/ still holds its invariants: no template logic, declared
+# variables match used ones, prompt rule numbers match the engine, one model on
+# both access routes, judge not seated, no secrets in models.yaml.
+prompts:
+    uv run scripts/check_prompts.py
+
+# Is moving first an advantage? (It isn't — ADR-0006.) Takes ~3 minutes.
+turn-order:
+    uv run --directory {{ENGINE_PY}} python examples/turn_order.py
+
 # Everything CI runs. No model calls, no cost.
-check: test conformance validate docs
+check: test conformance validate docs prompts

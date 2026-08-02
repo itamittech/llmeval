@@ -38,6 +38,8 @@ Every step emits events. The reasoning captured at step 4 and the memory writes 
 
 ## Communication
 
+Settled in [open question 6](../../open-questions.md#-6-alliance-channel-design); the protocol agents actually receive is [`system/negotiation.md`](../../../shared/prompts/ludo/system/negotiation.md).
+
 Two channels, both fully logged:
 
 - **Public** — broadcast to all four agents. Table talk, open threats, public offers.
@@ -45,7 +47,13 @@ Two channels, both fully logged:
 
 The distinction matters: with only a public channel, everyone sees every deal and betrayal is trivially detectable. Private messages let an agent tell red one thing and green the opposite — and that contradiction is invisible in-game while being perfectly visible to the *viewer* in the UI. Watching a lie land is the single best demo this project has.
 
-Messages are bounded per turn (count and length) to control cost and prevent negotiation from swamping actual play.
+**Who may speak.** Only the agent whose turn it is opens a conversation. An agent that receives a direct message may reply **once**. There are no unprompted broadcasts on someone else's turn.
+
+The alternative — all four free to talk every turn — costs roughly 4× the negotiation tokens and lets negotiation swamp the game. The cost of this choice is one that agents are told about explicitly: **forming an alliance takes at least two turns**, one to propose and one to accept.
+
+**Nobody sees anyone else's reasoning.** An agent's private deliberation is never shown to another agent — reading an opponent's mind would make deception pointless. Spectators see all of it.
+
+Messages are bounded per turn (count and length). The numbers live in [`shared/models.yaml`](../../../shared/models.yaml) per profile, not in the prompt, so tuning them costs a config edit rather than a prompt change and a new prompt-set hash.
 
 ## Memory
 
@@ -76,11 +84,15 @@ When history exceeds its budget, older turns are **compacted** — summarised in
 
 ## Prompts
 
-All prompts will live in `shared/prompts/`, versioned, shared verbatim by all three stacks. *(Not created yet — it's a prerequisite for the first stack, since whichever stack is written first would otherwise set the de facto prompt.)* If Strands and Spring AI ran different prompts, the comparison would be meaningless.
+Built: [`shared/prompts/ludo/`](../../../shared/prompts/README.md), versioned, shared verbatim by all three stacks. If Strands and Spring AI ran different prompts, the comparison would be meaningless.
 
-Each agent gets the same base prompt, differing only in colour identity and access route. **We do not hand-code personalities** — no "you are the aggressive one." Whether distinct playing styles emerge from identical prompts and different models is one of the more interesting things to watch, and pre-assigning personas would destroy that observation.
+Each agent gets the same base prompt, differing only in the `{{color}}` variable. **We do not hand-code personalities** — no "you are the aggressive one." Whether distinct playing styles emerge from identical prompts and different models is one of the more interesting things to watch, and pre-assigning personas would destroy that observation. [`check_prompts.py`](../../../scripts/check_prompts.py) fails the build on a per-colour prompt file, because this is exactly the rule that erodes while debugging one agent's bad play.
 
-The prompt states the rules, the objective, the tools, the negotiation rules, and that deception is permitted. It does not tell an agent whether to deceive.
+The prompt states the objective, the consequences of the rules, the negotiation protocol, and that deception is permitted. It does not tell an agent whether to deceive.
+
+**It does not teach legality.** The engine validates every move and only ever offers choices that are already legal, so an agent never needs to work out whether it may leave base on a 3 — that option simply isn't in the list. [ADR-0004](../../decisions/adr-0004-structural-guardrails.md) is usually described as making lenient content policy safe; it also makes the prompt substantially smaller, which is a second dividend worth naming.
+
+Which prompts played a given game is recorded in `game_started` as a version and a hash, since a transcript recorded under an older prompt set isn't comparable with a newer one and nothing else in the file would show it.
 
 ## Guardrails
 
@@ -96,7 +108,9 @@ Bedrock agents can use Bedrock Guardrails natively; direct-API agents need an eq
 
 ## Open design questions
 
-Tracked in [open-questions.md](../../open-questions.md): which four models, private-channel design details, negotiation budget sizing, and whether agents should see each other's reasoning traces (they should not, but it's worth stating explicitly).
+Settled since this doc was first written: the [channel design](../../open-questions.md#-6-alliance-channel-design), reasoning privacy, and the model families. Seat assignment [rotates between games](../../decisions/adr-0006-seat-rotation.md), so a colour is not a stable identity across transcripts.
+
+Still open in [open-questions.md](../../open-questions.md): concrete model IDs, and negotiation budget sizing — which needs a measured per-turn token cost and therefore can't be settled until the first stack runs.
 
 ## Related
 

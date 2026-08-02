@@ -14,7 +14,7 @@ This page tracks which project covers what, so gaps are visible and projects don
 | 4 | Cost analysis | LUDO | 📋 Planned |
 | 5 | Inference analysis | LUDO (latency, cold start) | 📋 Planned |
 | 6 | Observability & monitoring | LUDO | 📋 Planned |
-| 7 | Prompt tuning & templates | LUDO (shared versioned prompts) | 📋 Planned |
+| 7 | Prompt tuning & templates | LUDO — [shared versioned prompts](../../shared/prompts/README.md) built; tuning waits for a stack | 🔲 Partial |
 | 8 | Agentic AI | LUDO | 📋 Planned |
 | 9 | Agentic architectures | LUDO covers **swarm** only | 🔲 Partial |
 | 10 | Voice agents | — | 🔲 Unassigned |

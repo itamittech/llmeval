@@ -52,6 +52,8 @@ agent stack will follow:
 uv run --directory projects/ludo/engine-python python examples/custom_agent.py
 ```
 
+[`examples/turn_order.py`](examples/turn_order.py) is the other kind of example — using the engine as a *measuring instrument* rather than a game. It puts identical deciders in all four seats to ask whether moving first is an advantage in Ludo, and answers no. That result is why [ADR-0006](../../../docs/decisions/adr-0006-seat-rotation.md) reads the way it does.
+
 ## Commands
 
 Play one random-bot game and record it:

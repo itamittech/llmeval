@@ -118,14 +118,30 @@
           "enum": ["strands", "langgraph", "springai", "none"],
           "description": "Which agent framework drove this game. 'none' for engine-only runs such as random-bot calibration."
         },
+        "profile": {
+          "type": "string",
+          "description": "Named profile from shared/models.yaml ('dev', 'headline'). Records which model tier played, so a cheap harness-shakedown run is never mistaken for a real result. Absent on engine-only runs."
+        },
+        "prompt_set": {
+          "type": "object",
+          "required": ["version", "hash"],
+          "additionalProperties": false,
+          "description": "Which prompts produced this game. Prompts change, and a transcript recorded under an older set is not comparable with a newer one — nothing else in the file makes that visible. Absent on engine-only runs, which send no prompts.",
+          "properties": {
+            "version": { "type": "integer", "minimum": 1, "description": "manifest.yaml version. Bumped when meaning changes." },
+            "hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$", "description": "Over the rendered template set. A version can be forgotten on the way out; a hash cannot." }
+          }
+        },
         "players": {
           "type": "array", "minItems": 4, "maxItems": 4,
+          "description": "Seat assignment for THIS game. The seat-to-colour mapping rotates between games (ADR-0006), so this array is the record of who sat where — never assume red is the same model as in the previous transcript.",
           "items": {
             "type": "object",
             "required": ["color"],
             "properties": {
               "color": { "$ref": "#/$defs/color" },
               "agent": { "type": "string", "description": "Human-readable agent identity, e.g. 'random-bot' or a model label." },
+              "seat": { "type": "integer", "minimum": 1, "maximum": 4, "description": "Seat number from shared/models.yaml. Stable across games; the colour it maps to is not." },
               "model": { "type": "string" },
               "access": { "$ref": "#/$defs/access" }
             }
