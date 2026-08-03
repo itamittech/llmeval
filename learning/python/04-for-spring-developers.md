@@ -21,6 +21,25 @@ The [reading rule](README.md) applies: when a section says **Before you scroll**
 | Maven's shared `~/.m2` | per-project `.venv` — the **opposite** model | [doc 03](03-environments-and-packaging.md) |
 | A JAR from a repository | a path dependency in `pyproject.toml` | [doc 00](00-files-and-folders.md#how-another-project-uses-this-package) |
 
+## 0. The ladder — primitive to interface, bottom to top
+
+Before the wiring questions, the rungs underneath them. Java's ladder has distinct materials at each level; Python's is objects all the way down.
+
+| Rung | Java | Python | Where you'll meet it here |
+|---|---|---|---|
+| **Primitives** | `int`, `long`, `boolean` — unboxed, non-nullable, plus boxed `Integer` | **don't exist.** `3`, `True`, even `None` are full objects; `int` is one type, arbitrary precision, no overflow, no boxing question | why `Dice` needs `& MASK64` in Python and `>>>` in Java — [learning/java/01 §4](../java/01-same-engine-twice.md#4-dice--the-same-algorithm-different-arithmetic) |
+| **null** | `null`, plus `Optional<T>` | `None` — an object, tested with `is None`, typed as `Move \| None` | `Game._decide` returns `Move \| None` — [the walkthrough](01-walkthrough-game.md#_decide--the-densest-method) |
+| **Variables & fields** | declared with a type, fixed shape per class | names bound at assignment; fields spring into existence inside `__init__` (`self.x = ...`) — the constructor body *is* the shape | [`Game.__init__`](01-walkthrough-game.md#__init__--building-the-object) |
+| **Classes** | `this` implicit; overloading; `static`; `final`; `private` | `self` explicit (just the first parameter); no overloading — default arguments instead; `static` → a module-level function; `final`/`private` → conventions, not enforcement | [example 01](examples/01_classes_and_self.py) |
+| **Value objects** | `record Move(int token, int frm, int to)` | `@dataclass(frozen=True)` — same generated ctor/equals/hash, same shallow freeze | `Move` in both engines — [learning/java/01 §2](../java/01-same-engine-twice.md#2-move--frozen-dataclass-became-a-record) |
+| **Enums** | `enum Color { RED... }` — compile-checked | often just constants: the Python engine uses `Color = str` + a tuple; the Java port chose a real enum, deliberately | [learning/java/01 §1](../java/01-same-engine-twice.md#1-color--a-string-became-an-enum) |
+| **Interfaces** | `interface` + `implements`, `default` methods | `Protocol`, satisfied by shape; optional methods via `@runtime_checkable` presence checks | §1, next |
+| **Generics** | `List<Move>` — checked, then erased | `list[Move]` — a hint, never checked at all | §5 |
+| **Exceptions** | checked and unchecked | **all unchecked** — nothing forces a `try`; the engine catches exactly where a failure has in-game meaning | [`_decide`'s `except`](01-walkthrough-game.md#_decide--the-densest-method) |
+| **Packages** | `package` must match the directory; one public class per file | a module *is* a file, a package *is* a folder; many classes per module is normal | [doc 00](00-files-and-folders.md) vs [learning/java/00](../java/00-files-and-folders.md) |
+
+The one-sentence version of the whole table: **Java distinguishes kinds of things at compile time; Python has one kind of thing — objects — and distinguishes them by what they can do, at runtime.** Every rung above is that sentence applied to a different level, and §1 is just its top rung. For the full syntax-by-syntax lookup in both directions, keep [learning/java/02](../java/02-concept-index.md) open — its tables read fine right-to-left.
+
 ## 1. "Where is `implements`?"
 
 Side by side — the plugged class in both worlds:
@@ -134,10 +153,11 @@ And bring your **expectation of loud failure**. Spring rejects an unknown proper
 
 ## Check yourself
 
-1. Two implementations of one interface, no container: name Python's two in-process selection idioms, and the third mechanism this repo actually uses. → [§3](#3-where-is-qualifier)
-2. What replaces the compile error when a "bean" doesn't fit the interface — and *when* does it fire? → [§1](#1-where-is-implements)
-3. Rewrite `@Qualifier("strands")` as a shell command. → [§3](#3-where-is-qualifier)
-4. Which Spring habit produced better *Java engine* code here, even though Python never needed it? → [§6](#6-where-your-spring-instincts-still-pay)
+1. Java asks `int` or `Integer`; why does the question not exist in Python — and what single sentence covers every rung of the ladder? → [§0](#0-the-ladder--primitive-to-interface-bottom-to-top)
+2. Two implementations of one interface, no container: name Python's two in-process selection idioms, and the third mechanism this repo actually uses. → [§3](#3-where-is-qualifier)
+3. What replaces the compile error when a "bean" doesn't fit the interface — and *when* does it fire? → [§1](#1-where-is-implements)
+4. Rewrite `@Qualifier("strands")` as a shell command. → [§3](#3-where-is-qualifier)
+5. Which Spring habit produced better *Java engine* code here, even though Python never needed it? → [§6](#6-where-your-spring-instincts-still-pay)
 
 ## Related
 
