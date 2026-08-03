@@ -7,7 +7,7 @@ Look up a piece of syntax, see what it means, and jump to where the project uses
 | Syntax | Means | Runnable | Used in |
 |---|---|---|---|
 | `def f(self, x):` | Method. `self` is the object it was called on — Python passes it for you. | [01](examples/01_classes_and_self.py) | everywhere |
-| `__init__` | Runs when you write `Game(...)`. Fills in an already-created object. | [01](examples/01_classes_and_self.py) | `game.py:49` |
+| `__init__` | Runs when you write `Game(...)`. Fills in an already-created object. | [01](examples/01_classes_and_self.py) | `Game.__init__` |
 | `_name` | "Internal, please don't touch." Convention only — nothing enforces it. | [01](examples/01_classes_and_self.py) | `self._rotation` |
 | `@property` | Method accessed like an attribute, no parentheses. | [01](examples/01_classes_and_self.py) | `Outcome.winner` |
 | `@dataclass` | Generates `__init__`, `__repr__`, `__eq__` from annotated fields. | [02](examples/02_dataclasses.py) | `GameConfig`, `Move` |
