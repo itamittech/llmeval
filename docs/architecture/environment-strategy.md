@@ -36,7 +36,7 @@ Lockfiles are committed. A reader cloning this repo a year from now gets the ver
 
 ## Java: independent build
 
-Spring AI builds with **Maven**, with the wrapper (`mvnw`) committed so no global Maven install is required. Pinned JDK version. It shares nothing with the Python side except the files in `shared/`.
+The Java engine and the Spring AI stack build with **Maven**, with the wrapper (`mvnw`) committed so no global Maven install is required — `distributionType=only-script`, so there is no jar in the repo either. **JDK 21**, pinned via `maven.compiler.release`: the current LTS, and the version whose `record`s and pattern-matching `switch` the engine actually uses. It shares nothing with the Python side except the files in `shared/`.
 
 ## Node: the UI, plus one doc tool
 
@@ -54,7 +54,7 @@ Four toolchains means four sets of commands nobody remembers. A root `justfile` 
 just setup              # install all toolchains + dependencies
 just test               # every engine + stack test suite
 just conformance        # both engines against the shared vectors
-just play strands       # run a game on one stack
+just test-strands       # one stack's suite
 just ui                 # start the UI against recorded games
 ```
 

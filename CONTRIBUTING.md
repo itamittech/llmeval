@@ -8,7 +8,7 @@ New to the vocabulary? Start with the [glossary](docs/glossary.md).
 
 ## Quick start
 
-You need [`uv`](https://docs.astral.sh/uv/) and nothing else. No API keys, no AWS account, no cost — the engine makes no model calls.
+You need [`uv`](https://docs.astral.sh/uv/) and nothing else to run the Python engine. **No API keys, no AWS account, no cost** — nothing in this repo makes a model call yet.
 
 ```bash
 uv sync --directory projects/ludo/engine-python
@@ -18,19 +18,45 @@ uv sync --directory projects/ludo/engine-python
 uv run --directory projects/ludo/engine-python pytest
 ```
 
+### The other components
+
+Each builds independently; you only need the toolchain for the part you're touching.
+
+**Java engine** — needs a JDK 21+. Maven comes from the committed wrapper, so there is nothing to install:
+
+```bash
+cd projects/ludo/engine-java && ./mvnw test
+```
+
+**Strands stack** — its own virtual environment and lockfile, never shared with the LangGraph stack:
+
+```bash
+uv sync --directory projects/ludo/stack-strands
+```
+
+```bash
+uv run --directory projects/ludo/stack-strands pytest
+```
+
+**Docs and diagrams** — the mermaid check needs node once per checkout:
+
+```bash
+npm ci && node scripts/check_mermaid.mjs
+```
+
+Or `just check` to run everything at once, if you have [`just`](https://github.com/casey/just).
+
 Play a game between four random bots:
 
 ```bash
 uv run --directory projects/ludo/engine-python python -m ludo_engine.cli play --seed 7
 ```
 
-Everything CI checks, in one go:
+Everything CI checks — both engines, the stack, the docs, the diagrams and the shared-contract invariants — is wrapped up in one recipe:
 
 ```bash
-uv run --directory projects/ludo/engine-python pytest && uv run --directory projects/ludo/engine-python python -m ludo_engine.cli conformance --check
+just check
 ```
-
-There's a [`justfile`](justfile) wrapping these if you'd rather install [`just`](https://just.systems/).
 
 ## What needs doing
 
@@ -38,7 +64,7 @@ There's a [`justfile`](justfile) wrapping these if you'd rather install [`just`]
 - **[Topic roadmap](docs/topics/roadmap.md)** — what's claimed and what isn't.
 - **Anything confusing.** If a doc lost you, that's a bug. Say where.
 
-The project is early: the engine and the shared schema exist, no agent stack does yet. Large contributions are best discussed in an issue first, simply so two people don't build the same thing differently.
+The project is early: both engines, the shared schema and the shared prompt set exist; the first agent stack is under way and no live game has been played. Large contributions are best discussed in an issue first, simply so two people don't build the same thing differently.
 
 ---
 
@@ -68,7 +94,7 @@ These aren't style preferences. Each one, broken, quietly invalidates something 
 
 ### 1. Parity is the whole point
 
-The three implementations must differ **only** in the agent framework. Same rules, same prompts (destined for `shared/prompts/`, shared verbatim — not created yet), same schema, same retry behaviour.
+The three implementations must differ **only** in the agent framework. Same rules, same [prompts](shared/prompts/README.md) — loaded from `shared/prompts/` and sent verbatim, never edited by a stack — same schema, same retry behaviour.
 
 *Why:* if the LangGraph version gets a slightly better prompt, every measured difference becomes meaningless. We'd be comparing our own inconsistency. → [architecture overview](docs/architecture/overview.md)
 

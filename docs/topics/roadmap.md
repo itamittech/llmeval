@@ -8,10 +8,10 @@ This page tracks which project covers what, so gaps are visible and projects don
 
 | # | Topic | Covered by | Status |
 |---|---|---|---|
-| 1 | LLM invocation | LUDO | 📋 Planned |
-| 2 | LLM comparison | LUDO | 📋 Planned |
+| 1 | LLM invocation | LUDO — [Strands binding](../../projects/ludo/stack-strands/README.md) built, both access routes wired; no live call yet | 🔲 Partial |
+| 2 | LLM comparison | LUDO — seats, routes and the dual-route control are configured ([ADR-0005](../decisions/adr-0005-model-access-control.md)); waits on model ids | 🔲 Partial |
 | 3 | Guardrails | LUDO (lenient, game-scoped) | 📋 Planned |
-| 4 | Cost analysis | LUDO | 📋 Planned |
+| 4 | Cost analysis | LUDO — per-agent token accounting and a per-game ceiling built | 🔲 Partial |
 | 5 | Inference analysis | LUDO (latency, cold start) | 📋 Planned |
 | 6 | Observability & monitoring | LUDO | 📋 Planned |
 | 7 | Prompt tuning & templates | LUDO — [shared versioned prompts](../../shared/prompts/README.md) built; tuning waits for a stack | 🔲 Partial |

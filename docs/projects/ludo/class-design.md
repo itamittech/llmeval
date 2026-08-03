@@ -4,7 +4,7 @@ The object graph as actually built, at method granularity: who owns what, who ca
 
 **New to design patterns?** [Section 7](#7-design-patterns-from-the-problem-up) is written for you — each pattern starts from a problem this engine actually hit, shows the code you'd write first, shows what breaks, and only then names the thing.
 
-**This is a living document.** It covers the engine only, because that's all that exists. It grows as the agent stacks, UI, and eval harness arrive — see [What comes next](#what-comes-next).
+**This is a living document.** It covers the engines only. The agent stacks attach at a single dashed arrow and have not been drawn yet. It grows as the agent stacks, UI, and eval harness arrive — see [What comes next](#what-comes-next).
 
 Companion docs: [engine-design.md](engine-design.md) explains *why* these shapes were chosen; this one shows *how they connect*. For Python syntax itself, see [learning/python](../../../learning/python/).
 
@@ -21,12 +21,12 @@ classDiagram
     class Game {
         +play(deciders) Outcome
         -_play_turn(color, decider)
+        -_roll_loop(color, decider, view) str
         -_apply(color, move) bool
-        -_decide(color, decider, die, moves) Move
+        -_decide(color, decider, die, moves, view) Move
         -_next_player() Color
         -_emit(type, payload)
         -_emit_start(deciders)
-        -_end_turn(color, reason)
     }
 
     class GameConfig {
@@ -217,8 +217,10 @@ classDiagram
         +choose(ctx) Move
     }
     class StrandsAgent {
-        <<planned>>
+        <<in progress>>
         +choose(ctx) Move
+        +negotiate(start) None
+        +reflect(end) None
     }
     class LangGraphAgent {
         <<planned>>
@@ -1047,8 +1049,8 @@ This diagram will grow. Expected additions, roughly in build order:
 
 | Component | Shape it will take |
 |---|---|
-| **Agent stacks** | Each contributes a `Decider` implementation plus its own memory, negotiation, and context-compaction objects. They attach at the one dashed arrow above. |
-| **`engine-java`** | Mirrors this graph, with `Protocol` becoming an `interface` and frozen dataclasses becoming `record`s — see [engine-design.md](engine-design.md#porting-to-java). |
+| **Agent stacks** | 🚧 `stack-strands` under way. Each contributes a `Decider` implementation plus its own memory, negotiation, and context-compaction objects. They attach at the one dashed arrow above. |
+| **`engine-java`** | ✅ **Built.** Mirrors this graph, with `Protocol` becoming an `interface` and frozen dataclasses becoming `record`s — see [engine-design.md](engine-design.md#porting-to-java). The optional hooks became `default` methods, and `Game` gained an `IntSupplier` seam Python did not need. |
 | **Eval harness** | Reads transcripts only. Should appear with *no* arrow into the engine at all. |
 | **UI** | Same — consumes the event stream, never the classes. |
 
