@@ -15,6 +15,7 @@ default:
 # Install all toolchains and dependencies.
 setup:
     uv sync --directory {{ENGINE_PY}}
+    npm ci
 
 # Run every test suite.
 test: test-engine-py
@@ -46,10 +47,15 @@ bench games="500":
 validate:
     uv run --directory {{ENGINE_PY}} python -m ludo_engine.cli validate ../games/*.jsonl
 
-# Verify docs still hang together: links, anchors, mermaid syntax.
+# Verify docs still hang together: links, anchors, mermaid structure.
 # Checks structure, not truth — re-read what you changed. See CLAUDE.md Rule #1.
 docs:
     python scripts/check_docs.py
+
+# Parse every mermaid block with the real renderer, so a broken diagram fails
+# here instead of on GitHub. Needs `npm ci` once; `just docs` does not cover it.
+mermaid:
+    node scripts/check_mermaid.mjs
 
 # Verify shared/ still holds its invariants: no template logic, declared
 # variables match used ones, prompt rule numbers match the engine, one model on
@@ -62,4 +68,4 @@ turn-order:
     uv run --directory {{ENGINE_PY}} python examples/turn_order.py
 
 # Everything CI runs. No model calls, no cost.
-check: test conformance validate docs prompts
+check: test conformance validate docs mermaid prompts

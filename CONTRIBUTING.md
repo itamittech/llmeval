@@ -54,7 +54,13 @@ This repo exists to teach. A doc describing code that no longer exists is worse 
 python scripts/check_docs.py
 ```
 
-That validates links, anchors, and Mermaid syntax across every markdown file. **It cannot tell whether the prose is still true** — re-read what you touched. Status tables, counts, and worked examples go stale silently and no tool catches them.
+That validates links, anchors, and Mermaid structure across every markdown file. If you touched a diagram, also parse it for real (needs `npm ci` once):
+
+```bash
+node scripts/check_mermaid.mjs
+```
+
+**Neither can tell whether the prose is still true** — re-read what you touched. Status tables, counts, and worked examples go stale silently and no tool catches them.
 
 ## Six more rules that are easy to break by accident
 
@@ -113,8 +119,8 @@ Agents lie deliberately — that's the experiment. Anything derived from a trans
 - **Teach from the problem.** The pattern that works well here is: the problem → what you'd write first → what breaks → the fix → the name. [Section 7 of class-design](docs/projects/ludo/class-design.md#7-design-patterns-from-the-problem-up) is the model.
 - **Non-obvious, expensive-to-reverse decisions get an [ADR](docs/decisions/README.md)** — with the costs written down, not just the benefits.
 - **Mermaid diagrams** render on GitHub natively; locally you'll need a preview extension. Two traps worth knowing:
-  - **Node IDs must avoid Mermaid's reserved words** — `call`, `click`, `class`, `classDef`, `style`, `linkStyle`, `graph`, `subgraph`, `end`, `direction`, `href`, `default`. A node named `call` parses as a click-callback directive and the whole diagram fails. This has already bitten us once.
-  - **Balanced braces are not proof it parses.** Only the real parser knows. After pushing, **look at the file on GitHub** — a broken diagram shows "Unable to render rich display" with a parse error instead of the picture. GitHub renders Mermaid inside a cross-origin iframe, so scripted checks against the page will not see the failure.
+  - **Node IDs must avoid Mermaid's reserved words** — `call`, `click`, `class`, `classDef`, `style`, `linkStyle`, `graph`, `subgraph`, `end`, `direction`, `href`, `default`. A node named `call` at the start of a statement parses as a click-callback directive and the whole diagram fails. This has already bitten us once. As an arrow target the same name happens to survive — which is the more dangerous case, because it breaks later, when someone reorders the edges and can't see why. `check_docs.py` flags it in every position for that reason.
+  - **Balanced braces are not proof it parses.** Only the real parser knows — so run it: [`scripts/check_mermaid.mjs`](scripts/check_mermaid.mjs) feeds every block to mermaid itself and fails the build on anything that won't render. It exists because of the trap above; before it, the only way to find out was to push and look at the file on GitHub, where a broken diagram shows "Unable to render rich display" instead of the picture. That check is in CI, so a broken diagram now fails the PR rather than reaching a reader.
 
 ## Code conventions
 

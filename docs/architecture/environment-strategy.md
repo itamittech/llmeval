@@ -38,9 +38,13 @@ Lockfiles are committed. A reader cloning this repo a year from now gets the ver
 
 Spring AI builds with **Maven**, with the wrapper (`mvnw`) committed so no global Maven install is required. Pinned JDK version. It shares nothing with the Python side except the files in `shared/`.
 
-## Node: UI only
+## Node: the UI, plus one doc tool
 
-The UI is the only Node surface. Its `package.json` and lockfile live in `projects/<project>/ui/` and never leak upward.
+The UI is the Node surface that matters. Its `package.json` and lockfile live in `projects/<project>/ui/` and never leak upward — a UI dependency must not become a repo-wide one.
+
+There is one exception, and it is deliberately tiny: a root `package.json` holding `mermaid` and `jsdom` (a headless browser DOM, which mermaid needs to run outside a browser) so [`scripts/check_mermaid.mjs`](../../scripts/check_mermaid.mjs) can parse the diagrams in `docs/` with the real renderer. Mermaid is a browser library; there is no Python equivalent that parses the same grammar, and hand-rolling a second-guess of it is what let a broken diagram ship once already. The cost of the exception is one lockfile at the root; the alternative was documentation we could not verify. Node arrives regardless — [ADR-0007](../decisions/adr-0007-ui-alongside-first-stack.md) commits to React + Vite.
+
+The two do not share a dependency tree, and the root one is dev-only: nothing shipped, nothing imported by a stack.
 
 ## One entry point: `just`
 

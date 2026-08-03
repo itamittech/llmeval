@@ -35,7 +35,19 @@ This project exists to teach. A doc describing code that no longer exists is *wo
 python scripts/check_docs.py
 ```
 
-Checks links, anchors, and Mermaid syntax across every markdown file. **It cannot check whether the prose is still true** — that part is on you. Re-read every section that touches what you changed.
+Checks links, anchors, and Mermaid *structure* across every markdown file.
+
+If you touched a Mermaid diagram, that structural pass is not enough — it only knows the mistakes we have already made. Parse the diagrams for real:
+
+```bash
+node scripts/check_mermaid.mjs
+```
+
+This hands every ```` ```mermaid ```` block to mermaid's own parser, which is the only thing that can answer *does this diagram render*. We added it after shipping a diagram with a node called `call` — a click-callback directive, not a node id — and hearing about it from a reader. Needs `npm ci` once.
+
+**Run both.** Neither subsumes the other, in either direction: `check_docs.py` runs without node and flags reserved-word node ids that mermaid *currently* tolerates but that break the moment an edge is reordered; `check_mermaid.mjs` catches every malformed diagram nobody thought to hand-code a rule for.
+
+**Neither can check whether the prose is still true** — that part is on you. Re-read every section that touches what you changed.
 
 If you touched anything in `shared/`, also:
 
@@ -97,6 +109,18 @@ uv run --directory projects/ludo/engine-python python -m ludo_engine.cli play --
 ```bash
 uv run --directory projects/ludo/engine-python python -m ludo_engine.cli validate ../games/g.jsonl
 ```
+
+Mermaid diagrams are parsed by node, not by uv. Once per checkout:
+
+```bash
+npm ci
+```
+
+```bash
+node scripts/check_mermaid.mjs
+```
+
+The root [package.json](package.json) exists only for this — repo tooling, not the UI, which gets its own under `ui/` ([ADR-0007](docs/decisions/adr-0007-ui-alongside-first-stack.md)).
 
 No linter or formatter is configured yet. Nothing above makes a model call or costs anything.
 

@@ -7,6 +7,7 @@ llmeval/
 ├── README.md
 ├── CLAUDE.md                     # guidance for Claude Code sessions
 ├── justfile                      # cross-stack task runner (see environment-strategy.md)
+├── package.json                  # repo tooling ONLY (the mermaid parser) — not the UI
 ├── .env.example                  # every required secret, by name
 │
 ├── docs/
@@ -40,7 +41,9 @@ llmeval/
 │       └── games/                # recorded event streams (sample matches)
 │
 ├── scripts/
-│   └── check_docs.py             # links, anchors, mermaid — see CLAUDE.md Rule #1
+│   ├── check_docs.py             # links, anchors, mermaid structure — Rule #1
+│   ├── check_mermaid.mjs         # parses diagrams with real mermaid; needs node
+│   └── check_prompts.py          # shared/ invariants — parity depends on these
 │
 ├── platform/                     # code that graduated out of a project
 │   └── (empty for now)

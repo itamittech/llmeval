@@ -13,7 +13,17 @@ Checks:
   3. mermaid node ids don't collide with reserved keywords
   4. mermaid blocks have balanced subgraph/end and braces
 
-What it CANNOT check: whether the prose is still true. Only you can do that —
+The mermaid half is STRUCTURAL — a hand-written list of mistakes we have
+already made. It cannot tell you whether a diagram renders, and a block can
+pass every check here and still fail on GitHub. `scripts/check_mermaid.mjs`
+answers that question properly, by handing each block to mermaid's own parser.
+
+Run both. Neither subsumes the other, in either direction: this one catches
+reserved-word node ids that mermaid currently tolerates but that break the
+moment an edge is reordered, and runs without node installed; that one catches
+every malformed diagram nobody here thought to hand-code a rule for.
+
+What NEITHER can check: whether the prose is still true. Only you can do that —
 see the change map in CLAUDE.md.
 
 Exits non-zero if anything fails, so it can gate CI.
@@ -27,8 +37,11 @@ from pathlib import Path
 
 SKIP_DIRS = {".venv", "__pycache__", ".pytest_cache", "node_modules", ".git", "target"}
 
-# Using any of these as a mermaid node id breaks the whole diagram: a node
-# called `call`, for instance, parses as a click-callback directive.
+# Using any of these as a mermaid node id is a latent break: a node called
+# `call` at the start of a statement parses as a click-callback directive and
+# takes the whole diagram down. As an arrow target it happens to survive —
+# which is worse, because it survives until someone reorders the edges. Flagged
+# in every position deliberately; check_mermaid.mjs reports what breaks TODAY.
 MERMAID_RESERVED = {
     "call", "click", "class", "classdef", "style", "linkstyle",
     "graph", "flowchart", "href", "default", "interpolate", "callback",
@@ -119,8 +132,9 @@ def check_mermaid(files: list[Path]) -> list[str]:
                 continue
             for name in reserved_node_ids(lines[1:]):
                 problems.append(
-                    f"{label}: '{name}' is a reserved mermaid keyword and cannot be "
-                    f"a node id — the whole diagram fails to parse"
+                    f"{label}: '{name}' is a reserved mermaid keyword — rename the node. "
+                    f"Where it starts a statement the whole diagram fails to parse; "
+                    f"elsewhere it survives only until someone reorders the edges"
                 )
 
     print(f"  mermaid : {blocks} block(s) checked")
@@ -142,6 +156,8 @@ def main() -> int:
 
     print("\ndocs ok")
     print("Reminder: this checks structure, not truth. Re-read what you changed.")
+    print("Mermaid here is structural too — run scripts/check_mermaid.mjs to")
+    print("confirm the diagrams actually render.")
     return 0
 
 

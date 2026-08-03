@@ -52,10 +52,26 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Links, anchors, mermaid syntax
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Links, anchors, mermaid structure
         # Structure only. Whether the prose is still TRUE is on the author —
         # see Rule #1 in CLAUDE.md.
         run: python scripts/check_docs.py
+
+      - name: Install the mermaid parser
+        run: npm ci
+
+      - name: Mermaid blocks actually render
+        # The structural check above catches the mistakes we already know about.
+        # This one hands every block to mermaid's own parser, which is the only
+        # thing that can answer "does this diagram render". We added it after
+        # shipping a diagram with a node called `call` — a click-callback
+        # directive, not a node id — and hearing about it from a reader.
+        run: node scripts/check_mermaid.mjs
 
       - name: Prompt set and model config invariants
         # Guards ADR-0005 (one model on both routes) and the parity rules that

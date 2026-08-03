@@ -1,0 +1,13 @@
+{
+  "name": "llmeval-tooling",
+  "private": true,
+  "description": "Repo-level tooling only — not the UI. Exists so scripts/check_mermaid.mjs can parse docs with the real mermaid renderer. The UI gets its own package.json under ui/ (ADR-0007).",
+  "license": "Apache-2.0",
+  "scripts": {
+    "check:mermaid": "node scripts/check_mermaid.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0",
+    "mermaid": "^11.12.0"
+  }
+}

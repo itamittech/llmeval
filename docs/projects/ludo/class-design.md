@@ -1059,3 +1059,5 @@ If a future component needs an arrow *into* the engine that isn't `Decider`, tha
 ## Viewing these diagrams
 
 The blocks above are [Mermaid](https://mermaid.js.org/). They render automatically on GitHub, in VS Code with a Markdown preview extension, and in most JetBrains IDEs. In a plain terminal you'll see the source — which is still readable, and is why the tables duplicate the key relationships in text.
+
+If one of them ever shows an error box instead of a picture, that's a bug worth reporting: every block on this page is parsed by mermaid itself in CI ([`scripts/check_mermaid.mjs`](../../../scripts/check_mermaid.mjs)), so a diagram that doesn't render should not have reached you.
