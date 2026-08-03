@@ -81,15 +81,25 @@ That failure is invisible in the worst way: the model still answers, the game st
 
 **What to check in LangGraph and Spring AI:** whether a mistyped or misplaced config key fails loudly, warns, or is silently dropped. A framework that fails loudly deserves credit for it in this matrix.
 
-### Finding: Strands `Swarm` cannot express private channels
+### Finding: Strands `Swarm` cannot carry LUDO's negotiation protocol
 
-Recorded before the turn loop exists, from reading the pinned `strands-agents 1.50.2` source while mapping harness responsibilities to primitives for [ADR-0008](../decisions/adr-0008-framework-native-harness.md).
+Recorded before the turn loop exists, from reading the pinned `strands-agents 1.50.2` source while mapping harness responsibilities to primitives for [ADR-0008](../decisions/adr-0008-framework-native-harness.md). Line numbers refer to `strands/multiagent/swarm.py` at that version.
 
-Strands ships two multi-agent orchestrators, `Swarm` and `Graph`. `Swarm` is the obvious reach for LUDO — four peers, autonomous handoffs, no coordinator, exactly the [glossary's](../glossary.md) definition of a swarm. It does not fit, for one reason visible in its state model: everything an agent contributes goes into a `SharedContext` — the class docstring reads *"Shared context between swarm nodes"* (`strands/multiagent/swarm.py`) — and every agent in the swarm sees it. LUDO's negotiation ([answered question 6](../open-questions.md)) requires pairwise private messages other players never see; deception depends on them. A shared-everything context cannot carry a secret.
+First, a distinction that matters: **agent-swarm *architecture* — four peers, own goals, no coordinator — is not what's ruled out.** LUDO implements it either way, and Strands supports it through more than one pattern. What's ruled out is the `Swarm` *class* as the transport for [the negotiation protocol of answered question 6](../open-questions.md): active-agent-driven, reply-exactly-once, private pairwise channels.
 
-`Graph` doesn't fit either, for a different reason: it wires a *deterministic* topology in advance, while who talks to whom each turn is the active agent's runtime choice.
+`Swarm` is built for a different job — stateless specialist workers over a shared blackboard, collaborating on one task until whoever holds the floor declares it done. Three mechanics, each fine for that job, each colliding with this protocol:
 
-So negotiation uses the **agents-as-tools** pattern: the active agent gets a tool that addresses a chosen opponent; a public message lands in every agent's context, a private one reaches exactly one. The turn phases themselves need no orchestrator at all — the engine's `negotiate`/`choose`/`reflect` hooks already sequence them.
+1. **Every activation resets the agent to swarm-construction state.** `SwarmNode.__post_init__` snapshots the agent's messages *and* its `AgentState` (78–81); `reset_executor_state` restores both (115–116); the execution loop calls it before **every** node activation (886). Memory lives in `AgentState` per ADR-0008 — so red messages blue, blue replies, and red re-activates having *forgotten its own mid-negotiation memory writes*. The primitive assumes private state is disposable and the blackboard is the memory; this game is about private beliefs.
+2. **The floor belongs to whoever spoke last.** Every node input ends with *"If you don't hand off to another agent, the swarm will consider the task complete"* (699–701). The protocol needs the active agent to keep the floor and a recipient to reply exactly once — in `Swarm`, return-to-sender is a hope encoded in a prompt, and a recipient that answers without handing back silently ends the whole phase with the active agent's remaining messages unsent.
+3. **Cross-activation carriers are broadcast or ephemeral.** The handoff `context` dict is stored in `SharedContext` (621–624) and rendered to every later activation (678–685); node history — *who* talked to *whom* — is shown to everyone (676). Only the handoff `message` string is pairwise, and it is cleared after being shown once (879). No durable private channel; and no broadcast primitive at all, so "public" messages would be delivered by the harness out-of-band anyway.
+
+An earlier version of this finding claimed everything an agent contributes goes through `SharedContext` — overstated: the handoff message is genuinely pairwise. The correction came from being challenged on it, and the fuller reading above is what the challenge produced.
+
+`Graph` doesn't fit either, for a simpler reason: it wires a *deterministic* topology in advance, while who talks to whom each turn is the active agent's runtime choice.
+
+So negotiation uses **agents-as-tools** — also a Strands-documented multi-agent pattern, so this is a choice between two native patterns, not native vs. hand-rolled. The active agent gets a tool that addresses a chosen opponent; a public message lands in every agent's context, a private one reaches exactly one. The turn phases themselves need no orchestrator at all — the engine's `negotiate`/`choose`/`reflect` hooks already sequence them.
+
+Worth stating the counterfactual: a negotiation redesigned as all-public with autonomous floor-passing would fit `Swarm` natively. The mismatch is with *this* protocol — chosen because private channels are what make deception observable — not with multi-agent orchestration per se.
 
 **What to check in LangGraph and Spring AI:** whether their multi-agent stories can express per-pair visibility natively — LangGraph's graph state is shared by default too. A framework that can do it natively earns the credit here.
 

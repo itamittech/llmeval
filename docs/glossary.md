@@ -44,7 +44,7 @@ Definitions are short on purpose — each links to the doc that goes deeper.
 
 **Agent swarm** — several peer agents with their own goals sharing an environment, with no single coordinator. Ludo's four players are a swarm; they negotiate rather than being directed. → [agent design](projects/ludo/agent-design.md)
 
-**Agents-as-tools** — a multi-agent pattern where one agent invokes another as a callable tool and reads its reply, keeping every exchange directed and pairwise. Ludo's negotiation uses it: a swarm-style shared context would show every message to every player, and private channels are the point. → [capability matrix](architecture/stack-comparison.md)
+**Agents-as-tools** — a multi-agent pattern where one agent invokes another as a callable tool and reads its reply, keeping every exchange directed and pairwise. Ludo's negotiation uses it: a blackboard-style orchestrator broadcasts what agents share and hands the floor to whoever spoke last, and this game needs private channels and an active agent who keeps the floor. → [capability matrix](architecture/stack-comparison.md)
 
 **Tool / tool calling** — a function the model can invoke, described to it in the prompt. The model emits a request to call it; your code runs it and returns the result. It's how an agent affects anything outside its own text.
 
