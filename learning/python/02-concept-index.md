@@ -92,6 +92,22 @@ Assignment binds a name to an object; it never copies. Every copy in the engine 
 
 ## Beyond this project
 
-Concepts you'll meet in Python that the engine happens not to use: generators (`yield`), context managers (`with` — though `cli.py` uses one for files), decorators you write yourself, `async`/`await`, `__slots__`, metaclasses, and multiple inheritance.
+Concepts you'll meet in Python that the engine genuinely doesn't use: generators (`yield`), `@staticmethod` / `@classmethod`, decorators you write yourself, `async`/`await`, metaclasses, and multiple inheritance.
 
 The agent stacks will introduce `async`/`await` in particular, since LLM calls are I/O-bound. That's worth a follow-up note here once the first stack exists.
+
+## Used by the engine, not yet explained here
+
+An honest list of what you'll hit in the source that these docs don't cover. Each is a gap, not a decision:
+
+| In the source | Where | What it is |
+|---|---|---|
+| `__slots__` | `StateView` | Fixes the allowed attribute names, so a typo'd assignment raises instead of silently creating a field |
+| `object.__setattr__` | `StateView.__init__` | Bypasses the class's own `__setattr__` — how a read-only object still manages to set its one field |
+| `Final[...]` | `board.py` | "Don't reassign this." A type-checker hint, not enforcement — same spirit as `_underscore` |
+| `frozenset` | `SAFE_SQUARES` | An immutable `set`; hashable, so it can be a dict key or a constant |
+| `argparse` | `cli.py` | The standard-library command-line parser — subcommands, flags, defaults |
+| `with open(...)` | `cli.py` | Context manager: guarantees the file closes even if the body raises |
+| **writing tests** | `tests/` — 68 of them | Bare `assert`, `pytest.raises`, sharing a helper between test modules |
+
+The last row is the widest gap. This repo argues repeatedly that a check nobody has watched fail proves nothing — and none of that reasoning is currently teachable from these docs.
