@@ -13,9 +13,19 @@ Because both the dice and the decider are deterministic, the seed alone reproduc
 
 The digest covers the full event stream, so any divergence in rules, ordering, or dice shows up immediately.
 
+### One field is excluded, and it had to be
+
+`game_started.payload.engine` records **which engine produced the transcript** — `{"language": "python"}` on one side, `{"language": "java"}` on the other. Digesting it made the vectors satisfiable only by the engine that generated them, which is the exact opposite of their purpose.
+
+Nobody noticed until the Java engine was first run against them: it reproduced every rule, every roll and every event, and failed all twenty vectors on one string. The vectors were regenerated with that field excluded — and the regeneration is itself the evidence the change was scope-only, since **every** `reason`, `turns_played`, `events` and `standings` value came back byte-identical and only the digests moved.
+
+Nothing else is excluded. Everything else in the payload is either rules-driven or already an explicit field on the vector.
+
 This only works because [`dice.py`](../../projects/ludo/engine-python/src/ludo_engine/dice.py) specifies its own portable PRNG. Python's `random` and Java's `Random` produce different sequences from the same seed, which would have made cross-language conformance impossible.
 
 ## Checking
+
+Both engines, since both must pass:
 
 ```bash
 just conformance

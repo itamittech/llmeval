@@ -8,6 +8,7 @@
 # someone's shell history, it isn't documented.
 
 ENGINE_PY := "projects/ludo/engine-python"
+ENGINE_JAVA := "projects/ludo/engine-java"
 
 default:
     @just --list
@@ -16,16 +17,26 @@ default:
 setup:
     uv sync --directory {{ENGINE_PY}}
     npm ci
+    cd {{ENGINE_JAVA}} && ./mvnw -q -B dependency:resolve
 
 # Run every test suite.
-test: test-engine-py
+test: test-engine-py test-engine-java
 
 test-engine-py:
     uv run --directory {{ENGINE_PY}} pytest
 
-# Both engines against the shared conformance vectors (ADR-0002).
-conformance:
+test-engine-java:
+    cd {{ENGINE_JAVA}} && ./mvnw -q -B test
+
+# BOTH engines against the shared conformance vectors (ADR-0002). Running only
+# one defeats the point — the vectors exist to catch them disagreeing.
+conformance: conformance-py conformance-java
+
+conformance-py:
     uv run --directory {{ENGINE_PY}} python -m ludo_engine.cli conformance --check
+
+conformance-java:
+    cd {{ENGINE_JAVA}} && ./mvnw -q -B exec:java -Dexec.args="conformance --check"
 
 # Regenerate vectors. Only after a DELIBERATE rule change.
 conformance-generate:

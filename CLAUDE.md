@@ -65,17 +65,18 @@ Say so explicitly in your response, naming the file and what's now wrong. An ack
 
 ## Repository status
 
-The **shared event schema**, the **Python engine**, and the **shared prompt set + model config** are built and tested. No agent stack, UI, or eval harness exists yet.
+The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. No agent stack, UI, or eval harness exists yet.
 
 | Component | State |
 |---|---|
 | `shared/schemas/` — event contract | ✅ Built |
 | `projects/ludo/engine-python/` | ✅ Built, 68 tests passing |
+| `projects/ludo/engine-java/` | ✅ Built, 20 tests passing; matches Python on all 20 vectors |
 | `docs/projects/ludo/harness-contract.md` | ✅ Spec written; no stack implements it yet |
 | `shared/prompts/ludo/` — prompts all stacks send | ✅ 7 templates |
 | `shared/models.yaml` — seats, routes, profiles | ✅ Built; **model IDs still `TBD`** |
 | `shared/conformance/` — cross-engine vectors | ✅ 20 vectors |
-| `engine-java`, `stack-*`, `ui/`, `eval/` | ❌ Not started |
+| `stack-*`, `ui/`, `eval/` | ❌ Not started |
 | Judge prompt | ❌ Waits for the eval harness |
 
 ## Commands
@@ -109,6 +110,18 @@ uv run --directory projects/ludo/engine-python python -m ludo_engine.cli play --
 ```bash
 uv run --directory projects/ludo/engine-python python -m ludo_engine.cli validate ../games/g.jsonl
 ```
+
+The Java engine builds with the committed Maven wrapper — no global Maven needed, and Java 21 is already installed here. Run from `projects/ludo/engine-java`:
+
+```bash
+./mvnw -B test
+```
+
+```bash
+./mvnw -q -B exec:java -Dexec.args="conformance --check"
+```
+
+**Both engines must pass conformance.** Running only one defeats the point — the vectors exist to catch them disagreeing ([ADR-0002](docs/decisions/adr-0002-engine-per-language.md)).
 
 Mermaid diagrams are parsed by node, not by uv. Once per checkout:
 

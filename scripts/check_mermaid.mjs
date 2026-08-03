@@ -29,7 +29,7 @@ import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const SKIP_DIRS = new Set([".venv", "__pycache__", ".pytest_cache", "node_modules", ".git", "target"]);
+const SKIP_DIRS = new Set([".venv", "__pycache__", ".pytest_cache", "node_modules", ".git", "target", ".claude"]);
 const MERMAID_BLOCK = /```mermaid\r?\n([\s\S]*?)```/g;
 
 const dom = new JSDOM("<!doctype html><html><body></body></html>");

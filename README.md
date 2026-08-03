@@ -96,10 +96,11 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 |---|---|
 | ✅ | [Shared event schema](shared/schemas/) — the contract all three stacks emit |
 | ✅ | [Python game engine](projects/ludo/engine-python/) — full rules + agent hooks, 68 tests passing |
+| ✅ | [Java game engine](projects/ludo/engine-java/) — same rules, 20 tests; byte-identical transcripts to Python |
 | ✅ | [Shared prompts](shared/prompts/README.md) + [model config](shared/models.yaml) — identical across all three stacks, invariants enforced in CI |
 | ✅ | [CI](.github/workflows/ci.yml) — tests, conformance, schema, docs, mermaid diagrams, prompt invariants. No model calls, no cost. |
 | ✅ | [Cross-engine conformance vectors](shared/conformance/) |
-| ⬜ | Java engine · agent stacks · UI · eval harness |
+| ⬜ | Agent stacks · UI · eval harness |
 
 Try it without installing anything but [uv](https://docs.astral.sh/uv/) — no API keys, no cost:
 

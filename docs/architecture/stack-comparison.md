@@ -62,9 +62,20 @@ Every rating must link to the code that justifies it. **An unsourced rating is a
 |---|---|---|---|---|
 | Bedrock invocation | — | — | — | |
 | Direct provider API | — | — | — | |
+| Agent needs a compile-time dep on the engine | no | no | **yes** | Python `Protocol` is structural; Java `interface` needs `implements`. See the finding below |
 | Provider swap without code change | — | — | — | Driven by `shared/models.yaml` |
 | Bedrock-native guardrails | — | — | — | |
 | Per-provider inference config | — | — | — | See the finding below — settings are **not** uniform across families |
+
+### Finding: the Java agent must depend on the engine; the Python agents need not
+
+Recorded from the engine port, before any stack exists.
+
+In Python, `Decider` is a `Protocol`. An agent satisfies it by having a `choose` method of the right shape — no import, no inheritance, no compile-time relationship between the engine package and the agent package at all. That is what lets the Strands and LangGraph stacks keep [genuinely separate dependency trees](environment-strategy.md) while sharing one engine.
+
+Java's `interface` needs an explicit `implements`, so every Spring AI agent must have `ludo-engine` on its compile classpath. Nothing breaks — but the isolation the Python stacks get for free has to be arranged deliberately on the JVM, and a future change to `Decider` is a recompile for the Java stack and a no-op for the Python ones.
+
+A second, smaller one from the same port: **Java test seams must be designed in advance.** Python's engine tests reach three-sixes cancellation by assigning `game.dice` on a live object; Java has no equivalent, so `Game` carries a package-private constructor taking an `IntSupplier`. Expect the same asymmetry wherever the Spring AI stack needs to substitute a model client — which is exactly what the harness contract's [scripted-model conformance](../projects/ludo/harness-contract.md) will require.
 
 ### Finding: inference settings are not uniformly pinnable
 

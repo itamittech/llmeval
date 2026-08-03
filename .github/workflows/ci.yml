@@ -38,6 +38,26 @@ jobs:
       - name: Validate recorded transcripts against the shared schema
         run: uv run --directory projects/ludo/engine-python python -m ludo_engine.cli validate "../games/*.jsonl"
 
+  engine-java:
+    name: Java engine
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Tests
+        # Includes ConformanceTest, which replays all 20 shared vectors — the
+        # same ones the Python engine is held to. The two engines agreeing is
+        # the entire premise of ADR-0002; a failure here means they have
+        # drifted, and the fix is never to regenerate the vectors.
+        working-directory: projects/ludo/engine-java
+        run: ./mvnw -B test
+
   docs:
     name: Docs and shared contracts
     runs-on: ubuntu-latest

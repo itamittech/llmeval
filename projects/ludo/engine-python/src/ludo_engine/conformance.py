@@ -22,11 +22,27 @@ DEFAULT_SEEDS = tuple(range(1, 21))
 DEFAULT_MAX_TURNS = 400
 
 
+def for_digest(event: dict[str, Any]) -> dict[str, Any]:
+    """Drop the one field that is *required* to differ between engines.
+
+    `game_started.payload.engine` records which engine produced the transcript —
+    `{"language": "python"}` here, `{"language": "java"}` there. Including it made the
+    vectors unsatisfiable by any engine but the one that generated them, which is the
+    opposite of what they are for. Found the first time the Java engine was run against
+    them; nothing else in the payload is excluded, because everything else is either
+    rules-driven or already an explicit field on the vector.
+    """
+    if event["type"] != "game_started":
+        return event
+    payload = {k: v for k, v in event["payload"].items() if k != "engine"}
+    return {**event, "payload": payload}
+
+
 def digest(events: list[dict[str, Any]]) -> str:
-    """SHA-256 over the canonical form of every event."""
+    """SHA-256 over the canonical form of every event, minus engine identity."""
     h = hashlib.sha256()
     for event in events:
-        h.update(canonical(event).encode("utf-8"))
+        h.update(canonical(for_digest(event)).encode("utf-8"))
         h.update(b"\n")
     return h.hexdigest()
 

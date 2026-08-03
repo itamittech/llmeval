@@ -35,7 +35,7 @@ import re
 import sys
 from pathlib import Path
 
-SKIP_DIRS = {".venv", "__pycache__", ".pytest_cache", "node_modules", ".git", "target"}
+SKIP_DIRS = {".venv", "__pycache__", ".pytest_cache", "node_modules", ".git", "target", ".claude"}
 
 # Using any of these as a mermaid node id is a latent break: a node called
 # `call` at the start of a statement parses as a click-callback directive and

@@ -32,7 +32,7 @@ llmeval/
 ├── projects/
 │   └── ludo/
 │       ├── engine-python/        # shared by BOTH Python stacks
-│       ├── engine-java/
+│       ├── engine-java/          # Spring AI only; Maven wrapper committed
 │       ├── stack-strands/
 │       ├── stack-langgraph/
 │       ├── stack-springai/

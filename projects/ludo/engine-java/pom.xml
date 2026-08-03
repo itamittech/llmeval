@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.llmeval.ludo</groupId>
+  <artifactId>ludo-engine</artifactId>
+  <version>0.1.0</version>
+  <packaging>jar</packaging>
+
+  <name>LUDO Engine (Java)</name>
+  <description>
+    Deterministic Ludo rules engine. JDK only - no LLM SDKs, no network, no JSON library.
+    Held to the same conformance vectors as the Python engine (ADR-0002).
+  </description>
+
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- Test-only. The engine itself has zero runtime dependencies, deliberately:
+         two engines that must agree byte for byte should not be able to change
+         behaviour because something upstream was bumped. -->
+    <junit.version>5.11.3</junit.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.2</version>
+      </plugin>
+      <plugin>
+        <!-- `mvn exec:java` for the CLI, mirroring `python -m ludo_engine.cli`. -->
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <configuration>
+          <mainClass>com.llmeval.ludo.engine.Cli</mainClass>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
