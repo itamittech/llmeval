@@ -22,7 +22,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from .board import COLORS, HOME, Color, to_square
-from .deciders import Decider, TurnContext
+from .deciders import (
+    Decider, Negotiator, Reflector, StateView, TurnContext, TurnEnd, TurnStart,
+)
 ```
 
 | Line | What's happening |
@@ -31,6 +33,7 @@ from .deciders import Decider, TurnContext
 | `from __future__ import annotations` | Makes Python store type hints as *strings* instead of evaluating them. Lets you reference a class before it's defined, and costs nothing at import. Boilerplate in modern Python — see [example 06](examples/06_type_hints_and_errors.py). |
 | `from dataclasses import dataclass, field` | Imports two specific names. Now you write `dataclass`, not `dataclasses.dataclass`. |
 | `from .board import ...` | The **leading dot** means "the `board` module *next to this one*", not some `board` package installed globally. Relative imports keep a package self-contained. |
+| `from .deciders import (\n    ...\n)` | Parenthesised import — the way to wrap a long import across lines. No backslashes; Python continues any expression inside brackets automatically. |
 
 ```python
 ENGINE_VERSION = "0.1.0"
@@ -185,14 +188,43 @@ The dict passed to `_emit` is a plain literal spanning lines — Python allows t
 
 ---
 
-## `_play_turn` — the core loop
+## `_play_turn` — the turn, and its two optional hooks
 
-This is the longest method. It's one `while True:` with several exits.
+Short, because the rolling was moved out into `_roll_loop`.
 
 ```python
     def _play_turn(self, color: Color, decider: Decider) -> None:
+        self._turn_events = []
         self._emit("turn_started", {"player": color})
 
+        view = StateView(self.state)
+
+        if isinstance(decider, Negotiator):
+            decider.negotiate(TurnStart(view, color, self.turn))
+
+        reason = self._roll_loop(color, decider, view)
+        self._emit("turn_ended", {"player": color, "reason": reason})
+
+        if isinstance(decider, Reflector):
+            decider.reflect(
+                TurnEnd(view, color, self.turn, reason, tuple(self._turn_events))
+            )
+```
+
+**`isinstance(decider, Negotiator)` on a `Protocol`** is the surprising line. Normally `isinstance` asks "is this an instance of that class?" — but `Negotiator` is declared `@runtime_checkable`, which changes the question to **"does this object have a `negotiate` method?"** No inheritance is consulted. It's `hasattr` with a name, and it's how the engine supports optional hooks without forcing every bot to implement them.
+
+Note what it does *not* check: the signature. A `negotiate` taking the wrong arguments passes `isinstance` and then fails when called. `runtime_checkable` only ever looks at names.
+
+**`reason = self._roll_loop(...)`** is worth pausing on as a design idea, not just syntax. The loop used to emit `turn_ended` itself, at each of its four exits. Now it *returns* the reason and lets the caller emit. That's the difference between a function that performs a side effect and one that computes a value — and it's what makes the two hooks safe: there is exactly one path out of the turn, so `reflect` cannot be skipped down some branch someone adds later.
+
+---
+
+## `_roll_loop` — the core loop
+
+One `while True:` with several exits, each returning why the turn ended.
+
+```python
+    def _roll_loop(self, color: Color, decider: Decider, view: StateView) -> str:
         before = self.state.snapshot()
         sixes = 0
         roll_index = 0
@@ -211,8 +243,7 @@ This is the longest method. It's one `while True:` with several exits.
             sixes = sixes + 1 if die == 6 else 0
             if sixes == SIX_LIMIT:
                 self.state.restore(before)
-                self._end_turn(color, "three_sixes")
-                return
+                return "three_sixes"
 ```
 
 `sixes = sixes + 1 if die == 6 else 0` — the ternary again. It parses as `sixes = ((sixes + 1) if (die == 6) else 0)`. Rolling anything but a six resets the counter to zero.
@@ -220,18 +251,16 @@ This is the longest method. It's one `while True:` with several exits.
 ```python
             moves = legal_moves(self.state, color, die)
             if not moves:
-                self._end_turn(color, "no_legal_move")
-                return
+                return "no_legal_move"
 ```
 
 `if not moves:` relies on **truthiness**: an empty list is falsy, a non-empty one truthy. Idiomatic Python — `if len(moves) == 0:` works but reads as noise.
 
 ```python
-            move = self._decide(color, decider, die, moves)
+            move = self._decide(color, decider, die, moves, view)
             if move is None:
                 self.state.stats[color].turns_forfeited += 1
-                self._end_turn(color, "illegal_move")
-                return
+                return "illegal_move"
 ```
 
 `if move is None:` uses `is`, not `==`. `is` asks "the same object?", `==` asks "equal value?". `None` is a singleton, so `is None` is the correct and conventional test.
@@ -245,15 +274,14 @@ This is the longest method. It's one `while True:` with several exits.
                 })
                 continue
 
-            self._end_turn(color, "moved")
-            return
+            return "moved"
 ```
 
 `die == 6 or captured` mixes a comparison (a `bool`) with `captured` (also a `bool` here). `or` works on any truthy/falsy values.
 
 Note the ternary **inside a dict literal** — expressions nest anywhere a value is allowed.
 
-`continue` jumps back to the top of `while True` for the extra roll. `return` exits the method entirely, ending the turn. The distinction between these two is the whole extra-roll rule.
+`continue` jumps back to the top of `while True` for the extra roll. `return` exits the method entirely, ending the turn. The distinction between these two is the whole extra-roll rule — and it's why `negotiate` lives in `_play_turn` rather than here. Anything inside this loop happens once per *roll*; a six or a capture runs it again.
 
 ---
 
@@ -280,13 +308,14 @@ Note the ternary **inside a dict literal** — expressions nest anywhere a value
 
 ```python
     def _decide(
-        self, color: Color, decider: Decider, die: int, moves: list[Move]
+        self, color: Color, decider: Decider, die: int, moves: list[Move],
+        view: StateView,
     ) -> Move | None:
         """Ask for a move, rejecting illegal ones rather than correcting them."""
         allowed = set(moves)
 
         for attempt in range(1, MOVE_ATTEMPTS + 1):
-            ctx = TurnContext(self.state, color, die, list(moves), self.turn, attempt)
+            ctx = TurnContext(view, color, die, list(moves), self.turn, attempt)
             try:
                 move = decider.choose(ctx)
             except Exception as exc:
