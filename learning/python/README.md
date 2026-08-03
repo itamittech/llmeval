@@ -52,3 +52,5 @@ Teaching is a [stated goal](../../docs/vision.md) of this repo, and the same LUD
 For *why the engine is designed* the way it is — as opposed to what the syntax means — see [engine-design.md](../../docs/projects/ludo/engine-design.md).
 
 And once this folder makes sense, [learning/java](../java/) reads the *same engine* in Java. Because both implementations produce byte-identical transcripts from the same seed, every difference between them isolates a language property rather than a design choice — which is a comparison no single-language tutorial can offer.
+
+When you're ready for the agent layer on top of the engine, [learning/strands](../strands/) explains the first harness — what a framework `Agent` is, how one turn flows through it, and how four of them negotiate.

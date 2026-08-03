@@ -10,6 +10,8 @@ See it play, free and offline — the committed [UI fixture](../games/scripted-s
 uv run --directory projects/ludo/stack-strands python -m ludo_strands.demo out.jsonl
 ```
 
+> **Finding the code hard to follow?** [learning/strands](../../../learning/strands/) teaches it from the framework up — the agent loop, one turn traced end to end, and the swarm table — and [class-design.md §9](../../../docs/projects/ludo/class-design.md#9-the-harness-layer-the-same-turn-on-strands) has the object graph and call diagrams.
+
 ## Why this exists twice more
 
 This stack, the LangGraph stack, and the Spring AI stack (neither built yet) all implement the *same specification* — not a copy of each other. The contract was written before this stack so that Strands could not quietly become the standard the other two inherit. Anything Strands makes easy or hard is a [capability-matrix](../../../docs/architecture/stack-comparison.md) finding, not an implementation detail.

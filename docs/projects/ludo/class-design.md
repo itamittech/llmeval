@@ -1043,13 +1043,146 @@ One inheritance hierarchy, one protocol, everything else composition. That's the
 
 ---
 
+## 9. The harness layer: the same turn, on Strands
+
+Everything above ends at one dashed arrow: the engine calls a `Decider` and waits. This section is what now sits on the other side of that arrow in the first stack — the classes, who calls whom, and where the *framework* takes over from our code. The line-by-line walkthrough lives in [learning/strands](../../../learning/strands/); these are the maps.
+
+One orientation rule before the diagrams: in the engine, our code calls our code. In the harness, the interesting arrows are the ones where **Strands calls us** — the `Model.stream()` it invokes, the lifecycle events it fires into `GameHooks`, the agents its `Swarm` activates. Framework programming is mostly arranging to be called well.
+
+### 9.1 The harness object graph
+
+```mermaid
+flowchart LR
+    subgraph eng ["engine — deterministic, no SDKs"]
+        Game
+    end
+
+    subgraph strands ["stack-strands"]
+        Dec["_Decider ×4"]
+        H["LudoHarness"]
+        P["Agent ×4 — the players"]
+        SW["Swarm — fresh per turn"]
+        GH["GameHooks"]
+        SM["ScriptedModel"]
+        PM["BedrockModel / AnthropicModel"]
+        Tee["TeeSink"]
+        Win["_EventWindow"]
+    end
+
+    Game -- "negotiate / choose / reflect" --> Dec
+    Dec --> H
+    H -- "agent(prompt) in choose, reflect" --> P
+    H -- "constructs, one per negotiation" --> SW
+    SW -- "activates, resets, hands off" --> P
+    P -- "stream()" --> SM
+    P -- "stream()" --> PM
+    P -. "lifecycle events" .-> GH
+    Game -- "engine events" --> Tee
+    GH -- "llm_call, message_sent" --> Tee
+    H -- "agent_reasoning, memory_write" --> Tee
+    Tee --> Win
+```
+
+Reading the arrows:
+
+- **The engine's world is unchanged.** It still talks to a `Decider` and a sink, and nothing else — every class on the right could be swapped for LangGraph's without the left half noticing. That is [ADR-0002](../../decisions/adr-0002-engine-per-language.md)'s boundary holding under load.
+- **The dashed arrow is the framework calling us.** `GameHooks` never appears in the turn loop's code; the four `Agent`s fire events into it at Strands' own lifecycle points. Metering, the budget ceiling, and message capture all live on that arrow.
+- **One `TeeSink`, three writers.** Engine events, hook events, and harness events interleave on a single sequence — which is what makes the transcript one ordered record instead of three ([ADR-0003](../../decisions/adr-0003-shared-event-stream.md)).
+- **`Swarm` is not a member, it's a per-turn guest.** Constructed fresh each negotiation phase over the same four persistent agents, then discarded. Why that matters is §9.3.
+
+### 9.2 One `choose`, as calls
+
+The §3 diagram's `choose(TurnContext)` arrow, expanded. This is the only path that changes the game.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant G as Game
+    participant H as LudoHarness
+    participant A as Agent red
+    participant K as GameHooks
+    participant M as Model
+    participant E as TeeSink
+
+    G->>H: choose(TurnContext)
+    H->>H: render decide.md — board, legal moves, recent events, memory
+    H->>A: agent(prompt)
+    A->>K: BeforeModelCallEvent
+    Note over K: budget spent? cancel the call
+    A->>M: stream(messages, tools, system prompt)
+    M-->>A: text events, then usage metadata
+    A->>K: AfterModelCallEvent
+    K->>E: emit llm_call — per-call usage, off the message
+    A-->>H: AgentResult
+    H->>E: emit agent_reasoning
+    H-->>G: Move
+    Note over G,H: engine validates. Illegal? attempt 2 renders retry.md into the SAME conversation, so the model sees its own rejected answer
+```
+
+What this makes obvious:
+
+- **The harness never judges the move.** It parses, matches against the legal list, and returns — an unmatched reply goes back *as is*, because rejecting is the engine's job ([ADR-0004](../../decisions/adr-0004-structural-guardrails.md)).
+- **`llm_call` is emitted by the hook, not the caller.** The turn loop cannot forget to meter a call, because it was never responsible for metering at all.
+- **The budget gate sits inside the framework's loop.** `BeforeModelCallEvent.cancel` fires on *every* model invocation — including ones a swarm makes mid-conversation, where the harness has no line of code running.
+
+### 9.3 One negotiation phase, as calls
+
+The floor-passing table of [ADR-0009](../../decisions/adr-0009-swarm-negotiation.md): red opens, blue answers, red closes.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant H as LudoHarness
+    participant SW as Swarm
+    participant R as Agent red
+    participant B as Agent blue
+    participant K as GameHooks
+    participant E as TeeSink
+
+    H->>R: seed briefing — memory, inbox
+    H->>B: seed briefing
+    H->>SW: construct — snapshots all four agents
+    H->>SW: run(task)
+    SW->>R: reset to snapshot, activate with the task
+    R->>R: model calls handoff_to_agent(blue, message, table note)
+    R->>K: AfterToolCallEvent
+    K->>E: message_sent to blue, and to null for the note
+    SW->>B: reset to snapshot, activate with the handoff message
+    B->>B: model hands back to red
+    B->>K: AfterToolCallEvent
+    K->>E: message_sent to red
+    SW->>R: reset AGAIN, activate
+    R-->>SW: no handoff — conversation over
+    SW-->>H: done
+```
+
+- **The harness's only moves are before the swarm exists** — seed briefings, construct, run. From then on the *models* steer, and the orchestrator enforces the floor, the cap, and the ending.
+- **Step 15's "reset AGAIN" is the strangest and most important arrow.** Red's second activation starts from the construction snapshot — its briefing — not from what it said earlier in the phase. The reset that looks like a bug is the briefing delivery mechanism, and the reason durable memory is written at `reflect`, outside the swarm. [learning/strands/02](../../../learning/strands/02-the-swarm-table.md) walks the timeline.
+- **Spoken words become events at the tool boundary.** No negotiation reply is ever parsed; the handoff tool call *is* the message, captured by the hook.
+
+### 9.4 Who calls whom, harness edition
+
+| Caller | Callee | When |
+|---|---|---|
+| `Game` | `_Decider` → `LudoHarness` | the three engine hooks, per turn |
+| `LudoHarness` | `Agent.__call__` | choose, reflect |
+| `LudoHarness` | `Swarm` construct + run | once per negotiation phase |
+| `Swarm` | `Agent` (reset, activate) | per floor holding |
+| **Strands** | `Model.stream()` | every model invocation |
+| **Strands** | `GameHooks` callbacks | before/after every model call, after every tool call |
+| `GameHooks`, `LudoHarness`, `Game` | `TeeSink.emit` | one shared sequence |
+
+The bolded rows are the framework calling us — the arrows that make this a *harness* rather than a library of helpers.
+
+---
+
 ## What comes next
 
 This diagram will grow. Expected additions, roughly in build order:
 
 | Component | Shape it will take |
 |---|---|
-| **Agent stacks** | 🚧 `stack-strands` under way. Each contributes a `Decider` implementation plus its own memory, negotiation, and context-compaction objects. They attach at the one dashed arrow above. |
+| **Agent stacks** | 🚧 `stack-strands` turn loop **built** — its object graph and call traces are §9. LangGraph and Spring AI will each contribute their own §9-shaped layer, attaching at the same `Decider` arrow; the diffs between those sections become capability-matrix material. |
 | **`engine-java`** | ✅ **Built.** Mirrors this graph, with `Protocol` becoming an `interface` and frozen dataclasses becoming `record`s — see [engine-design.md](engine-design.md#porting-to-java). The optional hooks became `default` methods, and `Game` gained an `IntSupplier` seam Python did not need. |
 | **Eval harness** | Reads transcripts only. Should appear with *no* arrow into the engine at all. |
 | **UI** | Same — consumes the event stream, never the classes. |

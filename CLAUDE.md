@@ -19,6 +19,7 @@ This project exists to teach. A doc describing code that no longer exists is *wo
 | Game rules or engine behaviour | [game-rules.md](docs/projects/ludo/game-rules.md) **first** (it's the normative spec), then the engines, then regenerate conformance vectors |
 | Engine classes, methods, or structure | [engine-design.md](docs/projects/ludo/engine-design.md) · [class-design.md](docs/projects/ludo/class-design.md) — the **diagrams AND** the class-reference and who-calls-what tables · the engine README module map · **[learning/python/01](learning/python/01-walkthrough-game.md) if you touched `game.py`** — it quotes that file line by line, so a rename silently makes it teach code that no longer exists · **[learning/java/01](learning/java/01-same-engine-twice.md) if the two engines diverged** — it is a side-by-side, so it goes stale from either side |
 | Anything a stack does — turn loop, events, memory, budgets | [harness-contract.md](docs/projects/ludo/harness-contract.md) **first** (it's the normative spec all three stacks bind to), then the stack |
+| `stack-strands` harness classes or call flow | [class-design.md §9](docs/projects/ludo/class-design.md) diagrams · **[learning/strands](learning/strands/)** — 00 quotes the agent construction, 01–02 trace the turn and the swarm, and the README's class table names what's wired vs pending · the stack README module map |
 | The event schema | [shared/schemas/README.md](shared/schemas/README.md) · [ADR-0003](docs/decisions/adr-0003-shared-event-stream.md) if the contract itself changed · every stack that emits |
 | Dependencies, tooling, environment layout | [environment-strategy.md](docs/architecture/environment-strategy.md) · [repository-layout.md](docs/architecture/repository-layout.md) · [learning/python/03](learning/python/03-environments-and-packaging.md) |
 | Prompts, `models.yaml`, or anything in `shared/` | [shared/prompts/README.md](shared/prompts/README.md) · [agent-design.md](docs/projects/ludo/agent-design.md) · re-run `check_prompts.py` · a rule-number change means [game-rules.md](docs/projects/ludo/game-rules.md) first |
@@ -201,7 +202,7 @@ Full planned structure is in [docs/architecture/repository-layout.md](docs/archi
 
 Two conventions the engine already relies on: positions are **colour-relative** (`-1` base, `0`–`50` circuit, `51`–`55` home column, `56` home), and `shared/` holds contracts and data only — never executable code.
 
-`learning/` is standalone teaching material for readers new to Python — not imported by anything, not part of any build. Its examples must stay dependency-free so they run with bare `python`.
+`learning/` is standalone teaching material — not imported by anything, not part of any build. `learning/python` and `learning/java` examples must stay dependency-free so they run with a bare interpreter/JDK. `learning/strands` has **no examples folder for exactly that reason** — a Strands example needs the framework, so it teaches against the stack's own tests, which run in the stack's venv.
 
 ## Docs conventions
 
