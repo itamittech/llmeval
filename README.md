@@ -56,6 +56,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 | **Here for the framework comparison** | [Architecture overview](docs/architecture/overview.md) → [Capability matrix](docs/architecture/stack-comparison.md) |
 | **New to Python** | [What the files and folders are](learning/python/00-files-and-folders.md) → [learning/python](learning/python/) → [`Game` walkthrough](learning/python/01-walkthrough-game.md) |
 | **New to Java, or curious how it compares** | [learning/java](learning/java/) → [the same engine, twice](learning/java/01-same-engine-twice.md) — identical rules in both languages, so every difference isolates a language property |
+| **Coming from Java/Spring to Python** | [Python for the Spring developer](learning/python/04-for-spring-developers.md) — `implements`, the container, `@Qualifier`, all mapped side by side onto this codebase |
 | **Trying to read the agent harness** | [learning/strands](learning/strands/) — the agent loop, one turn traced, the swarm table → [class-design §9](docs/projects/ludo/class-design.md#9-the-harness-layer-the-same-turn-on-strands) for the diagrams |
 | **Curious about design patterns** | [Class design §7](docs/projects/ludo/class-design.md#7-design-patterns-from-the-problem-up) — each one taught from the problem up |
 | **Interested in experiment design** | [ADR-0005](docs/decisions/adr-0005-model-access-control.md) → [ADR-0006](docs/decisions/adr-0006-seat-rotation.md) — how to keep a comparison from quietly meaning nothing |

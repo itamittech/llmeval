@@ -37,6 +37,8 @@ One reading rule, used across all the learning folders: when a doc says **Before
 
 > The numbering is file order, not difficulty. `00` and `03` are about *tooling* — what the files are and how environments work. `01` and `02` are about the *language*. Read the pair that matches what's confusing you.
 
+**Coming from Java or Spring?** Start with [04 — Python for the Spring developer](04-for-spring-developers.md) instead: it maps every Spring reflex — `implements`, the container, `@Qualifier`, "where does the output travel" — onto this codebase, side by side, and grew directly out of a Spring developer's real questions while reading it.
+
 ## Three things that surprise people from other languages
 
 **Type hints do nothing at runtime.** `def add(a: int, b: int) -> int` will happily accept two strings. Annotations are for humans and type checkers only — which is exactly why the engine re-validates every move an agent returns instead of trusting a signature.

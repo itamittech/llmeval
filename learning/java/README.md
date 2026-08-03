@@ -54,4 +54,5 @@ That is what these docs are built around.
 - [engine-java README](../../projects/ludo/engine-java/README.md) — how to build and run it
 - [engine-design.md](../../docs/projects/ludo/engine-design.md) — *why* the engine is shaped this way, with the Python→Java mapping table
 - [learning/python](../python/) — the same material from the other side
+- [Python for the Spring developer](../python/04-for-spring-developers.md) — the reverse crossing: a Java/Spring reader arriving at the Python half
 - [learning/strands](../strands/) — the agent harness that sits on top of the Python engine

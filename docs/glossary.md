@@ -44,6 +44,10 @@ Definitions are short on purpose — each links to the doc that goes deeper.
 
 **Agent loop** — the cycle inside a framework `Agent`: ask the model; if it answers with a tool call, run the tool and ask again; stop when it answers with text. One agent invocation can therefore mean several model calls — which is why costs are metered per *call*, not per invocation. → [learning/strands/00](../learning/strands/00-the-agent-loop.md)
 
+**Composition root** — the one place a program builds its object graph: constructors called, dependencies handed in. Spring hides it inside the container; here it is an ordinary function you can read — `LudoHarness.__init__` plus the `main()` that calls `play`. → [learning/python/04](../learning/python/04-for-spring-developers.md)
+
+**Duck typing** — an object's fitness decided by the methods it *has*, not the type it declares: "if it quacks, it's a duck." Python's `Protocol` formalises it — which is how an agent satisfies the engine's `Decider` with no import and no `implements`. → [example 03](../learning/python/examples/03_protocols_duck_typing.py)
+
 **Agent swarm** — several peer agents with their own goals sharing an environment, with no single coordinator. Ludo's four players are a swarm; they negotiate rather than being directed. → [agent design](projects/ludo/agent-design.md)
 
 **Agents-as-tools** — a multi-agent pattern where one agent invokes another as a callable tool and reads its reply, keeping every exchange directed and pairwise. Ludo evaluated it for negotiation, then [ADR-0009](decisions/adr-0009-swarm-negotiation.md) went the other way: the protocol was redesigned to fit the swarm orchestrator instead. → [capability matrix](architecture/stack-comparison.md)
