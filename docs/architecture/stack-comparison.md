@@ -18,6 +18,8 @@ Gaps are results. When a framework can't do something, we record it here, build 
 
 Every rating must link to the code that justifies it. **An unsourced rating is an opinion, and opinions don't go in this table.**
 
+One more rule, from [ADR-0008](../decisions/adr-0008-framework-native-harness.md): stacks must use native primitives wherever the framework has them, so **Manual is legitimate only where the framework offers nothing**. A Manual rating sitting beside an existing framework feature means we broke our own rule, not that the framework lacks it.
+
 ## Matrix
 
 > ⏳ Empty pending implementation. Populated as LUDO is built in each stack.
@@ -28,8 +30,8 @@ Every rating must link to the code that justifies it. **An unsourced rating is a
 |---|---|---|---|---|
 | Tool / function calling | — | — | — | |
 | Structured output | — | — | — | |
-| Multi-agent orchestration | — | — | — | |
-| Agent-to-agent messaging | — | — | — | Alliance negotiation |
+| Multi-agent orchestration | — | — | — | Strands `Swarm` ruled out — see finding |
+| Agent-to-agent messaging | — | — | — | Alliance negotiation; needs *private* pairwise channels |
 | Streaming responses | — | — | — | |
 | Turn/step control & interruption | — | — | — | |
 
@@ -78,6 +80,18 @@ That failure is invisible in the worst way: the model still answers, the game st
 **The two providers also disagree within the same framework.** `BedrockConfig` has `temperature` and `top_p` as first-class keys; `AnthropicConfig` has neither and takes a `params` passthrough instead. So even inside one stack, "pin the inference settings" is per-provider plumbing rather than one call — the same asymmetry already recorded below for `models.yaml`, now confirmed at the SDK layer.
 
 **What to check in LangGraph and Spring AI:** whether a mistyped or misplaced config key fails loudly, warns, or is silently dropped. A framework that fails loudly deserves credit for it in this matrix.
+
+### Finding: Strands `Swarm` cannot express private channels
+
+Recorded before the turn loop exists, from reading the pinned `strands-agents 1.50.2` source while mapping harness responsibilities to primitives for [ADR-0008](../decisions/adr-0008-framework-native-harness.md).
+
+Strands ships two multi-agent orchestrators, `Swarm` and `Graph`. `Swarm` is the obvious reach for LUDO — four peers, autonomous handoffs, no coordinator, exactly the [glossary's](../glossary.md) definition of a swarm. It does not fit, for one reason visible in its state model: everything an agent contributes goes into a `SharedContext` — the class docstring reads *"Shared context between swarm nodes"* (`strands/multiagent/swarm.py`) — and every agent in the swarm sees it. LUDO's negotiation ([answered question 6](../open-questions.md)) requires pairwise private messages other players never see; deception depends on them. A shared-everything context cannot carry a secret.
+
+`Graph` doesn't fit either, for a different reason: it wires a *deterministic* topology in advance, while who talks to whom each turn is the active agent's runtime choice.
+
+So negotiation uses the **agents-as-tools** pattern: the active agent gets a tool that addresses a chosen opponent; a public message lands in every agent's context, a private one reaches exactly one. The turn phases themselves need no orchestrator at all — the engine's `negotiate`/`choose`/`reflect` hooks already sequence them.
+
+**What to check in LangGraph and Spring AI:** whether their multi-agent stories can express per-pair visibility natively — LangGraph's graph state is shared by default too. A framework that can do it natively earns the credit here.
 
 ### Finding: the Java agent must depend on the engine; the Python agents need not
 

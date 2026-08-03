@@ -65,18 +65,18 @@ Say so explicitly in your response, naming the file and what's now wrong. An ack
 
 ## Repository status
 
-The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack** is under way — its framework-independent core is built and tested, its turn loop is not. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in.
+The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack** is under way — its first-cut core is built and tested but is being **reworked onto Strands-native primitives** per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md); its turn loop is not built. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in.
 
 | Component | State |
 |---|---|
 | `shared/schemas/` — event contract | ✅ Built |
 | `projects/ludo/engine-python/` | ✅ Built, 68 tests passing |
 | `projects/ludo/engine-java/` | ✅ Built, 20 tests passing; matches Python on all 20 vectors |
-| `docs/projects/ludo/harness-contract.md` | ✅ Spec written; no stack implements it yet |
+| `docs/projects/ludo/harness-contract.md` | ✅ Spec written, re-scoped to observable behaviour ([ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)); no stack implements it yet |
 | `shared/prompts/ludo/` — prompts all stacks send | ✅ 7 templates |
 | `shared/models.yaml` — seats, routes, profiles | ✅ Built; **model IDs still `TBD`** |
 | `shared/conformance/` — cross-engine vectors | ✅ 20 vectors |
-| `projects/ludo/stack-strands/` | 🚧 Harness core built, 40 tests; turn loop and events not done |
+| `projects/ludo/stack-strands/` | 🚧 First-cut core built, 40 tests; being reworked framework-native (ADR-0008); turn loop and events not done |
 | `stack-langgraph`, `stack-springai`, `ui/`, `eval/` | ❌ Not started |
 | Judge prompt | ❌ Waits for the eval harness |
 
@@ -142,7 +142,7 @@ No linter or formatter is configured yet. Nothing above makes a model call or co
 
 Some foundational decisions are still open — read [docs/open-questions.md](docs/open-questions.md) before proposing or writing code.
 
-**Settled:** three parallel games (each stack runs its own full 4-agent game); two engines, one per language ([ADR-0002](docs/decisions/adr-0002-engine-per-language.md)); one model invoked via *both* Bedrock and direct API as a control ([ADR-0005](docs/decisions/adr-0005-model-access-control.md)); seat→colour rotates between games ([ADR-0006](docs/decisions/adr-0006-seat-rotation.md)); React + Vite for the UI, built to completion *alongside the first stack* and proven stack-independent by transcript fixtures ([ADR-0007](docs/decisions/adr-0007-ui-alongside-first-stack.md)); Maven for the Java stack; Apache-2.0; **Python 3.12** for both stacks; model *families* (Anthropic ×2 routes, Amazon Nova, DeepSeek; OpenAI judges and therefore does not play); negotiation uses both channels, active-agent-driven, no cross-reading of reasoning.
+**Settled:** three parallel games (each stack runs its own full 4-agent game); two engines, one per language ([ADR-0002](docs/decisions/adr-0002-engine-per-language.md)); one model invoked via *both* Bedrock and direct API as a control ([ADR-0005](docs/decisions/adr-0005-model-access-control.md)); seat→colour rotates between games ([ADR-0006](docs/decisions/adr-0006-seat-rotation.md)); React + Vite for the UI, built to completion *alongside the first stack* and proven stack-independent by transcript fixtures ([ADR-0007](docs/decisions/adr-0007-ui-alongside-first-stack.md)); Maven for the Java stack; Apache-2.0; **Python 3.12** for both stacks; model *families* (Anthropic ×2 routes, Amazon Nova, DeepSeek; OpenAI judges and therefore does not play); negotiation uses both channels, active-agent-driven, no cross-reading of reasoning; harness primitives are **framework-native** — the shared layer is contracts and data only, and hand-rolling where the framework has a primitive breaks the comparison ([ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)).
 
 **Still open:** concrete model IDs for Nova, DeepSeek, and the OpenAI judge (the Anthropic pair is pinned — `claude-sonnet-5` on `dev`, `claude-opus-5` on `headline`), turn/token budgets — provisional values sit in `shared/models.yaml` and get replaced by measured ones after the first stack runs. ADRs 0001, 0003, and 0004 remain **Proposed** — they encode reasoning from the brief but haven't been explicitly confirmed.
 

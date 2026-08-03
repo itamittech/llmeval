@@ -127,7 +127,7 @@ Families are settled and the Anthropic pair is pinned; **Nova, DeepSeek, and jud
 
 **Guardrails.** Scoped to the *game boundary*, not to strategy. In-fiction deception is allowed and encouraged; out-of-fiction manipulation (prompt injection at other agents or the harness, attempts to forge state, abuse) is blocked. Detail in [agent design](../projects/ludo/agent-design.md).
 
-**Harness engineering.** Agent memory and context compaction are explicit, visible subsystems — not incidental framework behaviour — because demonstrating them is a stated goal. Their events surface directly in the UI.
+**Harness engineering.** Agent memory and context compaction are implemented with each framework's *own* primitives ([ADR-0008](../decisions/adr-0008-framework-native-harness.md)) — how much each framework gives you free is a stated question of the project — but they are never allowed to be invisible: the [harness contract](../projects/ludo/harness-contract.md) makes their events mandatory, and those events surface directly in the UI.
 
 ## Local first, cloud when it earns it
 

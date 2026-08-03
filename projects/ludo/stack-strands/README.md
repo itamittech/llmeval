@@ -24,13 +24,13 @@ Python is pinned to **3.12** exactly, matching the LangGraph stack, so the inter
 
 ## Design
 
-**The model is behind a seam.** Everything above [`model.py`](src/ludo_strands/model.py) talks to a `ModelClient` with one method. Two implementations: one that calls a provider, and `ScriptedModel`, which replays a committed list of replies and never touches the network.
+**The framework is the implementation, not a dependency to contain.** Per [ADR-0008](../../../docs/decisions/adr-0008-framework-native-harness.md), harness responsibilities are met with Strands' own primitives: `AgentState` plus a session manager for memory, `SummarizingConversationManager` for compaction, hooks for token metering, budget enforcement and event emission, and negotiation via the agents-as-tools pattern — `Swarm` was evaluated and [ruled out](../../../docs/architecture/stack-comparison.md), because its shared context cannot carry a private message.
 
-That is not a testing convenience added late. The harness contract asks all three stacks to produce the *same event sequence* from the same seed and the same script — which is only possible if each can accept an injected client. A framework that cannot is itself a finding, so the seam is designed in rather than retrofitted.
+The first cut of this stack was built the other way — framework-independent `memory.py`, `budget.py`, and a `ModelClient` seam, with Strands confined to one adapter file. Those files still exist and still pass their tests, but they implement a retired design and are being replaced; the ADR records why. What survives them: the `Note` shape and the never-reconciled rule (memory records what an agent *believes*, including what it was lied to about — that is contract, not implementation), and the budget *numbers*, which stay in [`shared/models.yaml`](../../../shared/models.yaml).
+
+**The scripted model goes through Strands' own extension point.** The harness contract asks all three stacks to produce the same event sequence from the same seed and script, which requires an injectable fake model — implemented here as a custom Strands `Model`, not as a parallel client interface beside the framework. A framework that cannot accept one is itself a finding.
 
 **Prompts are loaded, never authored.** [`prompts.py`](src/ludo_strands/prompts.py) reads `shared/prompts/ludo`, refuses any template containing control flow, and requires declared variables to match used ones exactly — in both directions. A missing `{{board}}` would otherwise reach a model as literal braces and produce plausible nonsense.
-
-**Memory is explicit.** [`memory.py`](src/ludo_strands/memory.py) is a real subsystem rather than whatever the framework does implicitly, because an implicit implementation cannot be compared across three frameworks. It is also deliberately **not** reconciled against the board: it records what an agent believes, including things it was lied to about.
 
 **Seats rotate.** [`config.py`](src/ludo_strands/config.py) assigns colours to seats per game ([ADR-0006](../../../docs/decisions/adr-0006-seat-rotation.md)), so no model permanently occupies one colour.
 
@@ -40,13 +40,14 @@ That is not a testing convenience added late. The harness contract asks all thre
 |---|---|
 | Prompt loading, validation, provenance hash | ✅ |
 | `models.yaml` profiles, seats, budgets, seat rotation | ✅ |
-| Memory subsystem | ✅ |
-| Token accounting and per-game ceiling | ✅ |
-| `ModelClient` seam + `ScriptedModel` | ✅ |
-| Strands binding | ⬜ |
-| Turn loop: negotiate → decide → reflect | ⬜ |
-| Agent event emission | ⬜ |
-| Context compaction | ⬜ |
+| Memory subsystem | ♻️ built; being replaced by `AgentState` + session persistence ([ADR-0008](../../../docs/decisions/adr-0008-framework-native-harness.md)) |
+| Token accounting and per-game ceiling | ♻️ built; metering and enforcement moving into Strands hooks |
+| `ModelClient` seam + `ScriptedModel` | ♻️ built; being redone as a Strands `Model` implementation |
+| Strands model construction, settings pinned and read back | ✅ [`strands_client.py`](src/ludo_strands/strands_client.py) |
+| Turn loop: negotiate → decide → reflect | ⬜ on Strands primitives |
+| Negotiation via agents-as-tools | ⬜ |
+| Agent event emission (hooks) | ⬜ |
+| Context compaction (`SummarizingConversationManager`) | ⬜ |
 | Content guardrails | ⬜ |
 
 **No live game has been run.** Two of the four seats (Amazon Nova, DeepSeek) still have `TBD` model ids in [`shared/models.yaml`](../../../shared/models.yaml), so a real match cannot be played yet. Everything above is exercised by the scripted client instead, which is free and deterministic.

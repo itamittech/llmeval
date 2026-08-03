@@ -4,11 +4,11 @@ Everything above this module talks to :class:`ModelClient`. Two implementations
 exist: one that calls a provider, and one that replays a committed script and
 never touches the network.
 
-The scripted one is not a testing convenience bolted on afterwards. The harness
-contract asks all three stacks to produce the *same event sequence* from the
-same seed and the same script, which is only possible if each stack can accept
-an injected client. A framework that cannot is itself a capability-matrix
-finding, so the seam is designed in from the first line rather than retrofitted.
+BEING REPLACED per ADR-0008 (docs/decisions/adr-0008-framework-native-harness.md):
+the *requirement* — an injectable scripted model, so all three stacks can be
+compared on the same script — survives, but contract §8 now demands it go
+through the framework's own extension point. For Strands that means a custom
+``Model`` implementation, not this parallel Protocol beside the framework.
 """
 
 from __future__ import annotations

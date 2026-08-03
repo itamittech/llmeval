@@ -66,6 +66,14 @@ Should be chosen from what LUDO's [capability matrix](architecture/stack-compari
 
 ---
 
+## 🟢 17. Should the transcript record the framework version?
+
+[ADR-0008](decisions/adr-0008-framework-native-harness.md) makes framework behaviour part of game behaviour — a Strands upgrade can change how compaction summarises, and therefore how a game goes. Each stack's lockfile pins the version, but the transcript doesn't name it: `game_started` records the stack, engine, prompt-set hash, and served model, so two games played under different framework versions are indistinguishable from the file alone.
+
+> **Recommendation:** add `framework: {name, version}` to `game_started` when the first turn loop lands. A schema change is cheapest while there is one emitter — the same argument as [ADR-0007](decisions/adr-0007-ui-alongside-first-stack.md).
+
+---
+
 ## Answered
 
 ### ✅ 6. Alliance channel design

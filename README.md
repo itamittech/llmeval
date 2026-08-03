@@ -102,7 +102,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 | ✅ | [Shared prompts](shared/prompts/README.md) + [model config](shared/models.yaml) — identical across all three stacks, invariants enforced in CI |
 | ✅ | [CI](.github/workflows/ci.yml) — tests, conformance, schema, docs, mermaid diagrams, prompt invariants. No model calls, no cost. |
 | ✅ | [Cross-engine conformance vectors](shared/conformance/) |
-| 🚧 | [Strands stack](projects/ludo/stack-strands/) — harness core + model seam, 40 tests. No live game yet. |
+| 🚧 | [Strands stack](projects/ludo/stack-strands/) — first-cut core built, 40 tests; being reworked onto Strands-native primitives ([ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)). No live game yet. |
 | ⬜ | LangGraph stack · Spring AI stack · UI · eval harness |
 
 Try it without installing anything but [uv](https://docs.astral.sh/uv/) — no API keys, no cost:
@@ -111,7 +111,7 @@ Try it without installing anything but [uv](https://docs.astral.sh/uv/) — no A
 uv run --directory projects/ludo/engine-python python -m ludo_engine.cli play --seed 7
 ```
 
-Settled: three parallel games (one per stack), [two shared engines](docs/decisions/adr-0002-engine-per-language.md), [one model on both access routes as a control](docs/decisions/adr-0005-model-access-control.md), React + Vite, Maven. Still undecided: [open questions](docs/open-questions.md).
+Settled: three parallel games (one per stack), [two shared engines](docs/decisions/adr-0002-engine-per-language.md), [one model on both access routes as a control](docs/decisions/adr-0005-model-access-control.md), [framework-native harnesses over a shared behavioural contract](docs/decisions/adr-0008-framework-native-harness.md), React + Vite, Maven. Still undecided: [open questions](docs/open-questions.md).
 
 ## Cloud footprint
 

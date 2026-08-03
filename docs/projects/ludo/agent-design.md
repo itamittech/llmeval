@@ -63,7 +63,7 @@ Each agent keeps private, persistent memory across turns — not just conversati
 - **Commitments** — what it has promised, to whom, and whether it intends to honour it.
 - **Strategy notes** — standing plans that survive the context window.
 
-Memory is deliberately implemented as an explicit subsystem rather than left to whatever each framework does implicitly. That's the only way to compare frameworks on it fairly — and the memory implementation is one of the [matrix](../../architecture/stack-comparison.md) rows most likely to separate them.
+*How* memory is implemented is each framework's own business — its native state, session, or memory machinery, per [ADR-0008](../../decisions/adr-0008-framework-native-harness.md) — and it is one of the [matrix](../../architecture/stack-comparison.md) rows most likely to separate them. What is fixed is the observable behaviour: private, persistent, written at the [harness contract](harness-contract.md)'s named points, and surfaced in the transcript as `memory_write` events. A framework whose memory the transcript can't see hasn't implemented this design.
 
 Memory is **private and unreliable by design**: an agent's memory reflects what it *believes*, including things it was successfully deceived about. We do not correct it.
 

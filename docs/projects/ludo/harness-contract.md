@@ -6,8 +6,11 @@ It exists because of a problem [ADR-0007](../../decisions/adr-0007-ui-alongside-
 
 Requirement levels are RFC 2119: **MUST**, **MUST NOT**, **SHOULD**, **MAY**.
 
+**This contract specifies observable behaviour — what a reader holding only the transcript could check — never internal structure.** Which classes exist, where memory lives, how compaction works inside: those are each framework's business, per [ADR-0008](../../decisions/adr-0008-framework-native-harness.md), and differences there between stacks are findings, not violations. An earlier reading of this document treated the harness as a component design to reproduce three times; that reading is retired.
+
 ## Related
 
+- [ADR-0008](../../decisions/adr-0008-framework-native-harness.md) — why this contract binds behaviour and never mechanism
 - [agent-design.md](agent-design.md) — the *design* this specifies; read it first for the reasoning
 - [engine-design.md](engine-design.md) — the `Decider` protocol a harness implements
 - [shared/prompts](../../../shared/prompts/README.md) · [shared/schemas](../../../shared/schemas/README.md) — the two contracts this binds together
@@ -23,6 +26,10 @@ Requirement levels are RFC 2119: **MUST**, **MUST NOT**, **SHOULD**, **MAY**.
 | **Harness** *(this spec)* | Model calls, memory, compaction, budgets, agent events | Rule decisions, prompt text |
 
 The dividing line is sharp on purpose: **a harness never decides whether a move is legal.** It picks from a list the engine already validated. Everything the harness does is therefore safe to get wrong in interesting ways — an agent can lie, misremember, or run out of budget without ever corrupting the game.
+
+### 1.1 Behaviour, not mechanism
+
+Everything in the harness row is a *responsibility*, not a component. A stack MUST meet each one with its framework's native primitives wherever the framework has them ([ADR-0008](../../decisions/adr-0008-framework-native-harness.md)); hand-rolling is reserved for what the framework cannot do, and every hand-rolled piece MUST be recorded in the [capability matrix](../../architecture/stack-comparison.md). Two stacks that satisfy this contract with entirely different machinery are the point of the exercise, not a problem with it.
 
 ## 2. The turn loop
 
@@ -97,15 +104,15 @@ Memory MUST be private per agent, MUST persist across turns, and MUST survive co
 
 **Memory MUST NOT be corrected.** It records what an agent *believes*, including things it was successfully deceived about. A harness that "helpfully" reconciles memory against the board destroys the phenomenon under study.
 
-Memory MUST be an explicit subsystem rather than whatever the framework does implicitly — it is one of the matrix rows most likely to separate the three frameworks, and an implicit implementation cannot be compared.
+*Where* memory lives is the framework's choice — its native state, session, or memory machinery, per [ADR-0008](../../decisions/adr-0008-framework-native-harness.md) — and it is one of the matrix rows most likely to separate the three frameworks. What MUST hold regardless of mechanism: notes reach the model only through `{{memory}}`, every write emits `memory_write`, and every note carries one of the schema's four kinds. Memory the framework holds but the transcript cannot see fails this contract — an invisible memory cannot be compared, judged, or replayed.
 
 ## 5. Compaction
 
-When an agent's context exceeds its budget, the harness MUST summarise the oldest turns, fold durable facts into memory, drop the summarised turns from the window, and emit `context_compacted`.
+When an agent's context exceeds its budget, the harness MUST summarise the oldest turns, fold durable facts into memory, drop the summarised turns from the window, and emit `context_compacted`. Whether that is a framework conversation manager or hand-written glue is [ADR-0008](../../decisions/adr-0008-framework-native-harness.md)'s business; the events are not optional either way.
 
 It MUST NOT compact the system layer — that is the prompt-cacheable prefix, and touching it silently ends caching.
 
-Compaction is a model call and MUST emit its own `llm_call` with `purpose: "compact"`.
+Compaction is a model call and MUST emit its own `llm_call` with `purpose: "compact"`. It MUST use the compacted agent's own model and settings — a cheaper summariser would make one stack's games cheaper for reasons invisible to the comparison — and it counts against the per-game ceiling and that agent's attribution like any other call.
 
 ## 6. Budgets and failure
 
@@ -117,6 +124,8 @@ Compaction is a model call and MUST emit its own `llm_call` with `purpose: "comp
 | Per-game token ceiling reached | Stop the game; record the reason |
 
 **A harness MUST NOT add retries beyond the one the engine allows.** Reliability is part of what is being measured — a stack that quietly retries three times looks better than one that doesn't, and the difference would be an artifact of harness code rather than a property of the framework.
+
+That prohibition is about the application layer, and [ADR-0008](../../decisions/adr-0008-framework-native-harness.md) makes the line matter: transport retries inside the SDK — backoff on throttling or 5xx before any answer exists — are framework behaviour under test. Leave them at the framework's defaults and record what those defaults are in the matrix. The test is observable: anything that asks the model again a question it already answered is an application retry and forbidden; anything the SDK does to get one answer out is transport.
 
 Every forfeit MUST reach the transcript. A forfeit nobody can see is a measurement destroyed.
 
@@ -133,7 +142,7 @@ Every forfeit MUST reach the transcript. A forfeit nobody can see is a measureme
 
 The rules above are prose, and prose is not enforcement. The plan is to make harness parity **testable**, the way [conformance vectors](../../../shared/conformance/) already make engine parity testable:
 
-**Scripted-model conformance.** Each stack wires its framework to a fake model client that replays a committed script of responses instead of calling a provider. With a fixed seed and the same script, all three stacks MUST produce the same event sequence.
+**Scripted-model conformance.** Each stack wires a scripted model that replays a committed script of responses instead of calling a provider — **through the framework's own model extension point**: a custom `Model` in Strands, a fake chat model in LangChain, a stubbed `ChatModel` in Spring AI. Never through a parallel client interface bolted on beside the framework, which would route the game around the very layer under test. With a fixed seed and the same script, all three stacks MUST produce the same event sequence.
 
 Compared after normalising away what cannot match:
 
@@ -149,4 +158,6 @@ This does not exist yet and cannot until two stacks do. It is specified here so 
 
 ## Status
 
-Specification only — no stack implements it yet. Written before `stack-strands` deliberately; §2.1 names the engine change it requires.
+Specification only — no stack implements it yet. Written before `stack-strands` deliberately; §2.1 names the engine change it required.
+
+Re-scoped to observable behaviour by [ADR-0008](../../decisions/adr-0008-framework-native-harness.md) after the first cut of `stack-strands` showed what the earlier reading produced: a framework-independent harness that would have left the capability matrix comparing our own code with itself. The stack's built pieces are being reworked onto Strands-native primitives to match.

@@ -5,10 +5,11 @@ what an agent believes, including things it was successfully lied to about. A
 harness that reconciled memory against the board would destroy the phenomenon
 the project exists to study.
 
-Implemented as an explicit subsystem rather than left to whatever the framework
-does implicitly — that is the only way the three stacks can be compared on it
-fairly, and it is one of the capability-matrix rows most likely to separate
-them.
+BEING REPLACED per ADR-0008 (docs/decisions/adr-0008-framework-native-harness.md):
+storage and persistence move to Strands' own ``AgentState`` and session
+machinery, so the framework — the thing under comparison — is what gets
+exercised. The ``Note`` shape and the never-reconciled rule survive the move;
+they are contract, not implementation.
 """
 
 from __future__ import annotations

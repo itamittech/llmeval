@@ -44,9 +44,13 @@ Definitions are short on purpose — each links to the doc that goes deeper.
 
 **Agent swarm** — several peer agents with their own goals sharing an environment, with no single coordinator. Ludo's four players are a swarm; they negotiate rather than being directed. → [agent design](projects/ludo/agent-design.md)
 
+**Agents-as-tools** — a multi-agent pattern where one agent invokes another as a callable tool and reads its reply, keeping every exchange directed and pairwise. Ludo's negotiation uses it: a swarm-style shared context would show every message to every player, and private channels are the point. → [capability matrix](architecture/stack-comparison.md)
+
 **Tool / tool calling** — a function the model can invoke, described to it in the prompt. The model emits a request to call it; your code runs it and returns the result. It's how an agent affects anything outside its own text.
 
-**Harness** — the scaffolding around the model that makes an agent work: memory, context management, retries, budgets, tool wiring. "Harness engineering" is the craft of building it well, and how much of it each framework gives you free is one of this project's main questions.
+**Harness** — the scaffolding around the model that makes an agent work: memory, context management, retries, budgets, tool wiring. "Harness engineering" is the craft of building it well, and how much of it each framework gives you free is one of this project's main questions — which is why each stack must build its harness from the framework's own parts. → [ADR-0008](decisions/adr-0008-framework-native-harness.md)
+
+**Hook (lifecycle)** — a callback a framework fires at named points in its own loop: before a model call, after a message is added, when a tool runs. Hooks let you meter tokens, enforce budgets, or emit events without rewriting the loop — and how rich a framework's hook surface is decides how much of that you can do at all.
 
 **Agent memory** — what an agent remembers across turns beyond the raw conversation: opponent behaviour, promises made, standing plans. Here it's deliberately private and *unreliable* — it records what an agent believes, including things it was successfully lied to about.
 
