@@ -100,7 +100,8 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 | ✅ | [Shared prompts](shared/prompts/README.md) + [model config](shared/models.yaml) — identical across all three stacks, invariants enforced in CI |
 | ✅ | [CI](.github/workflows/ci.yml) — tests, conformance, schema, docs, mermaid diagrams, prompt invariants. No model calls, no cost. |
 | ✅ | [Cross-engine conformance vectors](shared/conformance/) |
-| ⬜ | Agent stacks · UI · eval harness |
+| 🚧 | [Strands stack](projects/ludo/stack-strands/) — harness core + model seam, 40 tests. No live game yet. |
+| ⬜ | LangGraph stack · Spring AI stack · UI · eval harness |
 
 Try it without installing anything but [uv](https://docs.astral.sh/uv/) — no API keys, no cost:
 

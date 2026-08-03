@@ -67,6 +67,18 @@ Every rating must link to the code that justifies it. **An unsourced rating is a
 | Bedrock-native guardrails | — | — | — | |
 | Per-provider inference config | — | — | — | See the finding below — settings are **not** uniform across families |
 
+### Finding: Strands accepts a wrong config keyword, warns, and ignores it
+
+First real observation from building a stack, and a cautionary one for the other two.
+
+`BedrockModel` and `AnthropicModel` take their configuration as **keyword arguments**. Passing `model_config={...}` — a plausible reading, since `update_config` takes exactly that name — is accepted, emits a `UserWarning`, and is then **discarded**. Every pinned setting reverts to a default.
+
+That failure is invisible in the worst way: the model still answers, the game still plays, the transcript still validates, and the claim that all three stacks run identical inference settings is quietly false. It was caught only because the settings were asserted rather than assumed — `test_strands_client.py` now constructs each seat's model and reads `get_config()` back.
+
+**The two providers also disagree within the same framework.** `BedrockConfig` has `temperature` and `top_p` as first-class keys; `AnthropicConfig` has neither and takes a `params` passthrough instead. So even inside one stack, "pin the inference settings" is per-provider plumbing rather than one call — the same asymmetry already recorded below for `models.yaml`, now confirmed at the SDK layer.
+
+**What to check in LangGraph and Spring AI:** whether a mistyped or misplaced config key fails loudly, warns, or is silently dropped. A framework that fails loudly deserves credit for it in this matrix.
+
 ### Finding: the Java agent must depend on the engine; the Python agents need not
 
 Recorded from the engine port, before any stack exists.

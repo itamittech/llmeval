@@ -38,6 +38,13 @@ jobs:
       - name: Validate recorded transcripts against the shared schema
         run: uv run --directory projects/ludo/engine-python python -m ludo_engine.cli validate "../games/*.jsonl"
 
+      - name: Strands stack
+        # Its own venv, never shared with the LangGraph stack. No model calls:
+        # everything runs against the scripted client.
+        run: |
+          uv sync --directory projects/ludo/stack-strands
+          uv run --directory projects/ludo/stack-strands pytest
+
   engine-java:
     name: Java engine
     runs-on: ubuntu-latest

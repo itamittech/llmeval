@@ -65,7 +65,7 @@ Say so explicitly in your response, naming the file and what's now wrong. An ack
 
 ## Repository status
 
-The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. No agent stack, UI, or eval harness exists yet.
+The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack** is under way — its framework-independent core is built and tested, its turn loop is not. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in.
 
 | Component | State |
 |---|---|
@@ -76,7 +76,8 @@ The **shared event schema**, **both engines** (Python and Java, cross-checked by
 | `shared/prompts/ludo/` — prompts all stacks send | ✅ 7 templates |
 | `shared/models.yaml` — seats, routes, profiles | ✅ Built; **model IDs still `TBD`** |
 | `shared/conformance/` — cross-engine vectors | ✅ 20 vectors |
-| `stack-*`, `ui/`, `eval/` | ❌ Not started |
+| `projects/ludo/stack-strands/` | 🚧 Harness core built, 40 tests; turn loop and events not done |
+| `stack-langgraph`, `stack-springai`, `ui/`, `eval/` | ❌ Not started |
 | Judge prompt | ❌ Waits for the eval harness |
 
 ## Commands

@@ -33,7 +33,7 @@ llmeval/
 │   └── ludo/
 │       ├── engine-python/        # shared by BOTH Python stacks
 │       ├── engine-java/          # Spring AI only; Maven wrapper committed
-│       ├── stack-strands/
+│       ├── stack-strands/        # own venv + lockfile, NEVER shared
 │       ├── stack-langgraph/
 │       ├── stack-springai/
 │       ├── eval/                 # LLM-as-judge + deterministic scoring

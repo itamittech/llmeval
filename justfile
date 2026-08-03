@@ -9,6 +9,7 @@
 
 ENGINE_PY := "projects/ludo/engine-python"
 ENGINE_JAVA := "projects/ludo/engine-java"
+STACK_STRANDS := "projects/ludo/stack-strands"
 
 default:
     @just --list
@@ -16,17 +17,21 @@ default:
 # Install all toolchains and dependencies.
 setup:
     uv sync --directory {{ENGINE_PY}}
+    uv sync --directory {{STACK_STRANDS}}
     npm ci
     cd {{ENGINE_JAVA}} && ./mvnw -q -B dependency:resolve
 
 # Run every test suite.
-test: test-engine-py test-engine-java
+test: test-engine-py test-engine-java test-strands
 
 test-engine-py:
     uv run --directory {{ENGINE_PY}} pytest
 
 test-engine-java:
     cd {{ENGINE_JAVA}} && ./mvnw -q -B test
+
+test-strands:
+    uv run --directory {{STACK_STRANDS}} pytest
 
 # BOTH engines against the shared conformance vectors (ADR-0002). Running only
 # one defeats the point — the vectors exist to catch them disagreeing.
