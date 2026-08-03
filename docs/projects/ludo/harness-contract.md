@@ -160,6 +160,6 @@ This does not exist yet and cannot until two stacks do. It is specified here so 
 
 ## Status
 
-Specification only — no stack implements it yet. Written before `stack-strands` deliberately; §2.1 names the engine change it required.
+Written before `stack-strands` deliberately; §2.1 names the engine change it required. Re-scoped to observable behaviour by [ADR-0008](../../decisions/adr-0008-framework-native-harness.md) after the first cut of `stack-strands` showed what the earlier reading produced: a framework-independent harness that would have left the capability matrix comparing our own code with itself.
 
-Re-scoped to observable behaviour by [ADR-0008](../../decisions/adr-0008-framework-native-harness.md) after the first cut of `stack-strands` showed what the earlier reading produced: a framework-independent harness that would have left the capability matrix comparing our own code with itself. The stack's built pieces are being reworked onto Strands-native primitives to match.
+**First implementation: `stack-strands`** runs §2's loop end to end against a scripted model — negotiation on the swarm orchestrator (ADR-0009), memory in agent state, budgets and events in lifecycle hooks — and its transcript validates against the schema ([the committed fixture](../../../projects/ludo/games/scripted-strands-seed7.jsonl)). §5 compaction is not yet built there. The §8 seam exists in one stack; the comparison it was specified for needs a second.

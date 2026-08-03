@@ -22,16 +22,16 @@ One more rule, from [ADR-0008](../decisions/adr-0008-framework-native-harness.md
 
 ## Matrix
 
-> ⏳ Empty pending implementation. Populated as LUDO is built in each stack.
+> Populated as LUDO is built in each stack. Strands ratings began with its turn loop; a link means the code exists and its tests pass against the scripted model.
 
 ### Core agent mechanics
 
 | Capability | Strands | LangGraph | Spring AI | Notes |
 |---|---|---|---|---|
-| Tool / function calling | — | — | — | |
+| Tool / function calling | **Native** — [hooks.py](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) | — | — | Strands: the swarm's own handoff tool, captured via `AfterToolCallEvent` |
 | Structured output | — | — | — | |
-| Multi-agent orchestration | — | — | — | `Swarm` adopted; protocol redesigned to fit it ([ADR-0009](../decisions/adr-0009-swarm-negotiation.md)) — see finding |
-| Agent-to-agent messaging | — | — | — | Alliance negotiation: directed messages + table notes |
+| Multi-agent orchestration | **Native** — [harness.py](../../projects/ludo/stack-strands/src/ludo_strands/harness.py) | — | — | `Swarm` runs the table; protocol redesigned to fit it ([ADR-0009](../decisions/adr-0009-swarm-negotiation.md)) — see finding |
+| Agent-to-agent messaging | **Native** — [hooks.py](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) | — | — | Handoff message = directed message; handoff context = table note |
 | Streaming responses | — | — | — | |
 | Turn/step control & interruption | — | — | — | |
 
@@ -40,7 +40,7 @@ One more rule, from [ADR-0008](../decisions/adr-0008-framework-native-harness.md
 | Capability | Strands | LangGraph | Spring AI | Notes |
 |---|---|---|---|---|
 | Short-term / conversation memory | — | — | — | |
-| Long-term agent memory | — | — | — | Cross-turn recall of opponents |
+| Long-term agent memory | **Native** — [players.py](../../projects/ludo/stack-strands/src/ludo_strands/players.py) | — | — | Cross-turn recall of opponents, on `AgentState` |
 | Context compaction / summarisation | — | — | — | Explicit goal of the project |
 | Prompt templating & versioning | — | — | — | |
 | Prompt caching | — | — | — | Provider- and framework-dependent |
@@ -51,7 +51,7 @@ One more rule, from [ADR-0008](../decisions/adr-0008-framework-native-harness.md
 
 | Capability | Strands | LangGraph | Spring AI | Notes |
 |---|---|---|---|---|
-| Token accounting | — | — | — | |
+| Token accounting | **Native** — [hooks.py](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) | — | — | Lifecycle hooks + per-call usage — see finding below for the trap |
 | Cost attribution | — | — | — | |
 | OpenTelemetry tracing | — | — | — | |
 | Retry / backoff / fallback model | — | — | — | |
@@ -104,6 +104,14 @@ Worth stating the counterfactual: a negotiation redesigned as all-public with au
 **What to check in LangGraph and Spring AI:** whether their multi-agent stories can express per-pair visibility natively — LangGraph's graph state is shared by default too. A framework that can do it natively earns the credit here.
 
 **Postscript, same day — the direction of fit was reversed.** [ADR-0009](../decisions/adr-0009-swarm-negotiation.md): rather than transporting the original protocol over a different pattern, the maintainer chose to redesign the protocol to `Swarm`'s semantics — directed messages as handoffs, table notes as shared-context posts, `max_floor_passes` as the handoff cap, per-agent briefings delivered through the construction-time snapshot that the reset semantics restore. The analysis above stands as the record of *why* the original protocol couldn't ride on `Swarm` unchanged, and it became the input to the redesign. What to check in LangGraph shifts accordingly: `langgraph-swarm` implements the same handoff pattern, so the two Python stacks now compare the *same orchestration architecture* — and whether Spring AI has any counterpart at all is the open headline row.
+
+### Finding: in Strands hooks, per-call token usage rides the message, not the totals
+
+Found building the turn loop, caught by a test, invisible in a live run.
+
+The obvious way to meter tokens from `AfterModelCallEvent` is to read `agent.event_loop_metrics.accumulated_usage` and diff against the previous total. It is wrong: the event loop fires the hook **before** it updates the accumulated metrics, so the diff reads zeros on the first call and stays one call behind forever. The correct source is the assistant message itself — the loop attaches `message["metadata"]["usage"]` *before* firing the hook, precisely so hooks can read per-call numbers ([hooks.py](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py)).
+
+It surfaced only because the scripted loop asserted a nonzero `llm_call`; against a live provider every transcript would have carried plausible-looking, uniformly stale token counts. **What to check in LangGraph and Spring AI:** where per-call versus accumulated usage lives, and whether their callback ordering has the same trap.
 
 ### Finding: the Java agent must depend on the engine; the Python agents need not
 

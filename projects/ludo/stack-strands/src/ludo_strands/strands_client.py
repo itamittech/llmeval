@@ -1,25 +1,18 @@
-"""The Strands binding — the only file in this stack that imports Strands.
+"""Provider model construction — one seat's settings, pinned and verified.
 
-Everything else talks to :class:`~ludo_strands.model.ModelClient`. Keeping the
-framework behind one small adapter is what makes the comparison legible: when
-LangGraph and Spring AI are built, the diff that matters is *this file* and the
-turn loop, not the whole harness.
-
-It is also what makes the scripted-model conformance in the harness contract
-possible at all — see model.py.
+Per ADR-0008 the framework is the implementation, not a dependency to hide, so
+Strands is imported wherever a primitive is used (players, hooks, harness,
+scripted). What stays in this module is the one genuinely provider-specific
+job: turning a `shared/models.yaml` seat into a configured Strands model
+object without any pinned setting silently reverting to a default.
 """
 
 from __future__ import annotations
 
-import time
 from typing import Any
 
-from strands import Agent
 from strands.models import BedrockModel
 from strands.models.anthropic import AnthropicModel
-
-from .budget import Usage
-from .model import Reply
 
 #: Bedrock spells the same model with a provider prefix; the direct API does not.
 #: Both come from shared/models.yaml already spelled correctly for their route,
@@ -81,41 +74,3 @@ def build_model(access: str, provider: str, model: str,
         return AnthropicModel(**config)
 
     raise ValueError(f"unknown access route {access!r}")
-
-
-class StrandsModel:
-    """A :class:`ModelClient` backed by a Strands ``Agent``.
-
-    One agent per seat, rebuilt per call with the system prompt it was given.
-    Strands keeps conversation state on the ``Agent``; this harness deliberately
-    does not use that — context is assembled by the harness so that all three
-    stacks assemble it the same way, and whatever each framework does implicitly
-    stays out of the comparison.
-    """
-
-    def __init__(self, access: str, provider: str, model: str,
-                 inference: dict[str, Any]) -> None:
-        self.access = access
-        self.provider = provider
-        self.model = model
-        self._inference = inference
-        self._model = build_model(access, provider, model, inference)
-
-    def complete(self, system: str, user: str, purpose: str) -> Reply:
-        agent = Agent(model=self._model, system_prompt=system)
-
-        started = time.perf_counter()
-        result = agent(user)
-        latency_ms = int((time.perf_counter() - started) * 1000)
-
-        usage = result.metrics.accumulated_usage
-        return Reply(
-            text=str(result),
-            usage=Usage(
-                input=usage.get("inputTokens", 0),
-                output=usage.get("outputTokens", 0),
-                cache_read=usage.get("cacheReadInputTokens", 0),
-                cache_write=usage.get("cacheWriteInputTokens", 0),
-            ),
-            latency_ms=latency_ms,
-        )

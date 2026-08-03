@@ -102,7 +102,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 | ✅ | [Shared prompts](shared/prompts/README.md) + [model config](shared/models.yaml) — identical across all three stacks, invariants enforced in CI |
 | ✅ | [CI](.github/workflows/ci.yml) — tests, conformance, schema, docs, mermaid diagrams, prompt invariants. No model calls, no cost. |
 | ✅ | [Cross-engine conformance vectors](shared/conformance/) |
-| 🚧 | [Strands stack](projects/ludo/stack-strands/) — first-cut core built, 40 tests; being reworked onto Strands-native primitives ([ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)). No live game yet. |
+| 🚧 | [Strands stack](projects/ludo/stack-strands/) — turn loop + swarm negotiation + events, running end to end on scripted models, 31 tests, [schema-valid fixture](projects/ludo/games/scripted-strands-seed7.jsonl) committed. Compaction + guardrails pending; no live game yet. |
 | ⬜ | LangGraph stack · Spring AI stack · UI · eval harness |
 
 Try it without installing anything but [uv](https://docs.astral.sh/uv/) — no API keys, no cost:

@@ -65,7 +65,7 @@ Say so explicitly in your response, naming the file and what's now wrong. An ack
 
 ## Repository status
 
-The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack** is under way — its first-cut core is built and tested but is being **reworked onto Strands-native primitives** per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md); its turn loop is not built. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in.
+The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack's turn loop runs end to end against scripted models** — swarm negotiation, memory in agent state, budgets and events in lifecycle hooks, all Strands-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)/[0009](docs/decisions/adr-0009-swarm-negotiation.md) — with context compaction and guardrails still unbuilt. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in.
 
 | Component | State |
 |---|---|
@@ -76,7 +76,7 @@ The **shared event schema**, **both engines** (Python and Java, cross-checked by
 | `shared/prompts/ludo/` — prompts all stacks send | ✅ 8 templates, v2 (floor-passing negotiation, ADR-0009) |
 | `shared/models.yaml` — seats, routes, profiles | ✅ Built; **model IDs still `TBD`** |
 | `shared/conformance/` — cross-engine vectors | ✅ 20 vectors |
-| `projects/ludo/stack-strands/` | 🚧 First-cut core built, 40 tests; being reworked framework-native (ADR-0008); turn loop and events not done |
+| `projects/ludo/stack-strands/` | 🚧 Turn loop + swarm negotiation + events running scripted, 31 tests, schema-valid fixture committed; compaction and guardrails not done |
 | `stack-langgraph`, `stack-springai`, `ui/`, `eval/` | ❌ Not started |
 | Judge prompt | ❌ Waits for the eval harness |
 
@@ -96,6 +96,18 @@ A single test:
 
 ```bash
 uv run --directory projects/ludo/engine-python pytest tests/test_moves.py::test_no_capture_on_a_safe_square
+```
+
+The Strands stack (own venv — never shared with LangGraph):
+
+```bash
+uv run --directory projects/ludo/stack-strands pytest
+```
+
+A full scripted game, offline and free — regenerates the committed fixture byte-identically:
+
+```bash
+uv run --directory projects/ludo/stack-strands python -m ludo_strands.demo out.jsonl
 ```
 
 Cross-engine conformance, plus a random-bot game and transcript validation:
