@@ -4,7 +4,9 @@ Deterministic Ludo rules engine. **JDK only** — no LLM SDKs, no network, no JS
 
 The second of two engines ([ADR-0002](../../../docs/decisions/adr-0002-engine-per-language.md)): this one serves the Spring AI stack, the [Python engine](../engine-python/README.md) serves both Python stacks. They are kept from drifting by [shared conformance vectors](../../../shared/conformance/README.md), and they agree — same seed, byte-identical transcript.
 
-> **Reading this to understand the design?** [engine-design.md](../../../docs/projects/ludo/engine-design.md) explains *why* the engine is shaped this way, in Python terms, with a Python→Java mapping table. This README is the practical reference.
+> **Reading this to understand the design?** [engine-design.md](../../../docs/projects/ludo/engine-design.md) explains *why* the engine is shaped this way, with a Python→Java mapping table. This README is the practical reference.
+>
+> **New to Java, or reading it against the Python engine?** [learning/java](../../../learning/java/) walks the port module by module, with runnable examples for the traps — including the `>>` vs `>>>` bug reproduced end to end.
 
 ## Build and test
 

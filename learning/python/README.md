@@ -50,3 +50,5 @@ Each script prints its own explanation as it runs. Editing them and re-running i
 Teaching is a [stated goal](../../docs/vision.md) of this repo, and the same LUDO game is being built three times — in Python twice and in Java once. A reader who can follow all three gets the comparison the project is actually about. This folder removes the Python half of that barrier.
 
 For *why the engine is designed* the way it is — as opposed to what the syntax means — see [engine-design.md](../../docs/projects/ludo/engine-design.md).
+
+And once this folder makes sense, [learning/java](../java/) reads the *same engine* in Java. Because both implementations produce byte-identical transcripts from the same seed, every difference between them isolates a language property rather than a design choice — which is a comparison no single-language tutorial can offer.

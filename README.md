@@ -55,6 +55,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 | **New to LLM engineering** | [Glossary](docs/glossary.md) → [Vision](docs/vision.md) → [LUDO brief](docs/projects/ludo/brief.md) |
 | **Here for the framework comparison** | [Architecture overview](docs/architecture/overview.md) → [Capability matrix](docs/architecture/stack-comparison.md) |
 | **New to Python** | [What the files and folders are](learning/python/00-files-and-folders.md) → [learning/python](learning/python/) → [`Game` walkthrough](learning/python/01-walkthrough-game.md) |
+| **New to Java, or curious how it compares** | [learning/java](learning/java/) → [the same engine, twice](learning/java/01-same-engine-twice.md) — identical rules in both languages, so every difference isolates a language property |
 | **Curious about design patterns** | [Class design §7](docs/projects/ludo/class-design.md#7-design-patterns-from-the-problem-up) — each one taught from the problem up |
 | **Interested in experiment design** | [ADR-0005](docs/decisions/adr-0005-model-access-control.md) → [ADR-0006](docs/decisions/adr-0006-seat-rotation.md) — how to keep a comparison from quietly meaning nothing |
 | **About to write code** | [Engine design](docs/projects/ludo/engine-design.md) → [Class design](docs/projects/ludo/class-design.md) → [Open questions](docs/open-questions.md) |
@@ -79,8 +80,9 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 - [Engine design](docs/projects/ludo/engine-design.md) — how the built engine is structured, and what a Java port must preserve
 - [Class design](docs/projects/ludo/class-design.md) — diagrams: the object graph, a turn traced as calls, module layering
 
-**New to Python?**
+**New to a language here?**
 - [learning/python/](learning/python/) — runnable examples and a line-by-line walkthrough of the engine's densest class. Standalone; no dependencies.
+- [learning/java/](learning/java/) — the same engine in Java, read against the Python one. Examples run with a bare JDK: `java learning/java/examples/03_signed_shift.java`.
 
 **Other**
 - [Contributing](CONTRIBUTING.md) — setup, and the six rules that are easy to break by accident
