@@ -30,8 +30,8 @@ One more rule, from [ADR-0008](../decisions/adr-0008-framework-native-harness.md
 |---|---|---|---|---|
 | Tool / function calling | — | — | — | |
 | Structured output | — | — | — | |
-| Multi-agent orchestration | — | — | — | Strands `Swarm` ruled out — see finding |
-| Agent-to-agent messaging | — | — | — | Alliance negotiation; needs *private* pairwise channels |
+| Multi-agent orchestration | — | — | — | `Swarm` adopted; protocol redesigned to fit it ([ADR-0009](../decisions/adr-0009-swarm-negotiation.md)) — see finding |
+| Agent-to-agent messaging | — | — | — | Alliance negotiation: directed messages + table notes |
 | Streaming responses | — | — | — | |
 | Turn/step control & interruption | — | — | — | |
 
@@ -102,6 +102,8 @@ So negotiation uses **agents-as-tools** — also a Strands-documented multi-agen
 Worth stating the counterfactual: a negotiation redesigned as all-public with autonomous floor-passing would fit `Swarm` natively. The mismatch is with *this* protocol — chosen because private channels are what make deception observable — not with multi-agent orchestration per se.
 
 **What to check in LangGraph and Spring AI:** whether their multi-agent stories can express per-pair visibility natively — LangGraph's graph state is shared by default too. A framework that can do it natively earns the credit here.
+
+**Postscript, same day — the direction of fit was reversed.** [ADR-0009](../decisions/adr-0009-swarm-negotiation.md): rather than transporting the original protocol over a different pattern, the maintainer chose to redesign the protocol to `Swarm`'s semantics — directed messages as handoffs, table notes as shared-context posts, `max_floor_passes` as the handoff cap, per-agent briefings delivered through the construction-time snapshot that the reset semantics restore. The analysis above stands as the record of *why* the original protocol couldn't ride on `Swarm` unchanged, and it became the input to the redesign. What to check in LangGraph shifts accordingly: `langgraph-swarm` implements the same handoff pattern, so the two Python stacks now compare the *same orchestration architecture* — and whether Spring AI has any counterpart at all is the open headline row.
 
 ### Finding: the Java agent must depend on the engine; the Python agents need not
 

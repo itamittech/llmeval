@@ -24,7 +24,7 @@ Python is pinned to **3.12** exactly, matching the LangGraph stack, so the inter
 
 ## Design
 
-**The framework is the implementation, not a dependency to contain.** Per [ADR-0008](../../../docs/decisions/adr-0008-framework-native-harness.md), harness responsibilities are met with Strands' own primitives: `AgentState` plus a session manager for memory, `SummarizingConversationManager` for compaction, hooks for token metering, budget enforcement and event emission, and negotiation via the agents-as-tools pattern — also Strands-native. The `Swarm` orchestrator was evaluated and [ruled out for this protocol](../../../docs/architecture/stack-comparison.md): it resets each agent's state on every activation, gives the floor to whoever spoke last, and its durable carriers are broadcast — a shared-blackboard design, where this game needs private beliefs and an active agent who keeps the floor.
+**The framework is the implementation, not a dependency to contain.** Per [ADR-0008](../../../docs/decisions/adr-0008-framework-native-harness.md), harness responsibilities are met with Strands' own primitives: `AgentState` plus a session manager for memory, `SummarizingConversationManager` for compaction, hooks for token metering, budget enforcement and event emission — and **negotiation runs on the `Swarm` orchestrator itself**. That took a real decision: `Swarm`'s semantics could not carry the original negotiation protocol, so [ADR-0009](../../../docs/decisions/adr-0009-swarm-negotiation.md) redesigned the protocol to fit the orchestrator — directed messages as handoffs, table notes as shared-context posts, the floor-pass cap as `max_handoffs`, per-agent briefings seeded through the construction-time snapshot. The [capability matrix](../../../docs/architecture/stack-comparison.md) keeps the full analysis.
 
 The first cut of this stack was built the other way — framework-independent `memory.py`, `budget.py`, and a `ModelClient` seam, with Strands confined to one adapter file. Those files still exist and still pass their tests, but they implement a retired design and are being replaced; the ADR records why. What survives them: the `Note` shape and the never-reconciled rule (memory records what an agent *believes*, including what it was lied to about — that is contract, not implementation), and the budget *numbers*, which stay in [`shared/models.yaml`](../../../shared/models.yaml).
 
@@ -45,7 +45,7 @@ The first cut of this stack was built the other way — framework-independent `m
 | `ModelClient` seam + `ScriptedModel` | ♻️ built; being redone as a Strands `Model` implementation |
 | Strands model construction, settings pinned and read back | ✅ [`strands_client.py`](src/ludo_strands/strands_client.py) |
 | Turn loop: negotiate → decide → reflect | ⬜ on Strands primitives |
-| Negotiation via agents-as-tools | ⬜ |
+| Negotiation via the `Swarm` orchestrator ([ADR-0009](../../../docs/decisions/adr-0009-swarm-negotiation.md)) | ⬜ |
 | Agent event emission (hooks) | ⬜ |
 | Context compaction (`SummarizingConversationManager`) | ⬜ |
 | Content guardrails | ⬜ |

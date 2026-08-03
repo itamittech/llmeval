@@ -32,7 +32,7 @@ Strong agents should finish faster than random bots, but not by the order of mag
 
 > **Recommendation:** set the cap from a per-game token budget rather than from game length — decide what a game may cost, then derive the cap. Needs a measured per-turn token cost, so it stays open until the first stack runs.
 
-**Provisional numbers are now in [`shared/models.yaml`](../shared/models.yaml)** so the negotiation prompt has something to render — 40 turns and 1 message per turn on the `dev` profile, 60 and 2 on `headline`. These are guesses, deliberately placed in config rather than in the prompt so that tuning them is a one-line edit and not a prompt change. Replace them with measured values after the first stack runs.
+**Provisional numbers are now in [`shared/models.yaml`](../shared/models.yaml)** so the negotiation prompt has something to render — 40 turns and 3 floor passes per conversation on the `dev` profile, 60 and 6 on `headline` (floor passes replaced per-turn message counts under [ADR-0009](decisions/adr-0009-swarm-negotiation.md); each pass is one agent activation, i.e. one model call). These are guesses, deliberately placed in config rather than in the prompt so that tuning them is a one-line edit and not a prompt change. Replace them with measured values after the first stack runs.
 
 ---
 
@@ -86,6 +86,8 @@ Should be chosen from what LUDO's [capability matrix](architecture/stack-compari
 - **No agent sees another's reasoning.** Reading an opponent's private deliberation would make deception meaningless.
 
 The consequence worth knowing: **an alliance takes at least two turns to form** — one to propose, one to accept. The prompt says so, so agents can plan around it.
+
+**Revised 2026-08-03 by [ADR-0009](decisions/adr-0009-swarm-negotiation.md).** The maintainer chose to run negotiation on the framework's swarm orchestrator and redesign the protocol to fit it, after [source-level analysis](architecture/stack-comparison.md) showed the original protocol and the orchestrator's semantics could not both survive. What changed: the active agent now *opens* a floor-passing conversation rather than driving it; the private channel became a **directed message** (content pairwise, existence public, not guaranteed to be remembered past the phase); the public channel became a **table note** riding on a floor pass; reply-exactly-once became a hard `max_floor_passes` cap. What survived: both channels in revised form, spectators-see-everything, no cross-reading of reasoning, and deception as the phenomenon under study. The original decision above is kept as written — the repo records its reversals.
 
 ### ✅ 8. Python version
 

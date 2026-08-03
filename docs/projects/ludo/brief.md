@@ -72,7 +72,7 @@ Games run to a configurable turn cap. Most won't finish, and that's fine — the
 
 The UI carries as much of the teaching load as the code.
 
-**During the game** — the board, whose turn it is, the dice, and each agent's reasoning as it decides. Public table talk and (revealed to the *viewer*, not to other agents) private messages. Live token and cost counters. Memory writes and context compactions shown as they happen.
+**During the game** — the board, whose turn it is, the dice, and each agent's reasoning as it decides. Public table notes and (revealed to the *viewer*, not to other players) directed messages. Live token and cost counters. Memory writes and context compactions shown as they happen.
 
 **After the game** — a well-presented summary: final standing, the turning points, which alliances formed and how they ended, who read the game best, and the judge's reasoning.
 

@@ -31,7 +31,9 @@ class Seat:
 @dataclass(frozen=True)
 class Budgets:
     max_turns: int
-    max_messages_per_turn: int
+    #: Floor passes per negotiation phase (ADR-0009) — maps to the swarm
+    #: orchestrator's handoff cap.
+    max_floor_passes: int
     max_message_chars: int
     max_tokens_per_game: int
 
@@ -83,7 +85,7 @@ def load(name: str = "dev", path: Path | None = None) -> Profile:
         name=name,
         seats=seats,
         judge=judge,
-        budgets=Budgets(b["max_turns"], b["max_messages_per_turn"],
+        budgets=Budgets(b["max_turns"], b["max_floor_passes"],
                         b["max_message_chars"], b["max_tokens_per_game"]),
         inference=raw.get("inference", {}),
     )

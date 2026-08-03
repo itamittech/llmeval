@@ -16,15 +16,15 @@ def test_loads_the_shared_set(loaded):
     assert {t.name for t in loaded.system} == {
         "system/identity.md", "system/rules.md", "system/negotiation.md",
     }
-    assert set(loaded.turn) == {"negotiate", "decide", "retry", "reflect"}
+    assert set(loaded.turn) == {"negotiate", "briefing", "decide", "retry", "reflect"}
 
 
 def test_system_prompt_is_stable_for_the_whole_game(loaded):
     # The cacheable layer. If this varied per turn, prompt caching would stop
     # working silently and the only symptom would be the bill.
-    once = loaded.system_prompt(color="red", max_messages_per_turn=1,
+    once = loaded.system_prompt(color="red", max_floor_passes=3,
                                 max_message_chars=240)
-    twice = loaded.system_prompt(color="red", max_messages_per_turn=1,
+    twice = loaded.system_prompt(color="red", max_floor_passes=3,
                                  max_message_chars=240)
     assert once == twice
     assert "{{" not in once, "every variable was substituted"

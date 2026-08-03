@@ -63,7 +63,9 @@ profiles:
   dev:
     budgets:
       max_turns: 40
-      max_messages_per_turn: 1
+      # Floor passes per negotiation phase (ADR-0009) — the swarm orchestrator's
+      # handoff cap. Each pass is one agent activation, i.e. one model call.
+      max_floor_passes: 3
       max_message_chars: 240
       max_tokens_per_game: 150000
     seats:
@@ -92,7 +94,7 @@ profiles:
   headline:
     budgets:
       max_turns: 60
-      max_messages_per_turn: 2
+      max_floor_passes: 6
       max_message_chars: 400
       max_tokens_per_game: 600000
     seats:

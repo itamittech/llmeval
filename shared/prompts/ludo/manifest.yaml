@@ -8,7 +8,9 @@
 # `variables` is the contract: check_prompts.py fails if a template uses a
 # variable not listed here, or lists one it never uses.
 
-version: 1
+# version 2: negotiation redesigned as a floor-passing table conversation to fit
+# the swarm orchestrator (ADR-0009). v1 transcripts are historical, not comparable.
+version: 2
 game: ludo
 
 # Concatenated in this order, once per game. Never varies within a game, which
@@ -21,13 +23,23 @@ system:
     variables: []
 
   - file: system/negotiation.md
-    variables: [max_messages_per_turn, max_message_chars]
+    variables: [max_floor_passes, max_message_chars]
 
 # Rendered fresh each time. Never cached.
 turn:
+  # The shared half of the negotiation phase: one render, shown to every player
+  # activated in the conversation. Global facts only — anything per-agent
+  # belongs in `briefing`.
   negotiate:
     file: turn/negotiate.md
-    variables: [turn, color, board, standings, inbox, memory, messages_remaining]
+    variables: [turn, active, board, standings]
+
+  # The per-agent half: seeded into each agent's own context at phase start,
+  # before the conversation begins. Private — carries that agent's memory and
+  # the messages addressed to it since its last turn.
+  briefing:
+    file: turn/briefing.md
+    variables: [color, inbox, memory]
 
   decide:
     file: turn/decide.md

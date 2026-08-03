@@ -1,4 +1,4 @@
-Turn {{turn}}. You are {{color}}. You have not rolled yet.
+Turn {{turn}}. The table is open before {{active}} rolls; {{active}} has the floor first.
 
 ## Board
 
@@ -8,22 +8,6 @@ Turn {{turn}}. You are {{color}}. You have not rolled yet.
 
 {{standings}}
 
-## Messages addressed to you
-
-{{inbox}}
-
-## Your notes
-
-{{memory}}
-
 ---
 
-You may send up to **{{messages_remaining}}** message(s) now, or none.
-
-Set `to` to `"all"` for a public broadcast, or to a colour for a private message only that player will see.
-
-```json
-{"messages": [{"to": "all" | "<colour>", "text": "<message>"}]}
-```
-
-Send `{"messages": []}` to stay quiet.
+If you hold the floor: send one message to one named player — optionally with a table note for everyone — or say nothing to end the conversation.

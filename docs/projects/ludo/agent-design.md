@@ -26,7 +26,7 @@ This is the "agent swarm" pattern from the brief, and Ludo is a good fit for it:
 Each turn runs a fixed sequence, identical across all three stacks:
 
 1. **Observe** — the agent receives the board state, the recent event log, and its own memory.
-2. **Negotiate** *(optional)* — it may send public or private messages, and read messages addressed to it. Bounded by a message budget so negotiation can't run forever.
+2. **Negotiate** *(optional)* — a floor-passing table conversation it opens, bounded by a floor-pass budget so negotiation can't run forever.
 3. **Roll** — the engine rolls. The agent does not control this.
 4. **Decide** — given the legal moves for that roll, the agent picks one and states its reasoning.
 5. **Resolve** — the engine applies the move, handles capture, and determines whether an extra roll was earned.
@@ -38,22 +38,24 @@ Every step emits events. The reasoning captured at step 4 and the memory writes 
 
 ## Communication
 
-Settled in [open question 6](../../open-questions.md#-6-alliance-channel-design); the protocol agents actually receive is [`system/negotiation.md`](../../../shared/prompts/ludo/system/negotiation.md).
+Settled in [open question 6](../../open-questions.md#-6-alliance-channel-design), then **redesigned by [ADR-0009](../../decisions/adr-0009-swarm-negotiation.md)** to fit the swarm orchestrator; the protocol agents actually receive is [`system/negotiation.md`](../../../shared/prompts/ludo/system/negotiation.md).
 
-Two channels, both fully logged:
+Negotiation is a **floor-passing table conversation**, once per turn before the active player rolls. The active player opens holding the floor; each floor-holder may send one message to one named player — which passes the floor to them — and may attach a **table note** everyone sees. A holder with nothing to say ends the conversation, and a hard cap on floor passes ends it regardless.
 
-- **Public** — broadcast to all four agents. Table talk, open threats, public offers.
-- **Private** — directed to exactly one agent. Where real alliances get made, and where deception becomes possible.
+Two kinds of speech, both fully logged:
 
-The distinction matters: with only a public channel, everyone sees every deal and betrayal is trivially detectable. Private messages let an agent tell red one thing and green the opposite — and that contradiction is invisible in-game while being perfectly visible to the *viewer* in the UI. Watching a lie land is the single best demo this project has.
+- **Table note** — public. An offer everyone can hold you to, a warning, an accusation.
+- **Directed message** — content seen only by its addressee; everyone sees *that* it was sent. Where deals get made, and where deception becomes possible.
 
-**Who may speak.** Only the agent whose turn it is opens a conversation. An agent that receives a direct message may reply **once**. There are no unprompted broadcasts on someone else's turn.
+The asymmetry matters: an agent can tell red one thing and green the opposite across two floor holdings — invisible to the players, perfectly visible to the *viewer* in the UI. Watching a lie land is the single best demo this project has. And because who-talks-to-whom is public, the whispering itself is part of the drama.
 
-The alternative — all four free to talk every turn — costs roughly 4× the negotiation tokens and lets negotiation swamp the game. The cost of this choice is one that agents are told about explicitly: **forming an alliance takes at least two turns**, one to propose and one to accept.
+**The floor is not owed back.** Once the active agent passes it, the conversation may wander; the cap bounds cost, not fairness. An alliance can form inside a single conversation — propose, pass the floor, hear the answer — where the old protocol needed two turns.
+
+**Conversations are not guaranteed to be remembered.** Retention within a phase is framework behaviour ([ADR-0008](../../decisions/adr-0008-framework-native-harness.md)); anything an agent wants to keep, it writes to memory at reflect. A deal the other side has genuinely forgotten is an observable outcome, not a bug.
 
 **Nobody sees anyone else's reasoning.** An agent's private deliberation is never shown to another agent — reading an opponent's mind would make deception pointless. Spectators see all of it.
 
-Messages are bounded per turn (count and length). The numbers live in [`shared/models.yaml`](../../../shared/models.yaml) per profile, not in the prompt, so tuning them costs a config edit rather than a prompt change and a new prompt-set hash.
+The bounds (floor passes, message length) live in [`shared/models.yaml`](../../../shared/models.yaml) per profile, not in the prompt, so tuning them costs a config edit rather than a prompt change and a new prompt-set hash.
 
 ## Memory
 

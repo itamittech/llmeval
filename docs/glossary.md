@@ -44,7 +44,9 @@ Definitions are short on purpose — each links to the doc that goes deeper.
 
 **Agent swarm** — several peer agents with their own goals sharing an environment, with no single coordinator. Ludo's four players are a swarm; they negotiate rather than being directed. → [agent design](projects/ludo/agent-design.md)
 
-**Agents-as-tools** — a multi-agent pattern where one agent invokes another as a callable tool and reads its reply, keeping every exchange directed and pairwise. Ludo's negotiation uses it: a blackboard-style orchestrator broadcasts what agents share and hands the floor to whoever spoke last, and this game needs private channels and an active agent who keeps the floor. → [capability matrix](architecture/stack-comparison.md)
+**Agents-as-tools** — a multi-agent pattern where one agent invokes another as a callable tool and reads its reply, keeping every exchange directed and pairwise. Ludo evaluated it for negotiation, then [ADR-0009](decisions/adr-0009-swarm-negotiation.md) went the other way: the protocol was redesigned to fit the swarm orchestrator instead. → [capability matrix](architecture/stack-comparison.md)
+
+**Floor / table note** — how Ludo's negotiation works after [ADR-0009](decisions/adr-0009-swarm-negotiation.md). The *floor* is the right to speak: the active player opens holding it, each speaker passes it by addressing one player with a directed message, and the conversation ends when a holder says nothing or the pass cap is hit. A *table note* is a public remark attached to a pass — every player sees it; directed-message content is seen only by its addressee.
 
 **Tool / tool calling** — a function the model can invoke, described to it in the prompt. The model emits a request to call it; your code runs it and returns the result. It's how an agent affects anything outside its own text.
 

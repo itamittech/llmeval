@@ -40,9 +40,11 @@ observe → negotiate → [roll → decide → resolve]+ → reflect
                        └── engine repeats on a 6 or a capture ──┘
 ```
 
-**Observe.** The harness MUST build the model context from: the `StateView`, the recent event window, and that agent's own memory. It MUST NOT include another agent's memory, reasoning, or private messages.
+**Observe.** The harness MUST build the model context from: the `StateView`, the recent event window, and that agent's own memory. It MUST NOT include another agent's memory, reasoning, or directed messages the agent was not the addressee of.
 
-**Negotiate.** Only the agent whose turn it is MAY open a conversation, sending at most `budgets.max_messages_per_turn` messages of at most `budgets.max_message_chars` each. An agent that received a direct message this turn MAY reply exactly once. No agent may broadcast on another agent's turn.
+**Negotiate** *(redesigned by [ADR-0009](../../decisions/adr-0009-swarm-negotiation.md) to fit the swarm orchestrator)*. The phase is a floor-passing conversation. The active agent opens holding the floor. A floor-holder MAY send **one message of at most `budgets.max_message_chars` to one named player**, optionally carrying a **table note** visible to every player for the rest of the phase — doing so passes the floor to the addressee. A floor-holder that sends nothing ends the phase. The phase also ends after `budgets.max_floor_passes` passes.
+
+Visibility rules, which every stack MUST reproduce: the directed message content reaches only its addressee; who-spoke-to-whom and table notes are visible to all players in the phase. Before the conversation starts, the harness MUST seed each agent's context with its own private briefing (`turn/briefing.md`: its memory, and messages addressed to it since its last turn). Whether an agent retains the conversation *within* the phase is framework behaviour ([ADR-0008](../../decisions/adr-0008-framework-native-harness.md)); the transcript is the durable record.
 
 **Roll / decide / resolve.** The engine rolls, offers legal moves, applies the chosen one. This block repeats within a turn on a six or a capture — **negotiation and reflection MUST NOT repeat with it.** An agent that talks once per extra roll gets a free multiplier on both influence and cost.
 
@@ -89,10 +91,10 @@ The transcript is the only output ([ADR-0003](../../decisions/adr-0003-shared-ev
 
 The prompts and the schema deliberately differ where each is easier for its own consumer. These mappings are specified so three stacks don't each invent one:
 
-| Model returns | Event carries | Why they differ |
+| Model does | Event carries | Why they differ |
 |---|---|---|
-| `"to": "all"` | `to: null` | `"all"` is easier for a model to emit reliably; `null` is unambiguous in a schema |
-| `"to": "<colour>"` | `to: "<colour>"` | unchanged |
+| Passes the floor to a player with a message | `message_sent`, `to: "<colour>"` | the pass is a framework action (a handoff in Strands); the event is its neutral record |
+| Leaves a table note while passing | `message_sent`, `to: null` | `null` marks the public channel unambiguously in the schema |
 | `{"token", "to", "reasoning"}` | `reasoning` → `agent_reasoning.text`; the move goes to the engine | reasoning is an observation, not an instruction |
 | `{"notes": [...]}` | one `memory_write` per note | one event per fact keeps the UI and eval able to count them |
 
@@ -134,7 +136,7 @@ Every forfeit MUST reach the transcript. A forfeit nobody can see is a measureme
 - Edit, reorder, or reformat anything in `shared/prompts/`
 - Add sampling parameters beyond those in `shared/models.yaml`, or accept framework defaults for them
 - Correct, validate, or second-guess a move the engine already accepted
-- Expose one agent's memory, reasoning, or private messages to another
+- Expose one agent's memory, reasoning, or received directed messages to another
 - Treat an agent's claim as fact anywhere in its own logic
 - Emit an event type not in the schema, or omit a required field
 
