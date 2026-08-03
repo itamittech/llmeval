@@ -15,29 +15,30 @@ Split every project into layers, and decide deliberately which layer is allowed 
 | Layer | Varies per stack? | Why |
 |---|---|---|
 | **Game engine** — rules, board state, dice, legal moves, win detection | **No** | Deterministic, no LLM involved. Any variation here is pure noise. |
-| **Tool contract** — what the agent can call on the engine | **No** | This is the parity contract. Same tools, same names, same schemas. |
-| **Agent layer** — LLM calls, memory, context management, prompts | **Yes** ← | **This is the thing under study.** |
-| **Orchestration** — turn loop, swarm coordination, negotiation | **Yes** ← | Also under study; frameworks differ most here. |
+| **Prompts and model config** — what agents are told, which models play | **No** | Sent verbatim from [`shared/`](../../shared/prompts/README.md). A stack that edited a prompt would be measuring its own wording. |
+| **Harness contract** — the *behaviour* every stack must produce: phases, budgets, failure rules, events out | **No** | The parity surface. Written as [a spec](../projects/ludo/harness-contract.md), not code. |
+| **Agent layer** — how the framework meets that contract: LLM calls, memory, context management | **Yes** ← | **This is the thing under study.** |
+| **Orchestration** — turn loop, swarm coordination, negotiation mechanics | **Yes** ← | Also under study; frameworks differ most here. |
 | **Event stream** — what the system emits as it runs | **No** | Shared schema. Enables one UI + one eval harness for all three. |
 | **Evaluation** — scoring, LLM-as-judge | **No** | Judging three stacks with three judges proves nothing. |
 | **UI** | **No** | One implementation, consumes the shared event stream. |
 
 Two rows carry the whole design:
 
-### Keystone 1 — the shared tool contract
+### Keystone 1 — the shared harness contract
 
-Agents never touch game state directly. They act through a fixed set of tools:
+Agents never touch game state directly — and they never even *ask* for things. **The engine drives**: once per turn it calls each stack's harness at three fixed points, and the [harness contract](../projects/ludo/harness-contract.md) specifies what must observably happen at each:
 
 ```
-get_board_state()      → full public game state
-get_legal_moves()      → the moves available for the current roll
-roll_dice()            → engine-controlled RNG, seeded and logged
-make_move(token, to)   → validated; illegal moves are rejected, not corrected
-send_message(to, text) → table talk / alliance negotiation
-get_memory(topic)      → this agent's recall about opponents
+negotiate   the floor-passing table conversation (ADR-0009)
+choose      pick from moves the ENGINE already computed and validated;
+            one retry after a rejection, then the turn is forfeit
+reflect     one memory-write opportunity, after the turn resolves
 ```
 
-Every stack binds the *same* contract to its own tool-calling mechanism. The engine validates everything. **An agent cannot cheat by producing bad output** — it can only lose a turn. This is what makes lenient guardrails safe (see [LUDO agent design](../projects/ludo/agent-design.md)).
+An agent is never asked "is this legal?" — it is handed a list that already is, and anything else it returns is rejected, not corrected. **An agent cannot cheat by producing bad output** — it can only lose a turn ([ADR-0004](../decisions/adr-0004-structural-guardrails.md)), which is what makes lenient guardrails safe.
+
+Note what the contract deliberately does **not** fix: the mechanism. Whether a stack meets it with tool calls, handoffs, or parsed JSON is framework territory ([ADR-0008](../decisions/adr-0008-framework-native-harness.md)) — that is where the comparison lives. An earlier version of this page showed a fixed list of callable tools (`make_move(...)`, `roll_dice()`); that design was superseded by the contract-plus-native-mechanism split, and the correction is left visible because it *is* the lesson: pin behaviour, free the machinery.
 
 ### Keystone 2 — the shared event stream
 

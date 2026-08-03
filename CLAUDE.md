@@ -207,5 +207,6 @@ Two conventions the engine already relies on: positions are **colour-relative** 
 ## Docs conventions
 
 - Non-obvious, expensive-to-reverse decisions get an [ADR](docs/decisions/README.md). Accepted ADRs are never edited — supersede them instead.
+- Teaching material follows the techniques in [vision.md → How the teaching is done](docs/vision.md#how-the-teaching-is-done): problem before solution, **Before you scroll** predictions, named-and-killed misconceptions, one handle per concept, check-yourself retrieval at the end. A few lines each — verbosity is not pedagogy.
 - Ratings in the capability matrix and scores from the LLM judge must cite evidence. Unsourced claims don't go in.
 - Keep [docs/topics/roadmap.md](docs/topics/roadmap.md) current when a project claims a topic.

@@ -58,7 +58,9 @@ for move in ctx.legal_moves:
 return Move(token, frm, to)             # not legal — returned anyway
 ```
 
-That last line is the one students argue with. The harness *knows* the move is illegal — why return it? Because **rejecting is the engine's job** ([ADR-0004](../../docs/decisions/adr-0004-structural-guardrails.md)). The engine emits `illegal_move_rejected`, asks again with `attempt=2`, and the harness renders `turn/retry.md` — *into the same conversation*, so the model is looking at its own rejected answer when it retries:
+**Before you scroll back up:** the harness *knows* that returned move is illegal. Three options — fix it to the nearest legal move, raise an error, or hand it over broken. Commit to one, and to why.
+
+Handing it over broken is correct, and the reason is the repo's deepest rule: **rejecting is the engine's job** ([ADR-0004](../../docs/decisions/adr-0004-structural-guardrails.md)). A harness that quietly fixed the move would erase the `illegal_move_rejected` event — and with it the evidence of how reliable each model actually is, which is part of what's being measured. The engine emits `illegal_move_rejected`, asks again with `attempt=2`, and the harness renders `turn/retry.md` — *into the same conversation*, so the model is looking at its own rejected answer when it retries:
 
 ```python
 prompt = self.prompts.turn["retry"].render(
@@ -114,5 +116,7 @@ and the full scripted game, which exercises everything on this page in one trans
 ```bash
 uv run --directory projects/ludo/stack-strands python -m ludo_strands.demo out.jsonl
 ```
+
+> **The line to keep: the engine judges, the harness narrates.** Everything `harness.py` does is rendering, parsing, and reporting; every decision about what is *true in the game* stays on the engine's side of the `Decider` arrow.
 
 Next: [the swarm table](02-the-swarm-table.md) — the phase this doc skipped over.

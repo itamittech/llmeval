@@ -25,6 +25,21 @@ Working code that nobody understands is a failed deliverable here. That means:
 - **The UI teaches too.** It doesn't just show the game — it explains the architecture behind it and flags where frameworks fell short.
 - **Production practices apply.** These are experiments, but they are not throwaways. Someone should be able to lift a pattern from here into real work.
 
+#### How the teaching is done
+
+The techniques below are not style preferences — each one exists because of how memory actually works. Explanations are forgotten; *answers you committed to* and *problems you felt* are not. Applied throughout [learning/](../learning/) and the design docs, and expected of new material:
+
+- **Problem before solution.** Show the itch before the scratch. A concept lands only when it answers a question the reader already has — which is why [class-design §7](projects/ludo/class-design.md#7-design-patterns-from-the-problem-up) names each pattern *last*, after the problem that forces it.
+- **Predict, then verify.** Where a doc says **Before you scroll** — stop and commit to an answer. Being asked *before* being told is what turns reading into learning, and a wrong guess corrected is the strongest memory hook there is.
+- **Name the wrong model, then kill it.** A misconception survives silent correction; it dies when stated. Hence the "NOT what the engine does" blocks, and findings that keep the earlier wrong claim visible.
+- **One handle per concept.** A phrase that fits in your head outlives any paragraph: *the reset is the delivery* · *gaps are results* · *claims are claims, not facts* · *the engine judges, the harness narrates*.
+- **Three encodings.** Prose, a picture or table, and something runnable. Never trust an explanation you can't execute — every learning doc ends with a command.
+- **Anchor in what the reader already knows.** Java is taught against Python, `uv` against Maven, the agent loop against the engine's turn loop. New ideas stick to old ones, not to nothing.
+- **Close with retrieval.** "Check yourself" questions at the end, answers as links back in. Rereading *feels* like learning; recalling *is* learning.
+- **Let concepts return in new clothes.** Hashability appears as a dataclass footnote, then as `set(moves)`, then as Java's `hashCode` contract. Meeting an idea three times in three contexts beats one thorough lecture.
+
+The boundary still holds: **verbosity is not pedagogy.** Every one of these techniques is a few lines. A doc that doubles in length to "teach better" has done the opposite.
+
 ### 3. The comparison must be honest
 
 A three-way comparison is only worth anything if the three implementations differ *only* in the thing being compared. If our LangGraph version loses because we wrote a worse dice roller, we've learned nothing.

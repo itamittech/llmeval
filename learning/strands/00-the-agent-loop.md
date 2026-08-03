@@ -1,6 +1,8 @@
 # What Happens When You Call `agent("...")`
 
-Everything in the harness rests on one framework behaviour. Before reading a line of `harness.py`, get this loop into your head.
+Here is the confusion this page exists to clear up. The harness calls each agent **once** per negotiation phase — yet the [fixture transcript](../../projects/ludo/games/scripted-strands-seed7.jsonl) shows **five** `llm_call` events for a single conversation. Where did the other calls come from?
+
+The answer is the one framework behaviour everything in the harness rests on. Get this loop into your head before reading a line of `harness.py`.
 
 ## The loop
 
@@ -78,7 +80,9 @@ The scripted usage numbers are fake but deliberately **nonzero** (chars/4 — th
 
 ## The trap this loop hid
 
-The obvious way to meter tokens from `AfterModelCallEvent` is to read the agent's *accumulated* metrics and diff against last time. It reads zeros — the event loop fires the hook **before** it adds the call's usage to the totals. The per-call numbers are attached to the assistant message itself (`message["metadata"]["usage"]`), put there *for* hooks, and that is what [`hooks.py`](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) reads.
+**Before you scroll:** you need per-call token counts inside `AfterModelCallEvent`, and the agent object exposes *accumulated* totals. Design your metering in one sentence — then look for the flaw in it.
+
+The obvious design — read the accumulated metrics, diff against last time — is the flawed one. It reads zeros: the event loop fires the hook **before** it adds the call's usage to the totals. The per-call numbers are attached to the assistant message itself (`message["metadata"]["usage"]`), put there *for* hooks, and that is what [`hooks.py`](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) reads.
 
 Caught only because a scripted-loop test asserted a nonzero `llm_call`. Against a live provider, every transcript would have carried plausible-looking, uniformly stale token counts — no error, no warning, wrong data forever. The full write-up is a [capability-matrix finding](../../docs/architecture/stack-comparison.md), with the question the other two stacks now have to answer.
 
@@ -89,5 +93,7 @@ Caught only because a scripted-loop test asserted a nonzero `llm_call`. Against 
 | The fake model's stream events | [`scripted.py`](../../projects/ludo/stack-strands/src/ludo_strands/scripted.py) | `uv run --directory projects/ludo/stack-strands pytest -k real_strands_model -q` |
 | Per-call metering off the hook | [`hooks.py`](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) `_after_model` | `... pytest -k picks_the_scripted_move -q` |
 | Agent construction | [`players.py`](../../projects/ludo/stack-strands/src/ludo_strands/players.py) `build_player` | |
+
+> **The line to keep: one agent call is not one model call.** Every tool round is another invocation, another `llm_call`, another chance for the budget hook to fire. If a number in this stack ever looks wrong by a small integer factor, suspect this first.
 
 Next: [one turn through the harness](01-one-turn-through-the-harness.md).

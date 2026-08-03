@@ -12,6 +12,8 @@ python learning/python/examples/01_classes_and_self.py
 
 Each script prints its own explanation as it runs. Editing them and re-running is the point — they're meant to be poked at.
 
+One reading rule, used across all the learning folders: when a doc says **Before you scroll**, stop and commit to an answer. A guess — *especially* a wrong one — is what makes the explanation underneath stick; skimming past the question throws that away. ([Why these docs teach the way they do.](../../docs/vision.md#how-the-teaching-is-done))
+
 ## Suggested order
 
 **0. [What all these files and folders are for](00-files-and-folders.md)** — if a Python repo looks like unexplained clutter, start here. `__init__.py`, `__pycache__`, `src/`, why commands use `python -m`. Numbered `00` because it comes first; no code required.

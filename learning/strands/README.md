@@ -60,6 +60,16 @@ And a full scripted game, free and offline, producing the same bytes as the comm
 uv run --directory projects/ludo/stack-strands python -m ludo_strands.demo out.jsonl
 ```
 
+## Check yourself
+
+After the three docs, these should come without looking. Each answer is a link; a surprise marks the doc to reread.
+
+1. One negotiation phase, three floor holdings, two handoffs. How many `llm_call` events — and why isn't it three? → [00](00-the-agent-loop.md)
+2. Your metering hook needs this call's token count. Why is diffing the agent's accumulated totals wrong, and what is right? → [00](00-the-agent-loop.md)
+3. The model names an illegal move and the harness knows it. What does `choose` return, and who emits the rejection? → [01](01-one-turn-through-the-harness.md)
+4. Red is activated twice in one conversation. What does it remember of its first activation, and where did that design decision push memory writes? → [02](02-the-swarm-table.md)
+5. A directed message's *content* is private. Name two things about it that are public anyway. → [02](02-the-swarm-table.md)
+
 ## Related
 
 - [Stack README](../../projects/ludo/stack-strands/README.md) — module map and status

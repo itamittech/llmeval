@@ -81,7 +81,9 @@ public interface Decider {
 }
 ```
 
-In Python an agent satisfies this **by shape**: no import, no inheritance, no compile-time relationship between the engine package and the agent package at all. In Java it satisfies it **by declaration**, so every agent needs `ludo-engine` on its classpath.
+**Before you scroll:** translate `FirstLegal` to Java word for word — right methods, right signatures — but forget to write `implements Decider`. Is the result a `Decider`? And in Python, would the same omission even *be* an omission?
+
+In Python an agent satisfies this **by shape**: no import, no inheritance, no compile-time relationship between the engine package and the agent package at all. In Java it satisfies it **by declaration**, so every agent needs `ludo-engine` on its classpath — the forgetful translation above is just a class that happens to resemble one.
 
 That is why the two Python stacks can share one engine while keeping [genuinely separate dependency trees](../../docs/architecture/environment-strategy.md), and the Java stack cannot. It's a [capability-matrix](../../docs/architecture/stack-comparison.md) finding, not trivia. [Example 02](examples/02_interfaces_and_defaults.java) demonstrates it.
 
@@ -98,9 +100,11 @@ x ^= x << 25;                      // long wraps at 64 bits for free
 x ^= x >>> 27;                     // but >> would drag the sign bit in
 ```
 
+**Before you scroll:** dice state is a signed `long`, negative about half the time. If a port writes `>>` where it needed `>>>`, what happens — a compile error, an exception, or something worse?
+
 Python's integers are arbitrary-precision, so the algorithm needs `& MASK64` after anything that could grow, and its `>>` is always logical. Java's `long` wraps for free — the masks vanish — but it is *signed*, so every right shift must be `>>>`.
 
-One `>>` and every conformance vector fails. [Example 03](examples/03_signed_shift.java) reproduces it: the broken version still produces plausible 1–6 dice, just a different game.
+The answer is *something worse*: nothing happens. One `>>` compiles, runs, and produces plausible 1–6 dice — just a different game, discovered only when every conformance vector fails. [Example 03](examples/03_signed_shift.java) reproduces it. That silence is the lesson: the bugs worth designing tests around are the ones with no symptom.
 
 ## 5. `Json` — the stdlib gap
 
@@ -152,6 +156,15 @@ Three things surfaced only because a second engine existed — the argument for 
 1. **The conformance vectors were unsatisfiable by any engine but the one that wrote them.** `game_started` records `engine.language`, the digest covered it, and a perfect Java port failed all twenty vectors on one string. See [the conformance README](../../shared/conformance/README.md).
 2. **One serialiser wasn't enough** — see §5.
 3. **Test seams must be designed in advance** — see §7.
+
+## Check yourself
+
+Answers are one click back — a surprising link marks the section to reread.
+
+1. Two byte-for-byte-identical agent classes, one Python, one Java. Why can one be a `Decider` while the other is not? → [§3](#3-decider--protocol-became-interface)
+2. One `>>` slips into `Dice`. What fails, and how loudly? → [§4](#4-dice--the-same-algorithm-different-arithmetic)
+3. Python reverses a sort with `reverse=True`, Java with `.reversed()`. What property must both preserve for the standings to agree? → [§6](#6-standings--where-a-tie-break-nearly-diverged)
+4. Why does the Java `Game` need a constructor the Python one never wrote? → [§7](#7-testing--the-difference-that-changes-the-design)
 
 ## Related
 

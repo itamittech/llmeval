@@ -66,18 +66,20 @@ class GameConfig:
 
 `dict[Color, dict]` reads as "a dict whose keys are `Color` and whose values are dicts".
 
-**The last line is the interesting one.** You cannot write `players: dict = {}`:
+**The last line is the interesting one.** You cannot write `players: dict = {}` — and the reason is a trap every Python programmer falls into exactly once:
 
 ```python
-def add(item, items=[]):     # a classic Python bug
+def add(item, items=[]):
     items.append(item)
     return items
 
 add("a")   # ['a']
-add("b")   # ['a', 'b']   <-- the SAME list, still there
+add("b")   # ?
 ```
 
-Default values are evaluated **once**, when the `def` runs — not per call. So every call shares one list. `@dataclass` refuses outright:
+**Before you scroll:** what does the second call return?
+
+It returns `['a', 'b']` — the **same** list, with `"a"` still in it. Default values are evaluated **once**, when the `def` runs — not per call. So every call shares one list. If you guessed `['b']`, you just felt the exact intuition the language violates — hold on to that. `@dataclass` refuses outright:
 
 ```
 ValueError: mutable default <class 'dict'> for field players is not allowed:
@@ -211,6 +213,8 @@ Short, because the rolling was moved out into `_roll_loop`.
             )
 ```
 
+**Before you scroll:** `RandomBot` never imports `Negotiator` and inherits from nothing — yet this `isinstance` line runs against it every turn without error. What can `isinstance` possibly be checking here?
+
 **`isinstance(decider, Negotiator)` on a `Protocol`** is the surprising line. Normally `isinstance` asks "is this an instance of that class?" — but `Negotiator` is declared `@runtime_checkable`, which changes the question to **"does this object have a `negotiate` method?"** No inheritance is consulted. It's `hasattr` with a name, and it's how the engine supports optional hooks without forcing every bot to implement them.
 
 Note what it does *not* check: the signature. A `negotiate` taking the wrong arguments passes `isinstance` and then fails when called. `runtime_checkable` only ever looks at names.
@@ -305,6 +309,8 @@ Note the ternary **inside a dict literal** — expressions nest anywhere a value
 ---
 
 ## `_decide` — the densest method
+
+One line in this method is the entire reason `Move` is declared `frozen=True`. **Before you scroll** past the code: find it.
 
 ```python
     def _decide(
@@ -412,6 +418,16 @@ That last one builds one flat dict — `{"color": "red", "agent": "random-bot"}`
 5. **Assignment never copies.** Every snapshot, every `list(moves)`, every `dict(...)` is deliberate.
 6. **Truthiness is idiomatic** (`if not moves:`), but `None` gets `is None`.
 7. **`continue` vs `return`** inside `while True:` is what encodes the extra-roll rule.
+
+## Check yourself
+
+Recalling is learning; rereading only feels like it. Each answer is one click back into this page — if a link surprises you, that section is the one to reread.
+
+1. Why does `@dataclass` refuse `players: dict = {}`, and what does `field(default_factory=dict)` change? → [GameConfig](#gameconfig--a-record-with-one-important-detail)
+2. Rewrite `g.play(deciders)` as the call Python actually makes. → [`__init__`](#__init__--building-the-object)
+3. What single question does `isinstance(decider, Negotiator)` really ask — and name one thing it does *not* check. → [`_play_turn`](#_play_turn--the-turn-and-its-two-optional-hooks)
+4. Which line forces `Move` to be immutable, and what would break without it? → [`_decide`](#_decide--the-densest-method)
+5. `continue` versus `return` inside the roll loop — which *game rule* does that distinction carry? → [`_roll_loop`](#_roll_loop--the-core-loop)
 
 ## Next
 

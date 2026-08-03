@@ -242,10 +242,10 @@ The pattern is so common that "main guard" is just what people call it.
 
 ### Step 1 — declare the dependency
 
-A consumer names it in its own `pyproject.toml`. Here, the agent stacks will point at the folder rather than a published release:
+A consumer names it in its own `pyproject.toml`. The agent stacks point at the folder rather than a published release — this is now real, from [the Strands stack's own file](../../projects/ludo/stack-strands/pyproject.toml):
 
 ```toml
-# projects/ludo/stack-strands/pyproject.toml   (not written yet)
+# projects/ludo/stack-strands/pyproject.toml
 [project]
 dependencies = ["ludo-engine"]
 

@@ -24,6 +24,8 @@ Each activated agent receives a built-up **node input**: the handoff message add
 
 ## The reset semantics — the part nobody expects
 
+**Before you scroll:** red opens the conversation, blue replies, and the floor comes back to red. When red is activated the second time — what does it remember of its own first message? Commit to an answer.
+
 Three facts from the source, and they change everything:
 
 1. When a `Swarm` is constructed, it **snapshots** every agent's conversation and `AgentState` (`SwarmNode.__post_init__`).
@@ -92,6 +94,8 @@ uv run --directory projects/ludo/stack-strands pytest -k table -q
 ```
 
 Then read `test_the_table_runs_on_the_swarm` in [`test_turnloop.py`](../../projects/ludo/stack-strands/tests/test_turnloop.py) against this doc — every mechanism above is asserted there: the message order, the five calls, the inboxes, the note fan-out.
+
+> **The line to keep: the reset is the delivery.** Swarm wipes each agent back to its construction snapshot on every activation — so put the briefing *in* the snapshot, and the wipe becomes the mechanism that guarantees every activation starts from exactly the private context you intended.
 
 ## Related
 

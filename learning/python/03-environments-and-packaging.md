@@ -204,7 +204,7 @@ One environment for every member. Adding `stack-strands` and `stack-langgraph` w
 No workspace. Every Python project is standalone, and stacks depend on the engine **by path**:
 
 ```toml
-# projects/ludo/stack-strands/pyproject.toml  (not yet written)
+# projects/ludo/stack-strands/pyproject.toml  (real — go look)
 dependencies = ["ludo-engine"]
 
 [tool.uv.sources]
