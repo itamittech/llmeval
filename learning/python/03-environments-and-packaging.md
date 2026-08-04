@@ -215,8 +215,8 @@ Result:
 
 ```
 projects/ludo/engine-python/.venv/     uv.lock
-projects/ludo/stack-strands/.venv/     uv.lock     <- own tree
-projects/ludo/stack-langgraph/.venv/   uv.lock     <- own tree
+projects/ludo/stack-strands/.venv/     uv.lock     <- own tree (real today)
+projects/ludo/stack-langgraph/.venv/   uv.lock     <- own tree (when that stack exists)
 ```
 
 Three environments. Strands and LangGraph never see each other's dependencies, while both use the same engine source.

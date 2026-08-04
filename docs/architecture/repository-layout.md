@@ -10,6 +10,8 @@ llmeval/
 ├── package.json                  # repo tooling ONLY (the mermaid parser) — not the UI
 ├── .env.example                  # every required secret, by name
 │
+├── .github/workflows/            # CI: tests, conformance, schema, docs, prompts
+│
 ├── docs/
 │   ├── vision.md
 │   ├── open-questions.md
@@ -18,6 +20,11 @@ llmeval/
 │   ├── decisions/                # ADRs
 │   ├── topics/
 │   └── projects/<project>/       # per-project design docs
+│
+├── learning/                     # standalone teaching material; never imported
+│   ├── python/                   # + dependency-free runnable examples
+│   ├── java/                     # + examples runnable with a bare JDK
+│   └── strands/                  # no examples folder — teaches against the stack's tests
 │
 ├── shared/                       # stack-neutral, language-neutral contracts
 │   ├── schemas/                  # JSON Schema: events, transcripts, eval results
@@ -60,6 +67,8 @@ That constraint is why prompt templates use literal `{{name}}` substitution with
 **Stack directories are self-contained and independently runnable.** `stack-strands/` must build, test, and run a game without `stack-langgraph/` present. Each owns its dependency manifest and lockfile. They never import each other — a shortcut between stacks would destroy the comparison.
 
 **Engines are libraries with no LLM dependency.** `engine-python/` and `engine-java/` know nothing about agents, prompts, or providers. They should be testable at speed with zero API calls, and a human-vs-random-bot game should be runnable straight from the engine. If an engine ever needs to import an LLM SDK, something has gone wrong.
+
+**`learning/` is teaching material, not code.** Nothing imports it and no build includes it. Its Python and Java examples stay dependency-free so a bare interpreter or JDK runs them; the Strands folder deliberately has no examples at all — a framework example can't be dependency-free, so it teaches against the stack's own tests instead.
 
 **`platform/` starts empty on purpose.** Cross-project abstractions get *extracted* after a second project proves they generalise, not designed upfront. Premature shared infrastructure is how teaching repos become unreadable.
 

@@ -1,6 +1,6 @@
 # What Happens When You Call `agent("...")`
 
-Here is the confusion this page exists to clear up. The harness calls each agent **once** per negotiation phase — yet the [fixture transcript](../../projects/ludo/games/scripted-strands-seed7.jsonl) shows **five** `llm_call` events for a single conversation. Where did the other calls come from?
+Here is the confusion this page exists to clear up. In the [fixture transcript](../../projects/ludo/games/scripted-strands-seed7.jsonl)'s negotiation, agents hold the floor **three** times — red, blue, red again — yet the transcript shows **five** `llm_call` events for that one conversation. Where did the extra two come from?
 
 The answer is the one framework behaviour everything in the harness rests on. Get this loop into your head before reading a line of `harness.py`.
 

@@ -73,7 +73,7 @@ The **shared event schema**, **both engines** (Python and Java, cross-checked by
 | `shared/schemas/` — event contract | ✅ Built |
 | `projects/ludo/engine-python/` | ✅ Built, 68 tests passing |
 | `projects/ludo/engine-java/` | ✅ Built, 20 tests passing; matches Python on all 20 vectors |
-| `docs/projects/ludo/harness-contract.md` | ✅ Spec written, re-scoped to observable behaviour ([ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)); no stack implements it yet |
+| `docs/projects/ludo/harness-contract.md` | ✅ Spec written, re-scoped to observable behaviour ([ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)); first implementation running scripted in `stack-strands` (§5 compaction still pending there) |
 | `shared/prompts/ludo/` — prompts all stacks send | ✅ 8 templates, v2 (floor-passing negotiation, ADR-0009) |
 | `shared/models.yaml` — seats, routes, profiles | ✅ Built; **model IDs still `TBD`** |
 | `shared/conformance/` — cross-engine vectors | ✅ 20 vectors |

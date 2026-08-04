@@ -97,7 +97,7 @@ An earlier version of this finding claimed everything an agent contributes goes 
 
 `Graph` doesn't fit either, for a simpler reason: it wires a *deterministic* topology in advance, while who talks to whom each turn is the active agent's runtime choice.
 
-So negotiation uses **agents-as-tools** — also a Strands-documented multi-agent pattern, so this is a choice between two native patterns, not native vs. hand-rolled. The active agent gets a tool that addresses a chosen opponent; a public message lands in every agent's context, a private one reaches exactly one. The turn phases themselves need no orchestrator at all — the engine's `negotiate`/`choose`/`reflect` hooks already sequence them.
+The finding's original conclusion — written before ADR-0009 reversed the direction of fit, and kept as the record — was to use **agents-as-tools** instead: also a Strands-documented multi-agent pattern, so a choice between two native patterns, not native vs. hand-rolled. The active agent would get a tool addressing a chosen opponent; a public message would land in every agent's context, a private one would reach exactly one. The turn phases themselves need no orchestrator either way — the engine's `negotiate`/`choose`/`reflect` hooks already sequence them.
 
 Worth stating the counterfactual: a negotiation redesigned as all-public with autonomous floor-passing would fit `Swarm` natively. The mismatch is with *this* protocol — chosen because private channels are what make deception observable — not with multi-agent orchestration per se.
 
