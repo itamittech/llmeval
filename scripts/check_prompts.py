@@ -178,10 +178,12 @@ def check_models() -> None:
         check_control(profile, seats)
         check_judge(profile, spec, seats)
 
-        for field in ("max_turns", "max_floor_passes", "max_message_chars"):
+        for field in ("max_turns", "max_floor_passes", "max_message_chars",
+                      "max_context_tokens"):
             if field not in (spec.get("budgets") or {}):
                 fail(f"models.yaml: profile '{profile}' is missing budgets.{field} — "
-                     f"the negotiation prompt renders these")
+                     f"every stack's harness reads these; the negotiation prompt "
+                     f"renders some of them")
 
         shapes[profile] = [(s.get("seat"), s.get("access"), s.get("provider"))
                            for s in seats]

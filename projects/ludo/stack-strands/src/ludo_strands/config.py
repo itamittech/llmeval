@@ -35,6 +35,9 @@ class Budgets:
     #: orchestrator's handoff cap.
     max_floor_passes: int
     max_message_chars: int
+    #: Per-agent conversation budget (harness-contract §5) — over it, the
+    #: oldest exchanges are summarised into memory and dropped.
+    max_context_tokens: int
     max_tokens_per_game: int
 
 
@@ -86,7 +89,8 @@ def load(name: str = "dev", path: Path | None = None) -> Profile:
         seats=seats,
         judge=judge,
         budgets=Budgets(b["max_turns"], b["max_floor_passes"],
-                        b["max_message_chars"], b["max_tokens_per_game"]),
+                        b["max_message_chars"], b["max_context_tokens"],
+                        b["max_tokens_per_game"]),
         inference=raw.get("inference", {}),
     )
 

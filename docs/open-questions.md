@@ -32,7 +32,7 @@ Strong agents should finish faster than random bots, but not by the order of mag
 
 > **Recommendation:** set the cap from a per-game token budget rather than from game length — decide what a game may cost, then derive the cap. Needs a measured per-turn token cost, so it stays open until the first stack runs.
 
-**Provisional numbers are now in [`shared/models.yaml`](../shared/models.yaml)** so the negotiation prompt has something to render — 40 turns and 3 floor passes per conversation on the `dev` profile, 60 and 6 on `headline` (floor passes replaced per-turn message counts under [ADR-0009](decisions/adr-0009-swarm-negotiation.md); each pass is one agent activation, i.e. one model call). These are guesses, deliberately placed in config rather than in the prompt so that tuning them is a one-line edit and not a prompt change. Replace them with measured values after the first stack runs.
+**Provisional numbers are now in [`shared/models.yaml`](../shared/models.yaml)** so the negotiation prompt has something to render — 40 turns, 3 floor passes per conversation, and a 6 000-token per-agent context budget on the `dev` profile; 60, 6, and 30 000 on `headline` (floor passes replaced per-turn message counts under [ADR-0009](decisions/adr-0009-swarm-negotiation.md); each pass is one agent activation, i.e. one model call; the context budget is what triggers compaction). These are guesses, deliberately placed in config rather than in the prompt so that tuning them is a one-line edit and not a prompt change. Replace them with measured values after the first stack runs.
 
 ---
 

@@ -48,8 +48,11 @@ Agent(
     state={"notes": [], "durable": []},  # AgentState — memory lives here
     callback_handler=None,       # no console streaming; the transcript is the record
     hooks=[self.hooks],          # our GameHooks subscribes to the lifecycle events
+    conversation_manager=manager,  # SummarizingConversationManager — compaction (doc 01)
 )
 ```
+
+One line after construction is worth noticing: `manager.summarization_agent = agent` — **each agent is its own summariser**. The manager's default path calls `model.stream()` directly, *bypassing the hooks*; routing the summary through a full self-invocation keeps it metered, budget-gated, and in the agent's own voice.
 
 `state` is an `AgentState`: a key-value store that validates everything is JSON-serialisable and **deep-copies on every `get`**. That last part changes how you write to it — mutating what `get` returned changes a copy, so memory writes are read-modify-**set**:
 

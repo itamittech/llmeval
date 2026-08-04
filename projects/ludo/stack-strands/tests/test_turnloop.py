@@ -182,6 +182,65 @@ def test_a_spent_budget_stops_calls_and_forfeits(profile, prompt_set):
     assert of_type(sink, "llm_call") == []  # not one model call got through
 
 
+def test_the_conversation_persists_across_turns(profile, prompt_set):
+    harness, _ = build(profile, prompt_set, {
+        "red": ['{"token": 0, "to": 0}', '{"token": 0, "to": 0}'],
+    })
+    view = StateView(GameState())
+    harness.deciders["red"].choose(TurnContext(view, "red", 6, [Move(0, -1, 0)], 1))
+    harness.deciders["red"].choose(TurnContext(view, "red", 6, [Move(0, -1, 0)], 2))
+    # Two exchanges, one conversation: turn 2's model saw turn 1 happen.
+    assert len(harness.players["red"].messages) == 4
+
+
+def test_the_table_leaves_no_residue_in_the_conversation(profile, prompt_set):
+    harness, _ = build(profile, prompt_set, {
+        "red": ['{"token": 0, "to": 0}', "(quiet)"],
+    })
+    view = StateView(GameState())
+    harness.deciders["red"].choose(TurnContext(view, "red", 6, [Move(0, -1, 0)], 1))
+    before = list(harness.players["red"].messages)
+
+    harness.deciders["red"].negotiate(TurnStart(view, "red", 2))
+
+    # The swarm seeded briefings and ran; the ongoing conversation is exactly
+    # what it was — the table is ephemeral by design (ADR-0009).
+    assert harness.players["red"].messages == before
+
+
+def test_compaction_summarises_meters_and_folds_into_memory(profile, prompt_set):
+    import dataclasses
+    harness, sink = build(profile, prompt_set, {
+        "red": ['{"token": 0, "to": 0}'] * 3
+               + ["Red and blue hold an alliance; yellow is the threat."]
+               + ['{"token": 0, "to": 0}'],
+    })
+    harness.budgets = dataclasses.replace(harness.budgets, max_context_tokens=40)
+    view = StateView(GameState())
+    ctx = TurnContext(view, "red", 6, [Move(0, -1, 0)], 1)
+
+    for _ in range(3):
+        harness.deciders["red"].choose(ctx)          # 6 messages accumulate
+    move = harness.deciders["red"].choose(ctx)       # over budget -> compact, then decide
+
+    assert move == Move(0, -1, 0)
+    compactions = of_type(sink, "context_compacted")
+    assert len(compactions) == 1
+    payload = compactions[0]["payload"]
+    assert payload["player"] == "red"
+    assert payload["tokens_before"] > payload["tokens_after"]
+    assert "alliance" in payload["summary"]
+
+    # The summarisation was a real, metered call on the agent's own model.
+    purposes = [c["payload"]["purpose"] for c in of_type(sink, "llm_call")]
+    assert purposes.count("compact") == 1
+
+    # And the summary survived into durable memory, where recency can't drop it.
+    from ludo_strands.players import render_memory
+    assert "(durable)" in render_memory(harness.players["red"])
+    assert "alliance" in render_memory(harness.players["red"])
+
+
 def test_a_full_scripted_game_produces_a_wellformed_transcript(profile, prompt_set):
     # Generous generic scripts: enough entries that no phase starves, generic
     # enough that legality is the dice's problem — forfeits are valid outcomes

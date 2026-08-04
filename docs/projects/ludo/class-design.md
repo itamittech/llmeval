@@ -1105,6 +1105,10 @@ sequenceDiagram
     participant E as TeeSink
 
     G->>H: choose(TurnContext)
+    opt conversation over max_context_tokens
+        H->>A: reduce_context — agent summarises ITSELF (one metered llm_call)
+        H->>E: emit context_compacted
+    end
     H->>H: render decide.md — board, legal moves, recent events, memory
     H->>A: agent(prompt)
     A->>K: BeforeModelCallEvent
@@ -1166,6 +1170,7 @@ sequenceDiagram
 |---|---|---|
 | `Game` | `_Decider` → `LudoHarness` | the three engine hooks, per turn |
 | `LudoHarness` | `Agent.__call__` | choose, reflect |
+| `LudoHarness` | `SummarizingConversationManager.reduce_context` | once per turn, when the conversation is over budget |
 | `LudoHarness` | `Swarm` construct + run | once per negotiation phase |
 | `Swarm` | `Agent` (reset, activate) | per floor holding |
 | **Strands** | `Model.stream()` | every model invocation |

@@ -66,18 +66,18 @@ Say so explicitly in your response, naming the file and what's now wrong. An ack
 
 ## Repository status
 
-The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack's turn loop runs end to end against scripted models** — swarm negotiation, memory in agent state, budgets and events in lifecycle hooks, all Strands-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)/[0009](docs/decisions/adr-0009-swarm-negotiation.md) — with context compaction and guardrails still unbuilt. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in.
+The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack's turn loop runs end to end against scripted models** — swarm negotiation, memory in agent state, budgets and events in lifecycle hooks, context compaction via each agent summarising itself, all Strands-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)/[0009](docs/decisions/adr-0009-swarm-negotiation.md) — with content guardrails and session persistence still unbuilt. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in.
 
 | Component | State |
 |---|---|
 | `shared/schemas/` — event contract | ✅ Built |
 | `projects/ludo/engine-python/` | ✅ Built, 68 tests passing |
 | `projects/ludo/engine-java/` | ✅ Built, 20 tests passing; matches Python on all 20 vectors |
-| `docs/projects/ludo/harness-contract.md` | ✅ Spec written, re-scoped to observable behaviour ([ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)); first implementation running scripted in `stack-strands` (§5 compaction still pending there) |
+| `docs/projects/ludo/harness-contract.md` | ✅ Spec written, re-scoped to observable behaviour ([ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)); §§2–6 running scripted in `stack-strands` |
 | `shared/prompts/ludo/` — prompts all stacks send | ✅ 8 templates, v2 (floor-passing negotiation, ADR-0009) |
 | `shared/models.yaml` — seats, routes, profiles | ✅ Built; **model IDs still `TBD`** |
 | `shared/conformance/` — cross-engine vectors | ✅ 20 vectors |
-| `projects/ludo/stack-strands/` | 🚧 Turn loop + swarm negotiation + events running scripted, 31 tests, schema-valid fixture committed; compaction and guardrails not done |
+| `projects/ludo/stack-strands/` | 🚧 Turn loop + swarm negotiation + compaction + events running scripted, 34 tests, schema-valid fixture committed; guardrails and session persistence not done |
 | `stack-langgraph`, `stack-springai`, `ui/`, `eval/` | ❌ Not started |
 | Judge prompt | ❌ Waits for the eval harness |
 

@@ -30,10 +30,10 @@ Two contract rules hide in those lines. `purpose` stamps every `llm_call` the ph
 
 ## Choose — the only call that changes the game
 
-The engine asks once per roll, with the legal moves already computed. Attempt 1 starts a **fresh conversation**:
+The engine asks once per roll, with the legal moves already computed. Attempt 1 first gives compaction its once-per-turn chance (next section), then renders into the agent's **ongoing conversation** — decide and reflect exchanges accumulate turn over turn, the way a framework agent is meant to live:
 
 ```python
-agent.messages = []
+self._maybe_compact(agent, ctx.color)
 prompt = self.prompts.turn["decide"].render(
     turn=..., color=..., die=...,
     board=render_board(ctx.state),
@@ -43,7 +43,7 @@ prompt = self.prompts.turn["decide"].render(
 )
 ```
 
-Every variable is rendered by code — `render_board`, `render_moves`, and friends at the top of `harness.py` — because the [prompt language has no loops](../../shared/prompts/README.md), deliberately. The prompt carries everything; nothing depends on what the agent happens to have in its message history.
+Every variable is still rendered by code — `render_board`, `render_moves`, and friends at the top of `harness.py` — because the [prompt language has no loops](../../shared/prompts/README.md), deliberately. The prompt carries the current facts; the conversation carries the lived history — and only the negotiation table sits outside it, its messages saved and restored around every swarm run so the table stays ephemeral (ADR-0009) without erasing the agent's life.
 
 Then the model answers, and three things happen in order:
 
@@ -104,6 +104,16 @@ The per-game ceiling stops **calls**, not the game:
 - `BeforeModelCallEvent.cancel` backstops mid-phase, where a swarm conversation could cross the line between checks
 
 So a spent game fast-forwards through instant forfeits to its turn cap and ends normally: `game_ended` is emitted, the transcript validates, and every skipped call is visible as a forfeit. The alternative — aborting mid-turn — would leave a `turn_started` with no `turn_ended` and a transcript that lies by omission.
+
+## When the conversation outgrows its budget
+
+**Before you scroll:** the summarisation is itself a model call. Which model should make it — a cheap dedicated summariser, or the agent's own? One of those answers breaks two contract rules at once.
+
+A persistent conversation grows without bound, so once per turn — between calls, never mid-call — `_maybe_compact` asks the framework's `count_tokens` what the conversation costs, and past `budgets.max_context_tokens` it calls the conversation manager's `reduce_context`: the oldest exchanges are summarised into one message and dropped, recent ones survive untouched.
+
+The cheap-summariser answer is the trap. The [contract](../../docs/projects/ludo/harness-contract.md#5-compaction) requires the *agent's own model and settings* (a cheaper summariser makes one stack's games quietly cheaper), and Strands' default path has a second problem you can only see in the source: it calls `model.stream()` **directly, bypassing the agent pipeline** — no lifecycle events, so no `llm_call`, no budget gate, an invisible model call. The fix is one line in [`players.py`](../../projects/ludo/stack-strands/src/ludo_strands/players.py): each agent is registered as its **own** `summarization_agent`, which routes the summary through a full self-invocation — hooks fire, `llm_call` lands with `purpose: "compact"`, the ceiling applies, and red summarises red's game in red's own voice.
+
+The summary then lands twice, deliberately: as the framework's summary message inside the conversation, and folded into **durable memory**, where `render_memory`'s recency limit can never drop it. `context_compacted` carries it to the transcript — memory the transcript cannot see does not exist.
 
 ## Watch it run
 

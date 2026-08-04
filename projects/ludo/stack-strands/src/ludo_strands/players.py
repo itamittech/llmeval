@@ -16,6 +16,13 @@ from __future__ import annotations
 from typing import Any
 
 from strands import Agent
+from strands.agent.conversation_manager import SummarizingConversationManager
+
+#: How much of the conversation one compaction summarises, and how many recent
+#: messages always survive one. Pinned explicitly: framework defaults could
+#: drift, and an unpinned knob here would be a silent parity break.
+SUMMARY_RATIO = 0.5
+PRESERVE_RECENT_MESSAGES = 4
 
 #: The kinds the event schema allows.
 KINDS = ("opponent_model", "commitment", "strategy", "observation")
@@ -31,15 +38,31 @@ def build_player(color: str, model: Any, system_prompt: str, hooks: list) -> Age
     ``name=color`` is load-bearing: the agent's name becomes its Swarm node id,
     which is what makes ``handoff_to_agent(agent_name="blue")`` addressable by
     colour — the floor-passing protocol of ADR-0009 rides on it.
+
+    **Each agent is its own summariser.** The conversation manager's default
+    path calls ``model.stream()`` directly, bypassing the agent pipeline — no
+    lifecycle hooks, so no ``llm_call``, no budget gate (a capability-matrix
+    finding). Passing the agent as its own ``summarization_agent`` routes the
+    summary through a full invocation instead: the agent's own model and
+    settings (harness-contract §5), metered and budget-gated like every other
+    call, and the summary is written from the player's own perspective.
     """
-    return Agent(
+    manager = SummarizingConversationManager(
+        summary_ratio=SUMMARY_RATIO,
+        preserve_recent_messages=PRESERVE_RECENT_MESSAGES,
+    )
+    agent = Agent(
         model=model,
         system_prompt=system_prompt,
         name=color,
         state={"notes": [], "durable": []},
         callback_handler=None,  # no console streaming; the transcript is the record
         hooks=list(hooks),
+        conversation_manager=manager,
     )
+    # After construction, because the agent must exist to be its own summariser.
+    manager.summarization_agent = agent
+    return agent
 
 
 def write_note(agent: Agent, text: str, turn: int,

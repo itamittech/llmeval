@@ -41,7 +41,7 @@ One more rule, from [ADR-0008](../decisions/adr-0008-framework-native-harness.md
 |---|---|---|---|---|
 | Short-term / conversation memory | — | — | — | |
 | Long-term agent memory | **Native** — [players.py](../../projects/ludo/stack-strands/src/ludo_strands/players.py) | — | — | Cross-turn recall of opponents, on `AgentState` |
-| Context compaction / summarisation | — | — | — | Explicit goal of the project |
+| Context compaction / summarisation | **Native** — [players.py](../../projects/ludo/stack-strands/src/ludo_strands/players.py) + [harness.py](../../projects/ludo/stack-strands/src/ludo_strands/harness.py) | — | — | Explicit goal of the project; see finding — the default path bypasses the hooks |
 | Prompt templating & versioning | — | — | — | |
 | Prompt caching | — | — | — | Provider- and framework-dependent |
 | State persistence / resume | — | — | — | |
@@ -112,6 +112,18 @@ Found building the turn loop, caught by a test, invisible in a live run.
 The obvious way to meter tokens from `AfterModelCallEvent` is to read `agent.event_loop_metrics.accumulated_usage` and diff against the previous total. It is wrong: the event loop fires the hook **before** it updates the accumulated metrics, so the diff reads zeros on the first call and stays one call behind forever. The correct source is the assistant message itself — the loop attaches `message["metadata"]["usage"]` *before* firing the hook, precisely so hooks can read per-call numbers ([hooks.py](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py)).
 
 It surfaced only because the scripted loop asserted a nonzero `llm_call`; against a live provider every transcript would have carried plausible-looking, uniformly stale token counts. **What to check in LangGraph and Spring AI:** where per-call versus accumulated usage lives, and whether their callback ordering has the same trap.
+
+### Finding: Strands' summariser bypasses Strands' own hook system
+
+Found wiring compaction, by reading `summarizing_conversation_manager.py` in the pinned `1.50.2` source.
+
+`SummarizingConversationManager`'s default path generates the summary by calling `model.stream()` **directly** — deliberately skipping the agent pipeline (the code comments cite re-entrancy: summarising *during* an invocation would deadlock on the agent's lock). The consequence for anyone metering with lifecycle hooks: the summarisation is an **invisible model call** — no `BeforeModelCallEvent`, no `AfterModelCallEvent`, so no `llm_call` event, no budget gate, and a token meter that silently undercounts exactly when contexts are largest.
+
+Two other properties matter for a game harness: the built-in *proactive* trigger keys off the **model's** `context_window_limit` (~200k), which a game budget should never approach — so a per-game budget means calling `reduce_context` yourself; and the summarisation prompt in the default path is framework-authored text, the same parity boundary as the swarm's handoff-tool description.
+
+The fix used here: register each agent as its **own** `summarization_agent`. That path runs a full agent invocation — hooks fire, `llm_call` lands with `purpose: "compact"`, the per-game ceiling applies, and the contract's own-model-own-settings rule is satisfied by construction. Safe because the harness compacts *between* calls, where no invocation lock is held.
+
+**What to check in LangGraph and Spring AI:** whether their summarisation/compaction machinery routes through the same instrumentation as ordinary model calls, or around it — and whether their compaction triggers can be driven by an application budget rather than the provider's context limit.
 
 ### Finding: the Java agent must depend on the engine; the Python agents need not
 
