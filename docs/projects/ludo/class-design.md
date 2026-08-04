@@ -1045,7 +1045,7 @@ One inheritance hierarchy, one protocol, everything else composition. That's the
 
 ## 9. The harness layer: the same turn, on Strands
 
-Everything above ends at one dashed arrow: the engine calls a `Decider` and waits. This section is what now sits on the other side of that arrow in the first stack — the classes, who calls whom, and where the *framework* takes over from our code. The line-by-line walkthrough lives in [learning/strands](../../../learning/strands/); these are the maps.
+Everything above ends at one dashed arrow: the engine calls a `Decider` and waits. This section is what now sits on the other side of that arrow in the first stack — the classes, who calls whom, and where the *framework* takes over from our code. The line-by-line walkthrough lives in [learning/strands](../../../learning/strands/), and [its doc 03](../../../learning/strands/03-the-full-picture.md) draws the same machine as a guided tour — construction wiring, the turn as a flowchart, and the memory map; these here are the reference diagrams.
 
 One orientation rule before the diagrams: in the engine, our code calls our code. In the harness, the interesting arrows are the ones where **Strands calls us** — the `Model.stream()` it invokes, the lifecycle events it fires into `GameHooks`, the agents its `Swarm` activates. Framework programming is mostly arranging to be called well.
 

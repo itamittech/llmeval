@@ -10,7 +10,7 @@ See it play, free and offline — the committed [UI fixture](../games/scripted-s
 uv run --directory projects/ludo/stack-strands python -m ludo_strands.demo out.jsonl
 ```
 
-> **Finding the code hard to follow?** [learning/strands](../../../learning/strands/) teaches it from the framework up — the agent loop, one turn traced end to end, and the swarm table — and [class-design.md §9](../../../docs/projects/ludo/class-design.md#9-the-harness-layer-the-same-turn-on-strands) has the object graph and call diagrams.
+> **Finding the code hard to follow?** [learning/strands](../../../learning/strands/) teaches it from the framework up — the agent loop, one turn traced end to end, the swarm table, and [the full picture](../../../learning/strands/03-the-full-picture.md): construction wiring, the turn as a flowchart, and where every kind of memory lives. [class-design.md §9](../../../docs/projects/ludo/class-design.md#9-the-harness-layer-the-same-turn-on-strands) has the reference object graph and call diagrams.
 
 ## Why this exists twice more
 
