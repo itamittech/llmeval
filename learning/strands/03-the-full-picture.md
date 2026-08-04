@@ -238,7 +238,8 @@ One deliberate absence, stated rather than hidden: no slur/abuse word lists — 
 | [`models.yaml`](../../shared/models.yaml) + [`prompts/`](../../shared/prompts/README.md) | the checked-in inputs every stack shares verbatim | committed | forever |
 | `build_model()` / `ScriptedModel` | one configured `Model` per seat — provider binding or the offline fake ([doc 00](00-the-agent-loop.md)) | construction | the game |
 | `Agent` ×4 | the framework loop: model + system prompt + state + hooks + manager | construction | the game |
-| `AgentState` | each agent's beliefs — notes and durable facts | with its agent | the game (a session manager would extend this; not wired yet) |
+| `AgentState` | each agent's beliefs — notes and durable facts | with its agent | the game — or across processes, when a session directory is given |
+| `FileSessionManager` | opt-in persistence: constructing over its store *restores* state and conversation | construction, when `session_dir` is set | as long as the directory does |
 | `SummarizingConversationManager` | compacts the conversation; the agent is registered as its own summariser | with its agent | the game |
 | `GameHooks` | metering, budget ceiling, message capture, the guardrail gate — fired *by the framework* | construction, one shared | the game |
 | [`guardrails.py`](../../projects/ludo/stack-strands/src/ludo_strands/guardrails.py) rules | three deterministic out-of-fiction checks; cunning passes | module constants | forever |

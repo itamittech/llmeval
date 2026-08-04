@@ -44,6 +44,7 @@ from ludo_engine.events import EventSink, TeeSink
 from ludo_engine.game import Game, GameConfig, Outcome
 from ludo_engine.moves import Move
 from strands.multiagent import Swarm
+from strands.session import FileSessionManager
 
 from .config import Profile, seating
 from .hooks import BudgetExceeded, GameHooks
@@ -160,7 +161,8 @@ class LudoHarness:
     def __init__(self, profile: Profile, prompts: PromptSet,
                  models: dict[str, Any], sink: EventSink,
                  seed: int = 1, game_index: int = 0,
-                 max_turns: int | None = None) -> None:
+                 max_turns: int | None = None,
+                 session_dir: Any = None) -> None:
         self.prompts = prompts
         self.budgets = profile.budgets
         self._last_reply: dict[str, str] = {}
@@ -194,8 +196,15 @@ class LudoHarness:
             )
             for color in COLORS
         }
+        #: Opt-in persistence: with a directory, agent state and conversation
+        #: survive the process — and constructing over an existing store is a
+        #: RESTORE. Off by default: games are independent experiments unless
+        #: someone deliberately decides otherwise (open question 18).
+        self.session = (FileSessionManager(session_id="ludo", storage_dir=str(session_dir))
+                        if session_dir else None)
         self.players = {
-            color: build_player(color, models[color], system[color], [self.hooks])
+            color: build_player(color, models[color], system[color], [self.hooks],
+                                session_manager=self.session)
             for color in COLORS
         }
         self.deciders = {
@@ -222,7 +231,24 @@ class LudoHarness:
         )
 
     def play(self) -> Outcome:
-        return self.game.play(self.deciders)
+        try:
+            return self.game.play(self.deciders)
+        finally:
+            self.persist()
+
+    def persist(self) -> None:
+        """Flush every agent's state to the session store, if one is wired.
+
+        Required, not belt-and-braces: the framework syncs on its own schedule
+        — after each invocation — and this harness writes state *after*
+        invocations return (reflect notes, compaction folds). Without a final
+        explicit sync, the last turn's memory writes would silently never
+        reach disk. A capability-matrix finding.
+        """
+        if self.session is None:
+            return
+        for agent in self.players.values():
+            self.session.sync_agent(agent)
 
     # -- negotiate --------------------------------------------------------
 

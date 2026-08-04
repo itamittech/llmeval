@@ -44,7 +44,7 @@ One more rule, from [ADR-0008](../decisions/adr-0008-framework-native-harness.md
 | Context compaction / summarisation | **Native** — [players.py](../../projects/ludo/stack-strands/src/ludo_strands/players.py) + [harness.py](../../projects/ludo/stack-strands/src/ludo_strands/harness.py) | — | — | Explicit goal of the project; see finding — the default path bypasses the hooks |
 | Prompt templating & versioning | — | — | — | |
 | Prompt caching | — | — | — | Provider- and framework-dependent |
-| State persistence / resume | — | — | — | |
+| State persistence / resume | **Native** — [harness.py](../../projects/ludo/stack-strands/src/ludo_strands/harness.py) + [test_session.py](../../projects/ludo/stack-strands/tests/test_session.py) | — | — | `FileSessionManager`, opt-in; see finding — the sync schedule is the framework's, not yours |
 | Human-in-the-loop interrupt | — | — | — | |
 
 ### Operations
@@ -124,6 +124,16 @@ Two other properties matter for a game harness: the built-in *proactive* trigger
 The fix used here: register each agent as its **own** `summarization_agent`. That path runs a full agent invocation — hooks fire, `llm_call` lands with `purpose: "compact"`, the per-game ceiling applies, and the contract's own-model-own-settings rule is satisfied by construction. Safe because the harness compacts *between* calls, where no invocation lock is held.
 
 **What to check in LangGraph and Spring AI:** whether their summarisation/compaction machinery routes through the same instrumentation as ordinary model calls, or around it — and whether their compaction triggers can be driven by an application budget rather than the provider's context limit.
+
+### Finding: session sync runs on the framework's schedule, not yours
+
+Found wiring `FileSessionManager`, from the session-manager source and pinned by a test.
+
+Strands syncs an agent to its session store at two moments: when a message is appended, and when an invocation ends. Both are the *framework's* moments. A harness that writes state at its own moments — this one writes reflect notes and compaction folds **after** the invocation returns — finds those writes silently missing from the store: the last sync ran just before they happened, and no later one comes. The final turn's memory of every game would simply never reach disk. Hence `LudoHarness.persist()`, an explicit `sync_agent` per player in `play()`'s `finally` — required, not tidy. [`test_session.py`](../../projects/ludo/stack-strands/tests/test_session.py) pins the trap by demonstrating the loss.
+
+The mirror asymmetry on messages: persistence hangs off the *append* chokepoint, so the swarm's activation messages (appended by real invocations) **are** captured, while this harness's curation — briefing seeds and the post-table restore, both plain assignments — is invisible to the store. The persisted conversation is therefore the *appended* history, table fragments included, not the curated conversation the agent actually carries. Harmless for state-only restore; a real semantic wrinkle for conversation restore, and one input to [open question 18](../open-questions.md) on cross-game memory.
+
+**What to check in LangGraph and Spring AI:** when their checkpointers/persistence actually write (per step? per graph run? explicit?), and whether state mutated outside the framework's own moments survives a restart without a manual flush.
 
 ### Finding: the Java agent must depend on the engine; the Python agents need not
 

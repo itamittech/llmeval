@@ -38,9 +38,7 @@ The lookup table. "We call" means harness code invokes it; "framework calls" mea
 | `handoff_to_agent` | The tool `Swarm` injects into every member — its only steering wheel | The *model* calls it | captured in [`hooks.py`](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) |
 | `AgentResult` | What `agent(...)` returns: message, stop reason, metrics | We read — `str(result)` is the reply text | [`harness.py`](../../projects/ludo/stack-strands/src/ludo_strands/harness.py) |
 | `SummarizingConversationManager` | The framework's context compaction: summarises the oldest messages, keeps the rest | We call `reduce_context` when the *game's* budget is exceeded | wired in [`players.py`](../../projects/ludo/stack-strands/src/ludo_strands/players.py) (each agent is its own summariser), driven from [`harness.py`](../../projects/ludo/stack-strands/src/ludo_strands/harness.py) `_maybe_compact` |
-| `FileSessionManager` | Persists agent state across processes | — | **not wired yet** — session persistence work item |
-
-The unwired row is deliberate: listing only what exists keeps this table from teaching code that was never written.
+| `FileSessionManager` | Persists agent state and conversation across processes; constructing an agent over an existing store *restores* it | We construct it (opt-in `session_dir`); the framework syncs after invocations — and `harness.persist()` covers what it misses | wired in [`harness.py`](../../projects/ludo/stack-strands/src/ludo_strands/harness.py); the sync trap is pinned by [`test_session.py`](../../projects/ludo/stack-strands/tests/test_session.py) |
 
 ## Running things
 

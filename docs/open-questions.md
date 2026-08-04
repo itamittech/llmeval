@@ -74,6 +74,18 @@ Should be chosen from what LUDO's [capability matrix](architecture/stack-compari
 
 ---
 
+## 🟢 18. Should a game ever inherit an earlier game's memory?
+
+The mechanism now exists — `FileSessionManager` persists each agent's beliefs and conversation across processes, opt-in via `session_dir` — but the *semantics* of using it across games are genuinely undecided, and harder than they look:
+
+- **Independence.** Games are currently independent samples; the eval compares them. A "campaign" where game 3's play depends on games 1–2 is a different experiment, not a free upgrade.
+- **Identity.** Seats rotate colours per game ([ADR-0006](decisions/adr-0006-seat-rotation.md)), but memories are *written about colours* — "blue betrayed me" points at a different model next game. Cross-game memory would need seat-keyed identity and belief rewriting, or it actively misleads.
+- **Restore scope.** The persisted conversation is the appended history — table fragments included — not the curated one (see the [session-sync finding](architecture/stack-comparison.md)). Restoring beliefs without conversation is probably the honest unit.
+
+> **Recommendation:** keep games independent by default (persistence stays opt-in and off). If a campaign mode is ever wanted, it is an ADR — new seat-keyed identity, beliefs-only restore, and its own eval treatment — not a flag flip.
+
+---
+
 ## Answered
 
 ### ✅ 6. Alliance channel design

@@ -105,7 +105,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 | ✅ | [Shared prompts](shared/prompts/README.md) + [model config](shared/models.yaml) — identical across all three stacks, invariants enforced in CI |
 | ✅ | [CI](.github/workflows/ci.yml) — tests, conformance, schema, docs, mermaid diagrams, prompt invariants. No model calls, no cost. |
 | ✅ | [Cross-engine conformance vectors](shared/conformance/) |
-| 🚧 | [Strands stack](projects/ludo/stack-strands/) — turn loop, swarm negotiation, context compaction, lenient guardrails, events: end to end on scripted models, 38 tests, [schema-valid fixture](projects/ludo/games/scripted-strands-seed7.jsonl) committed. Session persistence pending; no live game yet. |
+| ✅ | [Strands stack](projects/ludo/stack-strands/) — feature-complete on scripted models: turn loop, swarm negotiation, compaction, lenient guardrails, session persistence, events. 40 tests, [schema-valid fixture](projects/ludo/games/scripted-strands-seed7.jsonl). **No live game yet** — waiting only on Nova + DeepSeek model IDs. |
 | ⬜ | LangGraph stack · Spring AI stack · UI · eval harness |
 
 Try it without installing anything but [uv](https://docs.astral.sh/uv/) — no API keys, no cost:

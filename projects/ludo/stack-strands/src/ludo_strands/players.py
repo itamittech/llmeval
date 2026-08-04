@@ -32,12 +32,15 @@ KINDS = ("opponent_model", "commitment", "strategy", "observation")
 DEFAULT_KIND = "observation"
 
 
-def build_player(color: str, model: Any, system_prompt: str, hooks: list) -> Agent:
+def build_player(color: str, model: Any, system_prompt: str, hooks: list,
+                 session_manager: Any = None) -> Agent:
     """One seat's agent.
 
     ``name=color`` is load-bearing: the agent's name becomes its Swarm node id,
     which is what makes ``handoff_to_agent(agent_name="blue")`` addressable by
-    colour — the floor-passing protocol of ADR-0009 rides on it.
+    colour — the floor-passing protocol of ADR-0009 rides on it. ``agent_id``
+    is set to the colour too: it is the agent's identity *within a session*,
+    where the framework requires it to be unique.
 
     **Each agent is its own summariser.** The conversation manager's default
     path calls ``model.stream()`` directly, bypassing the agent pipeline — no
@@ -46,6 +49,11 @@ def build_player(color: str, model: Any, system_prompt: str, hooks: list) -> Age
     summary through a full invocation instead: the agent's own model and
     settings (harness-contract §5), metered and budget-gated like every other
     call, and the summary is written from the player's own perspective.
+
+    When a ``session_manager`` is given, construction is also *restoration*:
+    if the session store already holds this ``agent_id``, the framework
+    replaces the empty state below with the stored one and rebuilds the
+    conversation — memory that survives the process.
     """
     manager = SummarizingConversationManager(
         summary_ratio=SUMMARY_RATIO,
@@ -55,10 +63,12 @@ def build_player(color: str, model: Any, system_prompt: str, hooks: list) -> Age
         model=model,
         system_prompt=system_prompt,
         name=color,
+        agent_id=color,
         state={"notes": [], "durable": []},
         callback_handler=None,  # no console streaming; the transcript is the record
         hooks=list(hooks),
         conversation_manager=manager,
+        session_manager=session_manager,
     )
     # After construction, because the agent must exist to be its own summariser.
     manager.summarization_agent = agent
