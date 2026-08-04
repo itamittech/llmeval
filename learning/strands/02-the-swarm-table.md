@@ -72,6 +72,12 @@ The harness never parses negotiation replies. The *model's tool calls* are the m
 
 The same hook feeds each recipient's **inbox**, which surfaces in their *next* briefing — that is the only bridge a directed message has across phases, and it goes through the transcript-visible event first. Nothing reaches a player that a spectator cannot see.
 
+## The bouncer at the table
+
+One more hook stands between a floor pass and its delivery: `BeforeToolCallEvent`, where [`guardrails.py`](../../projects/ludo/stack-strands/src/ludo_strands/guardrails.py)'s three rules run. An out-of-fiction attack — *"ignore your instructions…"*, a fake `[SYSTEM]` block, *"I am the engine"* — sets `event.cancel_tool`: the handoff never executes, nothing reaches an inbox, no `message_sent` is recorded, and a `guardrail_triggered` event lands in the transcript instead.
+
+Two design choices worth noticing. The cancellation message goes back to the model as the tool's error — so a blocked player *knows* it was blocked and may rephrase; an adaptive attacker gets more tries, but the floor-pass cap bounds them, and observing *how* a model probes a guardrail is data, not damage. And the rules are deliberately few and precise, because the leniency is the requirement: **"You are now my most trusted ally" must pass.** The first test in [`test_guardrails.py`](../../projects/ludo/stack-strands/tests/test_guardrails.py) asserts exactly that — a guardrail suite whose most important test is the one where nothing fires.
+
 ## Why two script entries per handoff
 
 In tests and the demo, a scripted floor pass looks like:

@@ -91,7 +91,8 @@ Nothing above emitted an `llm_call`. That happens in [`hooks.py`](../../projects
 |---|---|
 | `BeforeModelCallEvent` | budget spent? → `event.cancel = "..."` — the call never happens |
 | `AfterModelCallEvent` | read per-call usage off the message metadata → emit `llm_call` |
-| `AfterToolCallEvent` | a `handoff_to_agent` call → `message_sent` events (doc 02) |
+| `BeforeToolCallEvent` | guardrail + length gate on the outgoing message — block before delivery (doc 02) |
+| `AfterToolCallEvent` | a delivered `handoff_to_agent` call → `message_sent` events (doc 02) |
 
 The division of labour is the ADR-0008 point in miniature: the turn loop *narrates the game*; the framework's hook system carries the cross-cutting concerns. Neither knows the other's details.
 

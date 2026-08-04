@@ -55,7 +55,7 @@ One more rule, from [ADR-0008](../decisions/adr-0008-framework-native-harness.md
 | Cost attribution | — | — | — | |
 | OpenTelemetry tracing | — | — | — | |
 | Retry / backoff / fallback model | — | — | — | |
-| Guardrails integration | — | — | — | Bedrock Guardrails vs. framework-native |
+| Guardrails integration | **Native** — [guardrails.py](../../projects/ludo/stack-strands/src/ludo_strands/guardrails.py) via `BeforeToolCallEvent.cancel_tool` in [hooks.py](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) | — | — | Harness rules at the message boundary; the cancellation carries the reason back to the model, which may rephrase. Bedrock Guardrails (abuse class) deferred to live games |
 | Rate limiting / concurrency control | — | — | — | |
 
 ### Model access

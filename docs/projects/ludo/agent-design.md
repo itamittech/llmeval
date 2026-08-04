@@ -106,6 +106,8 @@ Enforcement sits at three levels:
 
 Level 1 is what makes the lenient content policy safe. Because an agent physically cannot cheat, letting it lie costs nothing. Detail in the [brief](brief.md#guardrails-lenient-on-purpose).
 
+**Level 2 exists in the first stack**: three deterministic, high-precision rules ([`guardrails.py`](../../../projects/ludo/stack-strands/src/ludo_strands/guardrails.py)) at the one boundary agents share — the negotiation message — enforced by cancelling the floor pass before delivery, with every trigger recorded as `guardrail_triggered`. The rules cover instruction-override, role-smuggling, and system-impersonation; abuse-class filtering is deliberately *not* attempted with patterns (word lists are either useless or wrong) and belongs to provider-side guardrails once live games run. The leniency is tested, not assumed: the suite's first guardrail test asserts that lies, bluffs, and betrayal all pass.
+
 Bedrock agents can use Bedrock Guardrails natively; direct-API agents need an equivalent implemented in-harness. **That asymmetry is itself a finding** — one of the clearest concrete differences between the two access routes — and gets recorded rather than smoothed over.
 
 ## Open design questions

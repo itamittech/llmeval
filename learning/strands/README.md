@@ -31,6 +31,7 @@ The lookup table. "We call" means harness code invokes it; "framework calls" mea
 | `HookProvider` / `HookRegistry` | The lifecycle-event system: subscribe callbacks to named points in the loop | Framework calls our callbacks | [`hooks.py`](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) |
 | `BeforeModelCallEvent` | Fires before each model invocation; settable `cancel` | Framework → us | the budget ceiling |
 | `AfterModelCallEvent` | Fires after each invocation, success or failure | Framework → us | one `llm_call` event per firing |
+| `BeforeToolCallEvent` | Fires before a tool runs; settable `cancel_tool` stops it | Framework → us | the guardrail gate — [`guardrails.py`](../../projects/ludo/stack-strands/src/ludo_strands/guardrails.py) rules, message-length cap |
 | `AfterToolCallEvent` | Fires after each tool execution, carrying the tool's input | Framework → us | a floor pass becomes `message_sent` |
 | `Swarm` | Multi-agent orchestrator: agents hand off to each other until one stops | We construct one per negotiation phase; it drives the agents | [`harness.py`](../../projects/ludo/stack-strands/src/ludo_strands/harness.py) `_run_table` |
 | `handoff_to_agent` | The tool `Swarm` injects into every member — its only steering wheel | The *model* calls it | captured in [`hooks.py`](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) |

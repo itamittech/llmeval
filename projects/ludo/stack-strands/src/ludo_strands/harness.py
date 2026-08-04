@@ -183,6 +183,7 @@ class LudoHarness:
             self.sink,
             {c: {"model": labels[c], "access": seat_by_color[c].access} for c in COLORS},
             self.budgets.max_tokens_per_game,
+            self.budgets.max_message_chars,
         )
 
         system = {

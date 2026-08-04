@@ -42,7 +42,8 @@ The first cut of this stack was built the other way — framework-independent `m
 |---|---|
 | [`harness.py`](src/ludo_strands/harness.py) | The turn loop: the engine's `negotiate`/`choose`/`reflect` hooks, answered with Strands |
 | [`players.py`](src/ludo_strands/players.py) | The four agents; memory on `AgentState` |
-| [`hooks.py`](src/ludo_strands/hooks.py) | Lifecycle hooks: `llm_call` metering, the budget ceiling, floor-pass capture |
+| [`hooks.py`](src/ludo_strands/hooks.py) | Lifecycle hooks: `llm_call` metering, the budget ceiling, floor-pass capture, the guardrail gate |
+| [`guardrails.py`](src/ludo_strands/guardrails.py) | Three deterministic out-of-fiction rules; in-game cunning passes, and a test asserts it |
 | [`scripted.py`](src/ludo_strands/scripted.py) | The scripted `Model` (contract §8) |
 | [`demo.py`](src/ludo_strands/demo.py) | One scripted game → the committed fixture |
 | [`prompts.py`](src/ludo_strands/prompts.py) · [`config.py`](src/ludo_strands/config.py) · [`strands_client.py`](src/ludo_strands/strands_client.py) | Shared-layer loading: prompt set, `models.yaml`, provider model construction |
@@ -65,8 +66,8 @@ The first cut of this stack was built the other way — framework-independent `m
 | Negotiation on the `Swarm` orchestrator ([ADR-0009](../../../docs/decisions/adr-0009-swarm-negotiation.md)) | ✅ |
 | Agent event emission, one sequence with engine events | ✅ schema-validated [fixture](../games/scripted-strands-seed7.jsonl) |
 | Context compaction (`SummarizingConversationManager`, agent-as-own-summariser) | ✅ [`harness.py`](src/ludo_strands/harness.py) `_maybe_compact` |
+| Content guardrails — lenient by design, at the message boundary | ✅ [`guardrails.py`](src/ludo_strands/guardrails.py) + the `BeforeToolCallEvent` gate in [`hooks.py`](src/ludo_strands/hooks.py) |
 | Session persistence across games | ⬜ |
-| Content guardrails | ⬜ |
 | Live game | ⬜ blocked on Nova + DeepSeek model ids |
 
 **No live game has been run.** Two of the four seats (Amazon Nova, DeepSeek) still have `TBD` model ids in [`shared/models.yaml`](../../../shared/models.yaml), so a real match cannot be played yet. Everything above is exercised by the scripted model instead — free, offline, and byte-for-byte deterministic, which is what lets the fixture be committed at all.

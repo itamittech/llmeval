@@ -22,8 +22,11 @@ from __future__ import annotations
 from typing import Any
 
 from strands.hooks import (
-    AfterModelCallEvent, AfterToolCallEvent, BeforeModelCallEvent, HookRegistry,
+    AfterModelCallEvent, AfterToolCallEvent, BeforeModelCallEvent,
+    BeforeToolCallEvent, HookRegistry,
 )
+
+from . import guardrails
 
 
 class BudgetExceeded(RuntimeError):
@@ -34,11 +37,12 @@ class GameHooks:
     """Metering, budget, and table capture for one game."""
 
     def __init__(self, sink: Any, seats: dict[str, dict[str, str]],
-                 max_tokens_per_game: int) -> None:
+                 max_tokens_per_game: int, max_message_chars: int) -> None:
         #: seats: color -> {"model": ..., "access": ...} for llm_call payloads.
         self._sink = sink
         self._seats = seats
         self.max_tokens = max_tokens_per_game
+        self.max_message_chars = max_message_chars
         self.spent = 0
         self.per_agent: dict[str, int] = {}
         self.calls = 0
@@ -55,6 +59,7 @@ class GameHooks:
     def register_hooks(self, registry: HookRegistry, **kwargs: Any) -> None:
         registry.add_callback(BeforeModelCallEvent, self._before_model)
         registry.add_callback(AfterModelCallEvent, self._after_model)
+        registry.add_callback(BeforeToolCallEvent, self._before_tool)
         registry.add_callback(AfterToolCallEvent, self._after_tool)
 
     # -- model calls ------------------------------------------------------
@@ -98,8 +103,49 @@ class GameHooks:
 
     # -- floor passes -----------------------------------------------------
 
+    def _before_tool(self, event: BeforeToolCallEvent) -> None:
+        """The guardrail gate — the one place agent-to-agent text can be stopped.
+
+        Fires before the handoff executes, so a blocked message is never
+        delivered, never reaches an inbox, and never becomes ``message_sent``.
+        Cancelling puts the reason into the tool result: the model reads why
+        and may rephrase — a blocked message costs the attempt, not the floor.
+
+        Two different failures, deliberately treated differently:
+        - over-length is budget enforcement (contract §2's cap), cancelled
+          silently — not an attack, so no ``guardrail_triggered``;
+        - a content rule is an out-of-fiction attack, cancelled AND recorded,
+          because the schema reserves that event for exactly this.
+        """
+        if event.tool_use.get("name") != "handoff_to_agent":
+            return
+        params = event.tool_use.get("input") or {}
+        note = (params.get("context") or {}).get("table_note")
+        for text in filter(None, [str(params.get("message", "")), note and str(note)]):
+            if len(text) > self.max_message_chars:
+                event.cancel_tool = (
+                    f"message not delivered: over the {self.max_message_chars}"
+                    f"-character limit — say it shorter"
+                )
+                return
+            violation = guardrails.check(text)
+            if violation:
+                event.cancel_tool = f"message not delivered: {violation.reason}"
+                self._sink.emit("guardrail_triggered", {
+                    "player": event.agent.name,
+                    "rule": violation.rule,
+                    "action": "blocked",
+                    "source": "harness",
+                    "detail": violation.reason,
+                }, turn=self.turn)
+                return
+
     def _after_tool(self, event: AfterToolCallEvent) -> None:
         if event.tool_use.get("name") != "handoff_to_agent":
+            return
+        if event.cancel_message is not None:
+            # Cancelled by the gate above: nothing was delivered, so nothing
+            # is recorded — a message_sent for an undelivered message would lie.
             return
         params = event.tool_use.get("input") or {}
         speaker = event.agent.name

@@ -1174,7 +1174,7 @@ sequenceDiagram
 | `LudoHarness` | `Swarm` construct + run | once per negotiation phase |
 | `Swarm` | `Agent` (reset, activate) | per floor holding |
 | **Strands** | `Model.stream()` | every model invocation |
-| **Strands** | `GameHooks` callbacks | before/after every model call, after every tool call |
+| **Strands** | `GameHooks` callbacks | before/after every model call, before every tool call (the guardrail gate), after every tool call |
 | `GameHooks`, `LudoHarness`, `Game` | `TeeSink.emit` | one shared sequence |
 
 The bolded rows are the framework calling us — the arrows that make this a *harness* rather than a library of helpers.
