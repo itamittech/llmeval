@@ -15,7 +15,7 @@ Strands is an agent framework built around one loop: give an `Agent` a model, a 
 | [00 — the agent loop](00-the-agent-loop.md) | What actually happens when you call `agent("...")`? And how do you fake a model through the framework's own interface? |
 | [01 — one turn through the harness](01-one-turn-through-the-harness.md) | How the engine's `negotiate` / `choose` / `reflect` hooks are answered — rendering, parsing, retries, budgets, events |
 | [02 — the swarm table](02-the-swarm-table.md) | How negotiation runs on `Swarm` — handoffs, the snapshot-reset trick that delivers briefings, and what the orchestrator would not allow |
-| [03 — the full picture](03-the-full-picture.md) | The assembled machine: the construction wiring, one turn as a flowchart of budget gates, and the five places context lives — each bounded a different way |
+| [03 — the full picture](03-the-full-picture.md) | The assembled machine, with the real code at every step: construction wiring, one turn as a flowchart of the four gates (money, fiction, memory, rules), the memory write paths, and the guardrail gate |
 
 The diagrams live in [class-design.md §9](../../docs/projects/ludo/class-design.md#9-the-harness-layer-the-same-turn-on-strands) — the harness object graph and one turn traced across engine → harness → framework.
 
