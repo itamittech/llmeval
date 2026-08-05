@@ -30,8 +30,8 @@ One more rule, from [ADR-0008](../decisions/adr-0008-framework-native-harness.md
 |---|---|---|---|---|
 | Tool / function calling | **Native** — [hooks.py](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) | — | — | Strands: the swarm's own handoff tool, captured via `AfterToolCallEvent` |
 | Structured output | — | — | — | |
-| Multi-agent orchestration | **Native** — [harness.py](../../projects/ludo/stack-strands/src/ludo_strands/harness.py) | — | — | `Swarm` runs the table; protocol redesigned to fit it ([ADR-0009](../decisions/adr-0009-swarm-negotiation.md)) — see finding |
-| Agent-to-agent messaging | **Native** — [hooks.py](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) | — | — | Handoff message = directed message; handoff context = table note |
+| Multi-agent orchestration | **Native** — [harness.py](../../projects/ludo/stack-strands/src/ludo_strands/harness.py) | — | **Manual** — [Harness.java](../../projects/ludo/stack-springai/src/main/java/com/llmeval/ludo/springai/Harness.java) `runTable` | Strands: `Swarm` runs the table (ADR-0009). Spring AI: no orchestrator exists — see finding |
+| Agent-to-agent messaging | **Native** — [hooks.py](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) | — | **Manual** — same loop | Strands: handoff = directed message. Spring AI: the harness delivers |
 | Streaming responses | — | — | — | |
 | Turn/step control & interruption | — | — | — | |
 
@@ -40,7 +40,7 @@ One more rule, from [ADR-0008](../decisions/adr-0008-framework-native-harness.md
 | Capability | Strands | LangGraph | Spring AI | Notes |
 |---|---|---|---|---|
 | Short-term / conversation memory | — | — | — | |
-| Long-term agent memory | **Native** — [players.py](../../projects/ludo/stack-strands/src/ludo_strands/players.py) | — | — | Cross-turn recall of opponents, on `AgentState` |
+| Long-term agent memory | **Native** — [players.py](../../projects/ludo/stack-strands/src/ludo_strands/players.py) | — | **Manual** — [Memory.java](../../projects/ludo/stack-springai/src/main/java/com/llmeval/ludo/springai/Memory.java) | Strands: `AgentState`. Spring AI: `ChatMemory` is conversation, not beliefs — no key-value store exists |
 | Context compaction / summarisation | **Native** — [players.py](../../projects/ludo/stack-strands/src/ludo_strands/players.py) + [harness.py](../../projects/ludo/stack-strands/src/ludo_strands/harness.py) | — | — | Explicit goal of the project; see finding — the default path bypasses the hooks |
 | Prompt templating & versioning | — | — | — | |
 | Prompt caching | — | — | — | Provider- and framework-dependent |
@@ -51,7 +51,7 @@ One more rule, from [ADR-0008](../decisions/adr-0008-framework-native-harness.md
 
 | Capability | Strands | LangGraph | Spring AI | Notes |
 |---|---|---|---|---|
-| Token accounting | **Native** — [hooks.py](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) | — | — | Lifecycle hooks + per-call usage — see finding below for the trap |
+| Token accounting | **Native** — [hooks.py](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) | — | **Native** — [Harness.java](../../projects/ludo/stack-springai/src/main/java/com/llmeval/ludo/springai/Harness.java) `ask` | Strands: lifecycle hooks (see finding for the trap). Spring AI: `ChatResponse` usage metadata, read synchronously — no trap to fall into |
 | Cost attribution | — | — | — | |
 | OpenTelemetry tracing | — | — | — | |
 | Retry / backoff / fallback model | — | — | — | |
@@ -135,6 +135,16 @@ The mirror asymmetry on messages: persistence hangs off the *append* chokepoint,
 
 **What to check in LangGraph and Spring AI:** when their checkpointers/persistence actually write (per step? per graph run? explicit?), and whether state mutated outside the framework's own moments survives a restart without a manual flush.
 
+### Finding: Spring AI's missing harness primitives — and its simplest seam
+
+The prediction this repo made before any stack existed — *"suppose Spring AI doesn't have the corresponding harness functionality"* — landed exactly where expected, and somewhere it wasn't.
+
+**Missing, and hand-built as legitimate Manuals (ADR-0008):**
+- **No multi-agent orchestrator.** Strands has `Swarm`; LangGraph has `langgraph-swarm`; Spring AI has nothing that passes a conversation between agents. The floor-passing table of [ADR-0009](../decisions/adr-0009-swarm-negotiation.md) is orchestrated by harness code — [`Harness.runTable`](../../projects/ludo/stack-springai/src/main/java/com/llmeval/ludo/springai/Harness.java) delivers directed messages, fans table notes into inboxes, and enforces the pass cap itself. The observable protocol is identical across stacks; the machinery producing it is the comparison.
+- **No agent belief store.** `ChatMemory` is conversation history — messages in, messages out — not a key-value state an agent owns. Strands' `AgentState` has no counterpart, so [`Memory.java`](../../projects/ludo/stack-springai/src/main/java/com/llmeval/ludo/springai/Memory.java) is a plain class rendering the `{{memory}}` variable byte-identically to the Python stacks.
+
+**And the counterweight, because honest findings cut both ways:** Spring AI's `ChatModel` seam produced **the simplest scripted model of the three stacks** — one synchronous `call(Prompt) → ChatResponse` with usage attached to the response object itself. No stream-event choreography (Strands needed five event shapes per reply), no hook-ordering trap (usage is *on the response*, read after the call returns — the accumulated-metrics pitfall recorded above for Strands cannot exist here). Faking a provider took forty lines. For a framework aimed at enterprise Java, the flattest possible model seam is exactly the right instinct, and it deserves the credit here.
+
 ### Finding: the Java agent must depend on the engine; the Python agents need not
 
 Recorded from the engine port, before any stack exists.
@@ -142,6 +152,8 @@ Recorded from the engine port, before any stack exists.
 In Python, `Decider` is a `Protocol`. An agent satisfies it by having a `choose` method of the right shape — no import, no inheritance, no compile-time relationship between the engine package and the agent package at all. That is what lets the Strands and LangGraph stacks keep [genuinely separate dependency trees](environment-strategy.md) while sharing one engine.
 
 Java's `interface` needs an explicit `implements`, so every Spring AI agent must have `ludo-engine` on its compile classpath. Nothing breaks — but the isolation the Python stacks get for free has to be arranged deliberately on the JVM, and a future change to `Decider` is a recompile for the Java stack and a no-op for the Python ones.
+
+Predicted from the port; now real: [`Harness.SpringDecider`](../../projects/ludo/stack-springai/src/main/java/com/llmeval/ludo/springai/Harness.java) writes `implements Decider`, and the stack's pom depends on the engine by coordinates — built into the local repository first, exactly the arranged-deliberately step Python never needs.
 
 A second, smaller one from the same port: **Java test seams must be designed in advance.** Python's engine tests reach three-sixes cancellation by assigning `game.dice` on a live object; Java has no equivalent, so `Game` carries a package-private constructor taking an `IntSupplier`. Expect the same asymmetry wherever the Spring AI stack needs to substitute a model client — which is exactly what the harness contract's [scripted-model conformance](../projects/ludo/harness-contract.md) will require.
 

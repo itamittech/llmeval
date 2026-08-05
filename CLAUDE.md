@@ -20,6 +20,7 @@ This project exists to teach. A doc describing code that no longer exists is *wo
 | Engine classes, methods, or structure | [engine-design.md](docs/projects/ludo/engine-design.md) · [class-design.md](docs/projects/ludo/class-design.md) — the **diagrams AND** the class-reference and who-calls-what tables · the engine README module map · **[learning/python/01](learning/python/01-walkthrough-game.md) if you touched `game.py`** — it quotes that file line by line, so a rename silently makes it teach code that no longer exists · **[learning/java/01](learning/java/01-same-engine-twice.md) if the two engines diverged** — it is a side-by-side, so it goes stale from either side |
 | Anything a stack does — turn loop, events, memory, budgets | [harness-contract.md](docs/projects/ludo/harness-contract.md) **first** (it's the normative spec all three stacks bind to), then the stack |
 | `stack-strands` harness classes or call flow | [class-design.md §9](docs/projects/ludo/class-design.md) diagrams · **[learning/strands](learning/strands/)** — 00 quotes the agent construction, 01–02 trace the turn and the swarm, 03 is the assembled map (wiring, turn flowchart, memory stores, cast lifetimes), and the README's class table names what's wired vs pending · the stack README module map · [learning/python/04](learning/python/04-for-spring-developers.md) quotes the `_Decider` wiring |
+| `stack-springai` harness classes or call flow | its [README](projects/ludo/stack-springai/README.md) design section + status table · the [matrix](docs/architecture/stack-comparison.md) springai column and its finding |
 | The event schema | [shared/schemas/README.md](shared/schemas/README.md) · [ADR-0003](docs/decisions/adr-0003-shared-event-stream.md) if the contract itself changed · every stack that emits |
 | Dependencies, tooling, environment layout | [environment-strategy.md](docs/architecture/environment-strategy.md) · [repository-layout.md](docs/architecture/repository-layout.md) · [learning/python/03](learning/python/03-environments-and-packaging.md) |
 | Prompts, `models.yaml`, or anything in `shared/` | [shared/prompts/README.md](shared/prompts/README.md) · [agent-design.md](docs/projects/ludo/agent-design.md) · re-run `check_prompts.py` · a rule-number change means [game-rules.md](docs/projects/ludo/game-rules.md) first |
@@ -67,7 +68,7 @@ Say so explicitly in your response, naming the file and what's now wrong. An ack
 
 ## Repository status
 
-The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack is feature-complete against scripted models** — swarm negotiation, memory in agent state, budgets and events in lifecycle hooks, context compaction via each agent summarising itself, lenient content guardrails at the message boundary, opt-in session persistence — all Strands-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)/[0009](docs/decisions/adr-0009-swarm-negotiation.md). The **UI transcript player is built** against the committed fixtures, with ADR-0007's stack-independence rules enforced as tests. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in.
+The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack is feature-complete against scripted models** — swarm negotiation, memory in agent state, budgets and events in lifecycle hooks, context compaction via each agent summarising itself, lenient content guardrails at the message boundary, opt-in session persistence — all Strands-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)/[0009](docs/decisions/adr-0009-swarm-negotiation.md). The **Spring AI stack's turn loop runs scripted** — floor-passing table orchestrated in harness code (its predicted Manual finding), the scripted model through Spring AI's own `ChatModel` seam. The **UI transcript player is built**, and ADR-0007's rules are proven: the Spring AI fixture landed and the UI suite grew by four tests with zero source changes. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in.
 
 | Component | State |
 |---|---|
@@ -79,8 +80,9 @@ The **shared event schema**, **both engines** (Python and Java, cross-checked by
 | `shared/models.yaml` — seats, routes, profiles | ✅ Built; **model IDs still `TBD`** |
 | `shared/conformance/` — cross-engine vectors | ✅ 20 vectors |
 | `projects/ludo/stack-strands/` | ✅ Feature-complete scripted — turn loop, swarm negotiation, compaction, guardrails, session persistence, events; 40 tests, schema-valid fixture. **No live game** (model IDs TBD) |
-| `projects/ludo/ui/` | ✅ Transcript player (React + Vite), 15 tests; ADR-0007's fixture rules enforced in CI — a new stack's transcript must render with zero UI changes |
-| `stack-langgraph`, `stack-springai`, `eval/` | ❌ Not started |
+| `projects/ludo/ui/` | ✅ Transcript player (React + Vite), 19 tests; ADR-0007's fixture rules enforced in CI — proven when the Spring AI fixture landed and the suite grew by four with zero UI changes |
+| `projects/ludo/stack-springai/` | 🚧 Turn loop + floor-passing table + events running scripted, 6 tests, schema-valid fixture; compaction, guardrails, persistence, live providers not done |
+| `stack-langgraph`, `eval/` | ❌ Not started |
 | Judge prompt | ❌ Waits for the eval harness |
 
 ## Commands
@@ -149,6 +151,16 @@ The Java engine builds with the committed Maven wrapper — no global Maven need
 
 ```bash
 ./mvnw -q -B exec:java -Dexec.args="conformance --check"
+```
+
+The Spring AI stack depends on the engine by coordinates — install the engine locally once, then test (both from `projects/ludo`):
+
+```bash
+cd engine-java && ./mvnw -q -B install -DskipTests
+```
+
+```bash
+cd stack-springai && ./mvnw -B test
 ```
 
 **Both engines must pass conformance.** Running only one defeats the point — the vectors exist to catch them disagreeing ([ADR-0002](docs/decisions/adr-0002-engine-per-language.md)).

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.llmeval.ludo</groupId>
+  <artifactId>stack-springai</artifactId>
+  <version>0.1.0</version>
+  <packaging>jar</packaging>
+
+  <!-- The third agent harness: Spring AI on the Java engine (harness-contract.md,
+       ADR-0008/0009). Standalone project, deliberately: it depends on the engine
+       by coordinates, so build the engine into the local repository first:
+
+           ./mvnw -f ../engine-java install
+
+       No Spring Boot yet — the scripted harness needs only the Spring AI chat
+       client library. Boot and the provider starters arrive with live play. -->
+
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <spring-ai.version>1.1.2</spring-ai.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.llmeval.ludo</groupId>
+      <artifactId>ludo-engine</artifactId>
+      <version>0.1.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-client-chat</artifactId>
+      <version>${spring-ai.version}</version>
+    </dependency>
+
+    <!-- models.yaml and the prompt manifest. The engine itself stays
+         dependency-free; the harness is allowed a YAML parser. -->
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>2.3</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.11.4</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.2</version>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <configuration>
+          <mainClass>com.llmeval.ludo.springai.Demo</mainClass>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

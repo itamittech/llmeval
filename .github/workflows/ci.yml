@@ -65,6 +65,18 @@ jobs:
         working-directory: projects/ludo/engine-java
         run: ./mvnw -B test
 
+      - name: Install the engine locally
+        # The Spring AI stack depends on the engine by coordinates — the JVM's
+        # arranged-deliberately equivalent of Python's path dependency.
+        working-directory: projects/ludo/engine-java
+        run: ./mvnw -q -B install -DskipTests
+
+      - name: Spring AI stack
+        # Scripted only: the fake model implements Spring AI's own ChatModel
+        # seam, so no keys and no cost — same rule as every other job here.
+        working-directory: projects/ludo/stack-springai
+        run: ./mvnw -B test
+
   docs:
     name: Docs and shared contracts
     runs-on: ubuntu-latest
