@@ -44,7 +44,7 @@ llmeval/
 │       ├── stack-langgraph/
 │       ├── stack-springai/
 │       ├── eval/                 # LLM-as-judge + deterministic scoring
-│       ├── ui/
+│       ├── ui/                   # transcript player (React + Vite) — own package.json
 │       └── games/                # recorded event streams (sample matches)
 │
 ├── scripts/

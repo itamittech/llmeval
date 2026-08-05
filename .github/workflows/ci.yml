@@ -107,3 +107,34 @@ jobs:
         # quietly isn't what it claims. uv resolves pyyaml from the script's
         # own PEP 723 header; nothing to install.
         run: uv run scripts/check_prompts.py
+
+  ui:
+    name: UI transcript player
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: projects/ludo/ui/package-lock.json
+
+      - name: Install
+        working-directory: projects/ludo/ui
+        run: npm ci
+
+      - name: Tests
+        # ADR-0007's fixture rules, mechanised: every transcript in
+        # projects/ludo/games/ must render; the zero-agent-event fixture is a
+        # first-class citizen; `stack` is displayed, never branched on
+        # (enforced by a mutation-diff test); and the projector's replay must
+        # agree with the engine's own game_ended standings. Adding a stack
+        # means adding its transcript to games/ — and must NOT require
+        # touching UI source.
+        working-directory: projects/ludo/ui
+        run: npx vitest run
+
+      - name: Static build
+        working-directory: projects/ludo/ui
+        run: npm run build

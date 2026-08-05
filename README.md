@@ -106,12 +106,23 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 | ✅ | [CI](.github/workflows/ci.yml) — tests, conformance, schema, docs, mermaid diagrams, prompt invariants. No model calls, no cost. |
 | ✅ | [Cross-engine conformance vectors](shared/conformance/) |
 | ✅ | [Strands stack](projects/ludo/stack-strands/) — feature-complete on scripted models: turn loop, swarm negotiation, compaction, lenient guardrails, session persistence, events. 40 tests, [schema-valid fixture](projects/ludo/games/scripted-strands-seed7.jsonl). **No live game yet** — waiting only on Nova + DeepSeek model IDs. |
-| ⬜ | LangGraph stack · Spring AI stack · UI · eval harness |
+| ✅ | [UI](projects/ludo/ui/) — transcript player (React + Vite), offline against the committed fixtures; [ADR-0007](docs/decisions/adr-0007-ui-alongside-first-stack.md)'s stack-independence rules enforced as tests in CI |
+| ⬜ | LangGraph stack · Spring AI stack · eval harness |
 
 Try it without installing anything but [uv](https://docs.astral.sh/uv/) — no API keys, no cost:
 
 ```bash
 uv run --directory projects/ludo/engine-python python -m ludo_engine.cli play --seed 7
+```
+
+Or *watch* a recorded game in the browser (needs node):
+
+```bash
+npm ci --prefix projects/ludo/ui
+```
+
+```bash
+npm run dev --prefix projects/ludo/ui
 ```
 
 Settled: three parallel games (one per stack), [two shared engines](docs/decisions/adr-0002-engine-per-language.md), [one model on both access routes as a control](docs/decisions/adr-0005-model-access-control.md), [framework-native harnesses over a shared behavioural contract](docs/decisions/adr-0008-framework-native-harness.md), React + Vite, Maven. Still undecided: [open questions](docs/open-questions.md).

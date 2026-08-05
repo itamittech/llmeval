@@ -28,6 +28,7 @@ This project exists to teach. A doc describing code that no longer exists is *wo
 | Learned what a framework can or can't do | [stack-comparison.md](docs/architecture/stack-comparison.md) — with a link to the code that proves it |
 | Started or finished a component | Status tables in [README.md](README.md) **and** this file · [repository-layout.md](docs/architecture/repository-layout.md) |
 | A project claimed a topic | [topics/roadmap.md](docs/topics/roadmap.md) |
+| The UI | [its README](projects/ludo/ui/README.md) · ADR-0007's rules are UI **tests** — if adding a stack's transcript forces a UI source change, that is the failure the fixture set exists to catch, not something to code around |
 | Added a new doc | Link it from [README.md](README.md) and from the Related section of any sibling doc |
 
 ### Then verify
@@ -66,7 +67,7 @@ Say so explicitly in your response, naming the file and what's now wrong. An ack
 
 ## Repository status
 
-The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack is feature-complete against scripted models** — swarm negotiation, memory in agent state, budgets and events in lifecycle hooks, context compaction via each agent summarising itself, lenient content guardrails at the message boundary, opt-in session persistence — all Strands-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)/[0009](docs/decisions/adr-0009-swarm-negotiation.md). **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in.
+The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack is feature-complete against scripted models** — swarm negotiation, memory in agent state, budgets and events in lifecycle hooks, context compaction via each agent summarising itself, lenient content guardrails at the message boundary, opt-in session persistence — all Strands-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)/[0009](docs/decisions/adr-0009-swarm-negotiation.md). The **UI transcript player is built** against the committed fixtures, with ADR-0007's stack-independence rules enforced as tests. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in.
 
 | Component | State |
 |---|---|
@@ -78,7 +79,8 @@ The **shared event schema**, **both engines** (Python and Java, cross-checked by
 | `shared/models.yaml` — seats, routes, profiles | ✅ Built; **model IDs still `TBD`** |
 | `shared/conformance/` — cross-engine vectors | ✅ 20 vectors |
 | `projects/ludo/stack-strands/` | ✅ Feature-complete scripted — turn loop, swarm negotiation, compaction, guardrails, session persistence, events; 40 tests, schema-valid fixture. **No live game** (model IDs TBD) |
-| `stack-langgraph`, `stack-springai`, `ui/`, `eval/` | ❌ Not started |
+| `projects/ludo/ui/` | ✅ Transcript player (React + Vite), 15 tests; ADR-0007's fixture rules enforced in CI — a new stack's transcript must render with zero UI changes |
+| `stack-langgraph`, `stack-springai`, `eval/` | ❌ Not started |
 | Judge prompt | ❌ Waits for the eval harness |
 
 ## Commands
@@ -123,6 +125,20 @@ uv run --directory projects/ludo/engine-python python -m ludo_engine.cli play --
 
 ```bash
 uv run --directory projects/ludo/engine-python python -m ludo_engine.cli validate ../games/g.jsonl
+```
+
+The UI (own package.json under `projects/ludo/ui` — the root one is repo tooling only):
+
+```bash
+npm ci --prefix projects/ludo/ui
+```
+
+```bash
+npm test --prefix projects/ludo/ui
+```
+
+```bash
+npm run dev --prefix projects/ludo/ui
 ```
 
 The Java engine builds with the committed Maven wrapper — no global Maven needed, and Java 21 is already installed here. Run from `projects/ludo/engine-java`:
