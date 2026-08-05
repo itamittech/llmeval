@@ -56,9 +56,13 @@ Definitions are short on purpose — each links to the doc that goes deeper.
 
 **Tool / tool calling** — a function the model can invoke, described to it in the prompt. The model emits a request to call it; your code runs it and returns the result. It's how an agent affects anything outside its own text.
 
+**Internal tool execution** — a framework running the model's tool calls *itself*, inside one call to it, and handing back only the final answer: the caller sees one response where two or more model invocations actually happened. Spring AI does this by default. Usage is aggregated so cost survives, but per-invocation metering is lost — a recorded [matrix finding](architecture/stack-comparison.md#finding-spring-ais-internal-tool-execution-hides-model-invocations-from-the-caller), with an opt-out for live play.
+
 **Harness** — the scaffolding around the model that makes an agent work: memory, context management, retries, budgets, tool wiring. "Harness engineering" is the craft of building it well, and how much of it each framework gives you free is one of this project's main questions — which is why each stack must build its harness from the framework's own parts. → [ADR-0008](decisions/adr-0008-framework-native-harness.md)
 
 **Hook (lifecycle)** — a callback a framework fires at named points in its own loop: before a model call, after a message is added, when a tool runs. Hooks let you meter tokens, enforce budgets, or emit events without rewriting the loop — and how rich a framework's hook surface is decides how much of that you can do at all.
+
+**Advisor (Spring AI)** — Spring AI's interception seam: a component wrapped around a `ChatClient` call that can rewrite the request before the model sees it and react to the response after. The framework's conversation memory *is* an advisor — `MessageChatMemoryAdvisor` loads history in before the call and saves the exchange after. Same job as a lifecycle hook, opposite grain: an advisor wraps calls **you** make; a hook fires inside a loop the **framework** runs. → [class-design §10](projects/ludo/class-design.md#10-the-harness-layer-second-take-the-same-turn-on-spring-ai)
 
 **Agent memory** — what an agent remembers across turns beyond the raw conversation: opponent behaviour, promises made, standing plans. Here it's deliberately private and *unreliable* — it records what an agent believes, including things it was successfully lied to about.
 

@@ -57,7 +57,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 | **New to Python** | [What the files and folders are](learning/python/00-files-and-folders.md) → [learning/python](learning/python/) → [`Game` walkthrough](learning/python/01-walkthrough-game.md) |
 | **New to Java, or curious how it compares** | [learning/java](learning/java/) → [the same engine, twice](learning/java/01-same-engine-twice.md) — identical rules in both languages, so every difference isolates a language property |
 | **Coming from Java/Spring to Python** | [Python for the Spring developer](learning/python/04-for-spring-developers.md) — `implements`, the container, `@Qualifier`, all mapped side by side onto this codebase |
-| **Trying to read the agent harness** | [learning/strands](learning/strands/) — the agent loop, one turn traced, the swarm table, then [the full picture](learning/strands/03-the-full-picture.md) → [class-design §9](docs/projects/ludo/class-design.md#9-the-harness-layer-the-same-turn-on-strands) for the reference diagrams |
+| **Trying to read the agent harness** | [learning/strands](learning/strands/) — the agent loop, one turn traced, the swarm table, then [the full picture](learning/strands/03-the-full-picture.md) → [class-design §9](docs/projects/ludo/class-design.md#9-the-harness-layer-the-same-turn-on-strands) for the reference diagrams, and [§10](docs/projects/ludo/class-design.md#10-the-harness-layer-second-take-the-same-turn-on-spring-ai) for the same turn on Spring AI |
 | **Curious about design patterns** | [Class design §7](docs/projects/ludo/class-design.md#7-design-patterns-from-the-problem-up) — each one taught from the problem up |
 | **Interested in experiment design** | [ADR-0005](docs/decisions/adr-0005-model-access-control.md) → [ADR-0006](docs/decisions/adr-0006-seat-rotation.md) — how to keep a comparison from quietly meaning nothing |
 | **About to write code** | [Engine design](docs/projects/ludo/engine-design.md) → [Class design](docs/projects/ludo/class-design.md) → [Open questions](docs/open-questions.md) |
@@ -80,7 +80,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 - [Brief](docs/projects/ludo/brief.md) · [Game rules](docs/projects/ludo/game-rules.md) · [Agent design](docs/projects/ludo/agent-design.md) · [Evaluation](docs/projects/ludo/evaluation.md)
 - [Harness contract](docs/projects/ludo/harness-contract.md) — the normative spec all three agent stacks implement
 - [Engine design](docs/projects/ludo/engine-design.md) — how the built engine is structured, and what a Java port must preserve
-- [Class design](docs/projects/ludo/class-design.md) — diagrams: the object graph, a turn traced as calls, module layering
+- [Class design](docs/projects/ludo/class-design.md) — diagrams: the object graph, a turn traced as calls, module layering, and both built harness layers (§§9–10)
 
 **New to a language or framework here?**
 - [learning/python/](learning/python/) — runnable examples and a line-by-line walkthrough of the engine's densest class. Standalone; no dependencies.
@@ -95,7 +95,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 
 ## Status
 
-🚧 **Early build.** The foundations are in; no agents yet.
+🚧 **Scripted era.** Two of the three stacks play full games end to end — swarm negotiation, memory, compaction, guardrails, the lot — against *scripted* models, so every run is free and byte-reproducible. **No live model call has been made yet:** the last blocker is two model IDs ([open questions](docs/open-questions.md)).
 
 | | |
 |---|---|

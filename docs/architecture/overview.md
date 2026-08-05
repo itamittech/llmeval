@@ -53,38 +53,60 @@ This single decision buys a lot:
 
 The schema lives in `shared/schemas/` and is versioned. Adding an event type is cheap; changing one is a breaking change that all three stacks must follow together.
 
-## System shape
+## System shape — where the data actually flows
 
-```
-                    ┌─────────────────────────────────┐
-                    │      Shared, stack-neutral      │
-                    │  rules spec · tool contract ·   │
-                    │  event schema · prompts · eval  │
-                    └───────────────┬─────────────────┘
-                                    │  (all three conform)
-        ┌───────────────────────────┼───────────────────────────┐
-        ▼                           ▼                           ▼
-┌───────────────┐          ┌───────────────┐          ┌───────────────┐
-│    Strands    │          │   LangGraph   │          │   Spring AI   │
-│    (Python)   │          │    (Python)   │          │     (Java)    │
-│  agent layer  │          │  agent layer  │          │  agent layer  │
-│ orchestration │          │ orchestration │          │ orchestration │
-└───────┬───────┘          └───────┬───────┘          └───────┬───────┘
-        │                          │                          │
-        └──── Python engine ───────┘                   Java engine
-                    │                                         │
-                    └──────── conformance vectors ────────────┘
-                                    │
-                                    ▼
-                         ┌─────────────────────┐
-                         │  event stream (.jsonl) │
-                         └──────────┬──────────┘
-                              ┌─────┴─────┐
-                              ▼           ▼
-                            UI      eval harness
+**Before you scroll:** the UI replays a game played by the Java stack. What connects the browser to that stack — REST? A WebSocket? Predict it, then check.
+
+Nothing does. **A file connects them.** If you come from Spring, the arrow you're looking for — the controller the frontend calls — deliberately does not exist, and seeing why is most of this architecture:
+
+```mermaid
+flowchart TB
+    subgraph contracts ["shared/ — contracts and data, never code"]
+        direction LR
+        SPEC["game-rules +<br/>harness contract"]
+        PRM["prompts +<br/>models.yaml"]
+        SCH["event schema"]
+        VEC["conformance<br/>vectors"]
+    end
+
+    subgraph gametime ["game time — one process per stack, the only time money moves"]
+        direction LR
+        subgraph st1 ["stack-strands · Python"]
+            H1["harness"] --- E1["Python engine — shared"]
+        end
+        subgraph st2 ["stack-langgraph · Python"]
+            H2["harness"] --- E2["Python engine — shared"]
+        end
+        subgraph st3 ["stack-springai · Java"]
+            H3["harness"] --- E3["Java engine"]
+        end
+    end
+
+    PROV["model providers<br/>Bedrock route · direct APIs"]
+
+    TR[("projects/ludo/games/*.jsonl<br/>one append-only event stream per game")]
+
+    subgraph after ["after the game — consumers of the file, never of the stacks"]
+        UI["UI — transcript player<br/>in the browser, offline"]
+        EV["eval harness + LLM judge"]
+    end
+
+    contracts -.->|"read at start-up, applied verbatim"| gametime
+    H1 & H2 & H3 -->|"the ONLY network calls"| PROV
+    st1 & st2 & st3 -->|"append events"| TR
+    TR -->|"read, fold, replay"| UI
+    TR --> EV
 ```
 
-Note there are **two** engines, not three — see below.
+Reading it:
+
+- **The file is the API.** A game *becomes* `games/<name>.jsonl` — appended during play, read forever after. The UI's entire input is that file; so is the eval harness's. Diff two games, share one in a gist, replay a match without re-spending a token ([ADR-0003](../decisions/adr-0003-shared-event-stream.md)).
+- **The missing frontend arrow is a feature, not a gap.** The UI cannot query a harness, so anything it shows must be derivable from events — which turns the UI into a *test* of the event schema. That test has already caught its first prey: when the Spring AI transcript landed, the UI suite grew by four tests with **zero** source changes ([ADR-0007](../decisions/adr-0007-ui-alongside-first-stack.md)).
+- **Inside a stack, everything is in-process.** The engine calls the harness (`negotiate` / `choose` / `reflect`) through an ordinary language-level seam — a `Protocol` in Python, an `interface` in Java. No service boundary, no queue: one game is one process ([class-design §§9–10](../projects/ludo/class-design.md#9-the-harness-layer-the-same-turn-on-strands) draw both harnesses at method level).
+- **Only harnesses touch the network.** Engines are deterministic and SDK-free; the UI runs offline against committed fixtures; the judge does spend tokens, but it reads only the file — never a stack.
+- **Three clocks.** *Check time* (CI: conformance vectors, schema and prompt invariants, doc checks) costs nothing. *Game time* is where tokens are spent. *Replay time* is free forever — the judge is the one later consumer that pays, and even it reads only the file. Free replay is what makes a public repo of recorded games viable at all.
+
+Note there are **two** engines, not four — the Python one appears twice above because both Python stacks embed the *same package* in separate venvs. See below.
 
 ## Why two engines, not three
 

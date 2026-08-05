@@ -26,6 +26,8 @@ No Spring Boot yet, deliberately: the scripted harness needs only the Spring AI 
 
 ## Design
 
+The reference diagrams for this whole layer — the object graph, one `choose` as calls, one table round with its hidden invocation, and the Strands-vs-Spring-AI two-grains table — are [class-design §10](../../../docs/projects/ludo/class-design.md#10-the-harness-layer-second-take-the-same-turn-on-spring-ai). What follows states the decisions those diagrams draw.
+
 **`implements Decider`, at last.** The Python stacks satisfy the engine's contract by shape; this one writes the line Java demands — [`Harness.SpringDecider`](src/main/java/com/llmeval/ludo/springai/Harness.java) `implements Decider`, and therefore the whole stack depends on the engine jar. The [capability matrix](../../../docs/architecture/stack-comparison.md) predicted this row before any stack existed; here is its proof.
 
 **The scripted model is a real `ChatModel`.** [`ScriptedChatModel`](src/main/java/com/llmeval/ludo/springai/ScriptedChatModel.java) implements Spring AI's own provider seam — `call(Prompt) → ChatResponse` — so the `ChatClient`, usage metadata, and the whole loop run exactly as they would live (harness-contract §8). It is the simplest of the three stacks' fakes by a distance: one synchronous method, no stream-event choreography — a genuine point *for* Spring AI, recorded in the matrix.
