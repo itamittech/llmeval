@@ -32,7 +32,22 @@ public final class ModelsConfig {
     public record Budgets(int maxTurns, int maxFloorPasses, int maxMessageChars,
                           int maxContextTokens, long maxTokensPerGame) {}
 
-    public record Profile(String name, List<Seat> seats, Seat judge, Budgets budgets) {}
+    public record Profile(String name, List<Seat> seats, Seat judge, Budgets budgets,
+                          Map<String, Object> inference) {
+
+        /** Provider-narrowed inference settings — top-level scalars plus that
+         *  provider's own block, the same merge as config.py's inference_for. */
+        @SuppressWarnings("unchecked")
+        public Map<String, Object> inferenceFor(String provider) {
+            Map<String, Object> merged = new LinkedHashMap<>();
+            inference.forEach((key, value) -> {
+                if (!(value instanceof Map)) merged.put(key, value);
+            });
+            Object block = inference.get(provider);
+            if (block instanceof Map) merged.putAll((Map<String, Object>) block);
+            return merged;
+        }
+    }
 
     private ModelsConfig() {}
 
@@ -73,7 +88,10 @@ public final class ModelsConfig {
                 (int) b.get("max_context_tokens"),
                 ((Number) b.get("max_tokens_per_game")).longValue());
 
-        return new Profile(name, List.copyOf(seats), judge, budgets);
+        Map<String, Object> inference = raw.get("inference") instanceof Map
+                ? (Map<String, Object>) raw.get("inference") : Map.of();
+
+        return new Profile(name, List.copyOf(seats), judge, budgets, inference);
     }
 
     /**

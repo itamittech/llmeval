@@ -37,6 +37,14 @@
       <version>${spring-ai.version}</version>
     </dependency>
 
+    <!-- The Anthropic binding, for the ADR-0005 control seat: its OPTIONS are
+         built and tested keyless; the live ChatModel needs a key at runtime. -->
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-anthropic</artifactId>
+      <version>${spring-ai.version}</version>
+    </dependency>
+
     <!-- models.yaml and the prompt manifest. The engine itself stays
          dependency-free; the harness is allowed a YAML parser. -->
     <dependency>

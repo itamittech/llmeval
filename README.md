@@ -107,7 +107,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 | ✅ | [Cross-engine conformance vectors](shared/conformance/) |
 | ✅ | [Strands stack](projects/ludo/stack-strands/) — feature-complete on scripted models: turn loop, swarm negotiation, compaction, lenient guardrails, session persistence, events. 40 tests, [schema-valid fixture](projects/ludo/games/scripted-strands-seed7.jsonl). **No live game yet** — waiting only on Nova + DeepSeek model IDs. |
 | ✅ | [UI](projects/ludo/ui/) — transcript player (React + Vite), offline against the committed fixtures; [ADR-0007](docs/decisions/adr-0007-ui-alongside-first-stack.md)'s rules **proven**: the Spring AI fixture landed and the suite grew by four tests with zero UI changes |
-| 🚧 | [Spring AI stack](projects/ludo/stack-springai/) — turn loop + floor-passing table running scripted, [fixture committed](projects/ludo/games/scripted-springai-seed7.jsonl); its predicted finding recorded (no orchestrator, no belief store — and the simplest model seam of the three). Compaction, guardrails, live providers pending |
+| 🚧 | [Spring AI stack](projects/ludo/stack-springai/) — §§2–6 scripted: tool-driven floor passing, conversation memory, compaction, guardrails, [fixture committed](projects/ludo/games/scripted-springai-seed7.jsonl). Its predicted findings recorded: no orchestrator, no belief store, truncation-only memory — and the simplest model seam of the three. Persistence + live calls pending |
 | ⬜ | LangGraph stack · eval harness |
 
 Try it without installing anything but [uv](https://docs.astral.sh/uv/) — no API keys, no cost:

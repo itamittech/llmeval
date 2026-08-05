@@ -68,7 +68,7 @@ Say so explicitly in your response, naming the file and what's now wrong. An ack
 
 ## Repository status
 
-The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack is feature-complete against scripted models** — swarm negotiation, memory in agent state, budgets and events in lifecycle hooks, context compaction via each agent summarising itself, lenient content guardrails at the message boundary, opt-in session persistence — all Strands-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)/[0009](docs/decisions/adr-0009-swarm-negotiation.md). The **Spring AI stack's turn loop runs scripted** — floor-passing table orchestrated in harness code (its predicted Manual finding), the scripted model through Spring AI's own `ChatModel` seam. The **UI transcript player is built**, and ADR-0007's rules are proven: the Spring AI fixture landed and the UI suite grew by four tests with zero source changes. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in.
+The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack is feature-complete against scripted models** — swarm negotiation, memory in agent state, budgets and events in lifecycle hooks, context compaction via each agent summarising itself, lenient content guardrails at the message boundary, opt-in session persistence — all Strands-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)/[0009](docs/decisions/adr-0009-swarm-negotiation.md). The **Spring AI stack runs §§2–6 scripted** — the floor-passing loop is harness code (its predicted Manual finding) but the pass is a real framework tool with the guardrail gate inside it; conversation memory on `ChatMemory`; compaction hand-rolled because the framework only truncates; live Anthropic options pinned and read back. The **UI transcript player is built**, and ADR-0007's rules are proven: the Spring AI fixture landed and the UI suite grew by four tests with zero source changes. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in.
 
 | Component | State |
 |---|---|
@@ -81,7 +81,7 @@ The **shared event schema**, **both engines** (Python and Java, cross-checked by
 | `shared/conformance/` — cross-engine vectors | ✅ 20 vectors |
 | `projects/ludo/stack-strands/` | ✅ Feature-complete scripted — turn loop, swarm negotiation, compaction, guardrails, session persistence, events; 40 tests, schema-valid fixture. **No live game** (model IDs TBD) |
 | `projects/ludo/ui/` | ✅ Transcript player (React + Vite), 19 tests; ADR-0007's fixture rules enforced in CI — proven when the Spring AI fixture landed and the suite grew by four with zero UI changes |
-| `projects/ludo/stack-springai/` | 🚧 Turn loop + floor-passing table + events running scripted, 6 tests, schema-valid fixture; compaction, guardrails, persistence, live providers not done |
+| `projects/ludo/stack-springai/` | 🚧 §§2–6 scripted — tool-driven floor passing, conversation memory, hand-rolled compaction, guardrails, pinned live options; 10 tests, schema-valid fixture. Session persistence + live calls pending |
 | `stack-langgraph`, `eval/` | ❌ Not started |
 | Judge prompt | ❌ Waits for the eval harness |
 

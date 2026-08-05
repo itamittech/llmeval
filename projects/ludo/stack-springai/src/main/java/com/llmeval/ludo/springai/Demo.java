@@ -40,15 +40,21 @@ public final class Demo {
                 "{\"notes\": [{\"kind\": \"strategy\", \"text\": \"long game ahead\"}]}");
 
         Map<Color, List<String>> perColor = new EnumMap<>(Color.class);
+        // A floor pass costs two entries: the pass_floor tool call, then the
+        // reply after its result — the same rhythm as the Strands scripts.
         List<String> red = new ArrayList<>(List.of(
-                "{\"to\": \"blue\", \"message\": \"ally against yellow?\", \"note\": \"I want a quiet table\"}",
+                "{\"tool\": \"pass_floor\", \"args\": {\"to\": \"blue\", "
+                        + "\"message\": \"ally against yellow?\", \"note\": \"I want a quiet table\"}}",
+                "(floor passed)",
                 "(nothing further)"));
         red.addAll(decides);
         red.addAll(reflects);
         perColor.put(Color.RED, red);
 
         List<String> blue = new ArrayList<>(List.of(
-                "{\"to\": \"red\", \"message\": \"agreed - yellow first\"}",
+                "{\"tool\": \"pass_floor\", \"args\": {\"to\": \"red\", "
+                        + "\"message\": \"agreed - yellow first\"}}",
+                "(floor passed)",
                 "(quiet)"));
         blue.addAll(decides);
         blue.addAll(reflects);

@@ -28,7 +28,7 @@ One more rule, from [ADR-0008](../decisions/adr-0008-framework-native-harness.md
 
 | Capability | Strands | LangGraph | Spring AI | Notes |
 |---|---|---|---|---|
-| Tool / function calling | **Native** — [hooks.py](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) | — | — | Strands: the swarm's own handoff tool, captured via `AfterToolCallEvent` |
+| Tool / function calling | **Native** — [hooks.py](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) | — | **Native** — [Harness.java](../../projects/ludo/stack-springai/src/main/java/com/llmeval/ludo/springai/Harness.java) `passFloorTool` | Strands: the swarm's handoff tool. Spring AI: `pass_floor` as a `FunctionToolCallback`, executed by `ToolCallingManager` — but see the metering finding |
 | Structured output | — | — | — | |
 | Multi-agent orchestration | **Native** — [harness.py](../../projects/ludo/stack-strands/src/ludo_strands/harness.py) | — | **Manual** — [Harness.java](../../projects/ludo/stack-springai/src/main/java/com/llmeval/ludo/springai/Harness.java) `runTable` | Strands: `Swarm` runs the table (ADR-0009). Spring AI: no orchestrator exists — see finding |
 | Agent-to-agent messaging | **Native** — [hooks.py](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) | — | **Manual** — same loop | Strands: handoff = directed message. Spring AI: the harness delivers |
@@ -39,9 +39,9 @@ One more rule, from [ADR-0008](../decisions/adr-0008-framework-native-harness.md
 
 | Capability | Strands | LangGraph | Spring AI | Notes |
 |---|---|---|---|---|
-| Short-term / conversation memory | — | — | — | |
+| Short-term / conversation memory | — | — | **Native** — [Harness.java](../../projects/ludo/stack-springai/src/main/java/com/llmeval/ludo/springai/Harness.java) `askInConversation` | Spring AI: `ChatMemory` + `MessageChatMemoryAdvisor`, one conversation per agent |
 | Long-term agent memory | **Native** — [players.py](../../projects/ludo/stack-strands/src/ludo_strands/players.py) | — | **Manual** — [Memory.java](../../projects/ludo/stack-springai/src/main/java/com/llmeval/ludo/springai/Memory.java) | Strands: `AgentState`. Spring AI: `ChatMemory` is conversation, not beliefs — no key-value store exists |
-| Context compaction / summarisation | **Native** — [players.py](../../projects/ludo/stack-strands/src/ludo_strands/players.py) + [harness.py](../../projects/ludo/stack-strands/src/ludo_strands/harness.py) | — | — | Explicit goal of the project; see finding — the default path bypasses the hooks |
+| Context compaction / summarisation | **Native** — [players.py](../../projects/ludo/stack-strands/src/ludo_strands/players.py) + [harness.py](../../projects/ludo/stack-strands/src/ludo_strands/harness.py) | — | **Manual** — [Harness.java](../../projects/ludo/stack-springai/src/main/java/com/llmeval/ludo/springai/Harness.java) `maybeCompact` | The cleanest split so far: Strands ships a summarising manager; Spring AI's only strategy is silent truncation, so the summariser is harness code |
 | Prompt templating & versioning | — | — | — | |
 | Prompt caching | — | — | — | Provider- and framework-dependent |
 | State persistence / resume | **Native** — [harness.py](../../projects/ludo/stack-strands/src/ludo_strands/harness.py) + [test_session.py](../../projects/ludo/stack-strands/tests/test_session.py) | — | — | `FileSessionManager`, opt-in; see finding — the sync schedule is the framework's, not yours |
@@ -55,7 +55,7 @@ One more rule, from [ADR-0008](../decisions/adr-0008-framework-native-harness.md
 | Cost attribution | — | — | — | |
 | OpenTelemetry tracing | — | — | — | |
 | Retry / backoff / fallback model | — | — | — | |
-| Guardrails integration | **Native** — [guardrails.py](../../projects/ludo/stack-strands/src/ludo_strands/guardrails.py) via `BeforeToolCallEvent.cancel_tool` in [hooks.py](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) | — | — | Harness rules at the message boundary; the cancellation carries the reason back to the model, which may rephrase. Bedrock Guardrails (abuse class) deferred to live games |
+| Guardrails integration | **Native** — [guardrails.py](../../projects/ludo/stack-strands/src/ludo_strands/guardrails.py) via `BeforeToolCallEvent.cancel_tool` in [hooks.py](../../projects/ludo/stack-strands/src/ludo_strands/hooks.py) | — | **Manual** — [Guardrails.java](../../projects/ludo/stack-springai/src/main/java/com/llmeval/ludo/springai/Guardrails.java) inside the `pass_floor` tool | Same three rules both stacks, same leniency tests. Strands cancels at a framework hook; Spring AI has no cancellable boundary, so the gate is the tool's own body. Bedrock Guardrails (abuse class) deferred to live games |
 | Rate limiting / concurrency control | — | — | — | |
 
 ### Model access
@@ -144,6 +144,14 @@ The prediction this repo made before any stack existed — *"suppose Spring AI d
 - **No agent belief store.** `ChatMemory` is conversation history — messages in, messages out — not a key-value state an agent owns. Strands' `AgentState` has no counterpart, so [`Memory.java`](../../projects/ludo/stack-springai/src/main/java/com/llmeval/ludo/springai/Memory.java) is a plain class rendering the `{{memory}}` variable byte-identically to the Python stacks.
 
 **And the counterweight, because honest findings cut both ways:** Spring AI's `ChatModel` seam produced **the simplest scripted model of the three stacks** — one synchronous `call(Prompt) → ChatResponse` with usage attached to the response object itself. No stream-event choreography (Strands needed five event shapes per reply), no hook-ordering trap (usage is *on the response*, read after the call returns — the accumulated-metrics pitfall recorded above for Strands cannot exist here). Faking a provider took forty lines. For a framework aimed at enterprise Java, the flattest possible model seam is exactly the right instinct, and it deserves the credit here.
+
+### Finding: Spring AI's internal tool execution hides model invocations from the caller
+
+Found making `pass_floor` a real framework tool, and it matters for anyone doing cost accounting.
+
+Spring AI executes tools *inside* the `ChatModel` — the provider binding loops (model → tool → model) and hands the caller **one** `ChatResponse` for what was **two or more** model invocations. Client-level metering therefore cannot see the individual calls: this stack's scripted model aggregates usage across its internal chain so nothing goes unmetered, but per-invocation granularity is gone, and one `llm_call` event covers a whole tool round-trip. Contrast Strands, whose lifecycle hooks fired around *every* invocation, tool rounds included — the two frameworks disagree about what "one call" even is.
+
+The escape hatch exists and is the plan for live play: `ToolCallingChatOptions.setInternalToolExecutionEnabled(false)` returns the tool call to the caller, who runs the loop — per-invocation metering restored, at the price of owning the loop. **What to check in LangGraph:** where its tool execution sits relative to its callbacks, and what a "call" means to its token accounting.
 
 ### Finding: the Java agent must depend on the engine; the Python agents need not
 

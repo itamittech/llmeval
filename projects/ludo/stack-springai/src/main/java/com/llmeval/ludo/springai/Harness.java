@@ -7,13 +7,22 @@ import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.memory.MessageWindowChatMemory;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.function.FunctionToolCallback;
 import org.yaml.snakeyaml.Yaml;
 
 import com.llmeval.ludo.engine.Color;
@@ -32,21 +41,29 @@ import com.llmeval.ludo.engine.TurnStart;
 /**
  * The turn loop: the engine's agent hooks, answered with Spring AI.
  *
- * <p>The engine drives and calls three hooks per turn; this class answers them
- * (harness-contract §2). Model access goes through {@link ChatClient} over a
- * {@link ChatModel} — the scripted fake in tests, provider bindings when live —
- * and every call's usage is read from the framework's own response metadata
- * into an {@code llm_call} event.
+ * <p>The engine drives and calls three hooks per turn (harness-contract §2);
+ * this class answers them over {@link ChatClient}:
  *
- * <p><strong>Negotiation is the honest divergence.</strong> Strands has a swarm
- * orchestrator; Spring AI has none, so the floor-passing table of ADR-0009 is
- * orchestrated by this class — a legitimate <em>Manual</em> under ADR-0008,
- * recorded loudly in the capability matrix rather than smoothed over. The
- * observable protocol is identical: the active agent opens, a floor-holder
- * sends one directed message (optionally with a public table note) or ends the
- * conversation, capped by {@code max_floor_passes}. In this first cut the
- * floor-pass action is a parsed JSON reply; the framework-tool form arrives
- * with live play.
+ * <ul>
+ *   <li><b>negotiate</b> — the floor-passing table of ADR-0009. Spring AI has
+ *       no swarm orchestrator, so the loop over floor-holders is harness code
+ *       (a recorded <em>Manual</em>) — but the floor-pass action itself is a
+ *       real framework tool ({@code pass_floor}, a {@link FunctionToolCallback})
+ *       whose schema reaches the model as framework-authored text, exactly
+ *       ADR-0009's boundary. The guardrail gate lives inside the tool: a
+ *       blocked message never delivers, and the model reads why.
+ *   <li><b>choose / reflect</b> — one conversation per agent, carried by the
+ *       framework's {@link ChatMemory} through a {@link MessageChatMemoryAdvisor}.
+ *       The conversation grows turn over turn; past the game's context budget,
+ *       the oldest exchanges are summarised into durable memory — the
+ *       summariser is hand-rolled because Spring AI has no summarising memory,
+ *       another recorded Manual.
+ * </ul>
+ *
+ * <p>Every model call's usage is read from the framework's response metadata
+ * into one {@code llm_call}. With internal tool execution, a tool round-trip
+ * is two invocations inside one call — usage is aggregated by the scripted
+ * model and the granularity loss is a capability-matrix finding.
  */
 public final class Harness {
 
@@ -57,7 +74,11 @@ public final class Harness {
         }
     }
 
+    /** The floor-pass action's input — the schema the framework describes to the model. */
+    public record PassFloor(String to, String message, String note) {}
+
     private static final Pattern JSON_OBJECT = Pattern.compile("\\{.*}", Pattern.DOTALL);
+    private static final int PRESERVE_RECENT_MESSAGES = 4;
     private static final Map<String, Color> BY_LABEL = new LinkedHashMap<>();
     static {
         for (Color c : Color.values()) BY_LABEL.put(c.label(), c);
@@ -71,6 +92,8 @@ public final class Harness {
     private final Map<Color, List<String>> inbox = new EnumMap<>(Color.class);
     private final Map<Color, String> lastReply = new EnumMap<>(Color.class);
     private final Map<Color, Decider> deciders = new EnumMap<>(Color.class);
+    private final ChatMemory conversations;
+    private final MessageChatMemoryAdvisor memoryAdvisor;
     private final EventSink sink;
     private final RecentWindow window;
     private final Game game;
@@ -88,6 +111,12 @@ public final class Harness {
         // One tee: engine and harness events share one sequence (ADR-0003).
         this.window = new RecentWindow(30);
         this.sink = new EventSink.TeeSink(destination, window);
+
+        // The framework's conversation memory, one conversation per colour.
+        // The window is set far above the game's own budget so OUR compaction
+        // triggers first — the framework's only strategy is silent truncation.
+        this.conversations = MessageWindowChatMemory.builder().maxMessages(400).build();
+        this.memoryAdvisor = MessageChatMemoryAdvisor.builder(conversations).build();
 
         Map<Color, Map<String, Object>> players = new EnumMap<>(Color.class);
         for (Color color : Color.values()) {
@@ -115,6 +144,10 @@ public final class Harness {
 
     public Outcome play() {
         return game.play(deciders);
+    }
+
+    List<Message> conversation(Color color) {
+        return conversations.get(color.label());
     }
 
     private boolean exhausted() {
@@ -154,6 +187,19 @@ public final class Harness {
 
     // -- negotiate: the floor-passing table (ADR-0009) --------------------
 
+    /** Everything one table run needs to remember between floor holdings. */
+    private static final class TableState {
+        Color holder;
+        Color nextHolder;
+        String lastMessage;
+        boolean delivered;
+        int passes;
+
+        TableState(Color opener) {
+            holder = opener;
+        }
+    }
+
     private void negotiate(TurnStart start) {
         turn = start.turn();
         if (exhausted()) return;
@@ -179,42 +225,84 @@ public final class Harness {
                 "board", renderBoard(start.state()),
                 "standings", renderStandings(start.state())));
 
-        Color holder = start.color();
-        String incoming = null;
-        int passes = 0;
-        while (true) {
-            String context = briefings.get(holder) + "\n\n" + task
-                    + (incoming == null ? "" : "\n\nMessage addressed to you this conversation: " + incoming);
-            String reply = ask(holder, "negotiate", context);
+        TableState state = new TableState(start.color());
+        ToolCallback passFloor = passFloorTool(state);
 
-            Map<String, Object> action = tryJson(reply);
-            Color to = action == null ? null : BY_LABEL.get(String.valueOf(action.get("to")));
-            String message = action == null ? null : asText(action.get("message"));
-            if (to == null || to == holder || message == null || message.isBlank()) {
-                return;    // silence — or an unparseable/self-addressed reply — ends the table
+        while (true) {
+            state.delivered = false;
+            String context = briefings.get(state.holder) + "\n\n" + task
+                    + (state.lastMessage == null ? ""
+                       : "\n\nMessage addressed to you this conversation: " + state.lastMessage);
+
+            ChatResponse response = clients.get(state.holder).prompt()
+                    .system(systemPrompt(state.holder))
+                    .user(context)
+                    .toolCallbacks(passFloor)
+                    .call()
+                    .chatResponse();
+            meter(state.holder, "negotiate", response);
+
+            if (!state.delivered || state.passes >= budgets.maxFloorPasses()) return;
+            state.holder = state.nextHolder;
+        }
+    }
+
+    /**
+     * The floor-pass action as a real framework tool. The delivery decision —
+     * length cap, guardrail gate, inbox fan-out, events — happens INSIDE the
+     * tool, so what the model gets back is the truth about what was delivered.
+     */
+    private ToolCallback passFloorTool(TableState state) {
+        Function<PassFloor, String> execute = (pass) -> {
+            if (state.passes >= budgets.maxFloorPasses()) {
+                return "the table is closed: the floor-pass cap was reached";
+            }
+            Color to = pass.to() == null ? null : BY_LABEL.get(pass.to());
+            String message = pass.message();
+            if (to == null || to == state.holder || message == null || message.isBlank()) {
+                return "not delivered: name one other player and give the message";
             }
             if (message.length() > budgets.maxMessageChars()) {
-                return;    // over the cap: not delivered; budget enforcement, not content policy
+                return "not delivered: over the " + budgets.maxMessageChars()
+                        + "-character limit — say it shorter";
+            }
+            Guardrails.Violation violation = Guardrails.check(message);
+            String note = pass.note();
+            if (violation == null && note != null && !note.isBlank()) {
+                violation = Guardrails.check(note);
+            }
+            if (violation != null) {
+                emit("guardrail_triggered", payload("player", state.holder.label(),
+                        "rule", violation.rule(), "action", "blocked",
+                        "source", "harness", "detail", violation.reason()));
+                return "message not delivered: " + violation.reason();
             }
 
-            emit("message_sent", payload("player", holder.label(), "to", to.label(), "text", message));
-            inbox.get(to).add("from " + holder.label() + ": \"" + message + "\"");
-
-            String note = asText(action.get("note"));
+            emit("message_sent", payload("player", state.holder.label(),
+                    "to", to.label(), "text", message));
+            inbox.get(to).add("from " + state.holder.label() + ": \"" + message + "\"");
             if (note != null && !note.isBlank() && note.length() <= budgets.maxMessageChars()) {
-                emit("message_sent", payload("player", holder.label(), "to", null, "text", note));
+                emit("message_sent", payload("player", state.holder.label(), "to", null, "text", note));
                 for (Color other : Color.values()) {
-                    if (other != holder) {
-                        inbox.get(other).add("(table) from " + holder.label() + ": \"" + note + "\"");
+                    if (other != state.holder) {
+                        inbox.get(other).add("(table) from " + state.holder.label() + ": \"" + note + "\"");
                     }
                 }
             }
+            state.delivered = true;
+            state.nextHolder = to;
+            state.lastMessage = message;
+            state.passes++;
+            return "delivered to " + to.label();
+        };
 
-            passes++;
-            if (passes >= budgets.maxFloorPasses()) return;
-            holder = to;
-            incoming = message;
-        }
+        return FunctionToolCallback.builder("pass_floor", execute)
+                .description("Send one message to one named player (red, green, yellow or blue) "
+                        + "and pass them the floor. Optionally include a public table note every "
+                        + "player will see. This is the only way to speak; reply without calling "
+                        + "it to end the conversation.")
+                .inputType(PassFloor.class)
+                .build();
     }
 
     private String drainInbox(Color color) {
@@ -236,21 +324,26 @@ public final class Harness {
             throw new BudgetSpent("per-game token ceiling reached");
         }
 
-        String prompt = ctx.attempt() == 1
-                ? prompts.turn("decide").render(Map.of(
-                        "turn", ctx.turn(),
-                        "color", ctx.color().label(),
-                        "die", ctx.die(),
-                        "board", renderBoard(ctx.state()),
-                        "legal_moves", renderMoves(ctx.legalMoves()),
-                        "recent_events", window.render(),
-                        "memory", memories.get(ctx.color()).render(40)))
-                : prompts.turn("retry").render(Map.of(
-                        "reason", "not a legal move for this roll",
-                        "rejected", lastReply.getOrDefault(ctx.color(), "(no parseable reply)"),
-                        "legal_moves", renderMoves(ctx.legalMoves())));
+        String prompt;
+        if (ctx.attempt() == 1) {
+            maybeCompact(ctx.color());
+            prompt = prompts.turn("decide").render(Map.of(
+                    "turn", ctx.turn(),
+                    "color", ctx.color().label(),
+                    "die", ctx.die(),
+                    "board", renderBoard(ctx.state()),
+                    "legal_moves", renderMoves(ctx.legalMoves()),
+                    "recent_events", window.render(),
+                    "memory", memories.get(ctx.color()).render(40)));
+        } else {
+            // Same conversation, so the model sees its own rejected answer.
+            prompt = prompts.turn("retry").render(Map.of(
+                    "reason", "not a legal move for this roll",
+                    "rejected", lastReply.getOrDefault(ctx.color(), "(no parseable reply)"),
+                    "legal_moves", renderMoves(ctx.legalMoves())));
+        }
 
-        String reply = ask(ctx.color(), "move", prompt);
+        String reply = askInConversation(ctx.color(), "move", prompt);
         lastReply.put(ctx.color(), reply.strip());
 
         Map<String, Object> data = tryJson(reply);
@@ -285,7 +378,7 @@ public final class Harness {
                     "color", end.color().label(),
                     "turn_summary", renderEvents(end.events()),
                     "memory", memories.get(end.color()).render(40)));
-            Map<String, Object> data = tryJson(ask(end.color(), "reflect", prompt));
+            Map<String, Object> data = tryJson(askInConversation(end.color(), "reflect", prompt));
             Object raw = data == null ? null : data.get("notes");
             if (!(raw instanceof List)) return;
             notes = (List<Map<String, Object>>) raw;
@@ -306,17 +399,86 @@ public final class Harness {
         }
     }
 
+    // -- compaction (harness-contract §5): a recorded Manual ---------------
+
+    /**
+     * Spring AI's only conversation-management strategy is a sliding window —
+     * silent truncation, exactly what §5 forbids replacing summarisation with.
+     * So the summariser is harness code: past the game's context budget, the
+     * oldest exchanges are summarised (by the agent's own model, metered as
+     * {@code purpose: "compact"}), folded into durable memory, and the
+     * framework's {@link ChatMemory} is rebuilt as summary + recent.
+     */
+    private void maybeCompact(Color color) {
+        List<Message> history = conversations.get(color.label());
+        int tokensBefore = estimateTokens(history) + systemPrompt(color).length() / 4;
+        if (tokensBefore <= budgets.maxContextTokens()) return;
+        if (history.size() <= PRESERVE_RECENT_MESSAGES) return;
+
+        List<Message> oldest = history.subList(0, history.size() - PRESERVE_RECENT_MESSAGES);
+        List<Message> recent = List.copyOf(history.subList(oldest.size(), history.size()));
+
+        StringBuilder transcript = new StringBuilder();
+        for (Message message : oldest) {
+            transcript.append(message.getMessageType()).append(": ")
+                      .append(message.getText()).append("\n");
+        }
+        String summary = askOneShot(color, "compact",
+                "Summarise this earlier part of your game so far in at most three sentences, "
+                        + "first person, keeping any deals and suspicions:\n\n" + transcript)
+                .strip();
+
+        memories.get(color).absorb(summary);
+        conversations.clear(color.label());
+        List<Message> rebuilt = new ArrayList<>();
+        rebuilt.add(new UserMessage("(summary of earlier turns) " + summary));
+        rebuilt.add(new AssistantMessage("Noted."));
+        rebuilt.addAll(recent);
+        conversations.add(color.label(), rebuilt);
+
+        emit("context_compacted", payload("player", color.label(),
+                "tokens_before", tokensBefore,
+                "tokens_after", estimateTokens(conversations.get(color.label())),
+                "summary", summary));
+    }
+
+    private static int estimateTokens(List<Message> messages) {
+        int chars = 0;
+        for (Message message : messages) {
+            String text = message.getText();
+            if (text != null) chars += text.length();
+        }
+        return chars / 4;
+    }
+
     // -- the model boundary ------------------------------------------------
 
-    /** One model call through the framework: ChatClient in, usage metadata out,
-     *  one {@code llm_call} event — never batched (harness-contract §3). */
-    private String ask(Color color, String purpose, String user) {
+    /** Decide and reflect live in one framework-held conversation per agent. */
+    private String askInConversation(Color color, String purpose, String user) {
+        ChatResponse response = clients.get(color).prompt()
+                .system(systemPrompt(color))
+                .user(user)
+                .advisors(memoryAdvisor)
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, color.label()))
+                .call()
+                .chatResponse();
+        meter(color, purpose, response);
+        return response.getResult().getOutput().getText();
+    }
+
+    /** Table and compaction calls are one-shot: the conversation is for the game. */
+    private String askOneShot(Color color, String purpose, String user) {
         ChatResponse response = clients.get(color).prompt()
                 .system(systemPrompt(color))
                 .user(user)
                 .call()
                 .chatResponse();
+        meter(color, purpose, response);
+        return response.getResult().getOutput().getText();
+    }
 
+    /** One llm_call per client call, usage from the framework's own metadata. */
+    private void meter(Color color, String purpose, ChatResponse response) {
         Usage usage = response.getMetadata().getUsage();
         int input = usage.getPromptTokens() == null ? 0 : usage.getPromptTokens();
         int output = usage.getCompletionTokens() == null ? 0 : usage.getCompletionTokens();
@@ -333,8 +495,6 @@ public final class Harness {
         p.put("tokens", tokens);
         p.put("latency_ms", 0);
         emit("llm_call", p);
-
-        return response.getResult().getOutput().getText();
     }
 
     private String systemPrompt(Color color) {
