@@ -45,6 +45,14 @@ jobs:
           uv sync --directory projects/ludo/stack-strands
           uv run --directory projects/ludo/stack-strands pytest
 
+      - name: LangGraph stack
+        # The other Python venv — resolved separately on purpose, so the two
+        # frameworks can disagree about every transitive dependency. Scripted
+        # only, like everything in this workflow.
+        run: |
+          uv sync --directory projects/ludo/stack-langgraph
+          uv run --directory projects/ludo/stack-langgraph pytest
+
   engine-java:
     name: Java engine
     runs-on: ubuntu-latest

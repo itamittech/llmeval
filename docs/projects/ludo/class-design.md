@@ -4,7 +4,7 @@ The object graph as actually built, at method granularity: who owns what, who ca
 
 **New to design patterns?** [Section 7](#7-design-patterns-from-the-problem-up) is written for you — each pattern starts from a problem this engine actually hit, shows the code you'd write first, shows what breaks, and only then names the thing.
 
-**This is a living document.** Sections 1–8 are the engines. The agent stacks attach to them at a single dashed arrow, and the two built so far are drawn on the far side of it: [§9](#9-the-harness-layer-the-same-turn-on-strands) is the same turn on Strands, [§10](#10-the-harness-layer-second-take-the-same-turn-on-spring-ai) the same turn on Spring AI — read together, they are the framework comparison at class level. LangGraph will attach at the same arrow — see [What comes next](#what-comes-next).
+**This is a living document.** Sections 1–8 are the engines. The agent stacks attach to them at a single dashed arrow, and all three are now drawn on the far side of it: [§9](#9-the-harness-layer-the-same-turn-on-strands) is the same turn on Strands, [§10](#10-the-harness-layer-second-take-the-same-turn-on-spring-ai) on Spring AI, [§11](#11-the-harness-layer-third-take-the-same-turn-on-langgraph) on LangGraph — read together, they are the framework comparison at class level, and §11.4 ends in the three-grain table the whole repo builds toward.
 
 Companion docs: [engine-design.md](engine-design.md) explains *why* these shapes were chosen; this one shows *how they connect*. For Python syntax itself, see [learning/python](../../../learning/python/).
 
@@ -223,8 +223,10 @@ classDiagram
         +reflect(end) None
     }
     class LangGraphAgent {
-        <<planned>>
+        <<built — §11>>
         +choose(ctx) Move
+        +negotiate(start) None
+        +reflect(end) None
     }
 
     Decider <|.. FirstLegal
@@ -420,7 +422,7 @@ flowchart TD
         cli[cli.py]
     end
 
-    outside["agent stacks<br/>Strands §9 · Spring AI §10 · LangGraph planned"]
+    outside["agent stacks<br/>Strands §9 · Spring AI §10 · LangGraph §11"]
 
     state --> board
     moves --> board
@@ -473,7 +475,7 @@ Already know the patterns? Skip to the [recap](#79-recap).
 
 ### 7.1 Four players, four different brains → **Strategy**
 
-**The problem.** `Game` has to ask each player "what's your move?" But the players are wildly different things. Two ship with the engine: `RandomBot` (picks at random, for benchmarking) and `FirstLegal` (always takes the first option, so conformance vectors stay reproducible). The rest are LLM agents, each on a different framework — two have since arrived, Strands ([§9](#9-the-harness-layer-the-same-turn-on-strands)) and Spring AI in *Java* ([§10](#10-the-harness-layer-second-take-the-same-turn-on-spring-ai)) — with LangGraph still to come.
+**The problem.** `Game` has to ask each player "what's your move?" But the players are wildly different things. Two ship with the engine: `RandomBot` (picks at random, for benchmarking) and `FirstLegal` (always takes the first option, so conformance vectors stay reproducible). The rest are LLM agents, each on a different framework — and all three have since arrived: Strands ([§9](#9-the-harness-layer-the-same-turn-on-strands)), Spring AI in *Java* ([§10](#10-the-harness-layer-second-take-the-same-turn-on-spring-ai)), and LangGraph ([§11](#11-the-harness-layer-third-take-the-same-turn-on-langgraph)).
 
 How does the turn loop ask the question without knowing who it's asking?
 
@@ -936,7 +938,7 @@ flowchart LR
 
     fl[FirstLegal]
     rb[RandomBot]
-    agents["agent harnesses<br/>Strands §9 · Spring AI §10 · LangGraph planned"]
+    agents["agent harnesses<br/>Strands §9 · Spring AI §10 · LangGraph §11"]
 
     ls[ListSink]
     js[JsonlSink]
@@ -1356,13 +1358,195 @@ Neither column is "the better framework" — the [capability matrix](../../archi
 
 ---
 
+## 11. The harness layer, third take: the same turn on LangGraph
+
+Third framework, third grain. Strands was *a loop you decorate* — the framework runs the show and fires hooks at you. Spring AI was *a toolkit you drive* — you hold the objects and call them. LangGraph is **a graph you draw**: you declare nodes and edges, hand the drawing to a runtime, and the framework executes *your* control flow over state *it* owns. Almost nothing in this stack is a method call on an object the harness holds — it is state moving through a machine the harness declared. The stack's [README](../../../projects/ludo/stack-langgraph/README.md) states the design decisions; these are the reference diagrams. (`learning/langgraph` follows once the code stops moving.)
+
+### 11.1 The harness object graph
+
+```mermaid
+flowchart LR
+    subgraph eng ["engine-python — deterministic, no SDKs"]
+        PG["Game"]
+    end
+
+    subgraph lg ["stack-langgraph"]
+        DEC["_Decider ×4"]
+        LH["LudoHarness"]
+        PA["player agents ×4<br/>create_agent — compiled graphs"]
+        MW["BudgetGate + Compactor<br/>middleware"]
+        CP["checkpointer<br/>one thread per colour"]
+        ST["Store<br/>('beliefs', colour) namespaces"]
+        TB["Table — a fresh StateGraph per turn<br/>brief → speak → tools"]
+        PF["pass_floor tool"]
+        GR["guardrails"]
+        MT["Meter — callback handler"]
+        SM["ScriptedChatModel /<br/>ChatAnthropic"]
+        TEE["TeeSink"]
+        WIN["_EventWindow"]
+    end
+
+    PG -- "negotiate / choose / reflect" --> DEC
+    DEC --> LH
+    LH -- "invoke(thread_id=colour) in choose, reflect" --> PA
+    PA -- "before_model" --> MW
+    PA -- "load state before, save after every step" --> CP
+    PA -- "model calls" --> SM
+    LH -- "draws, one per negotiation" --> TB
+    TB -- "speak: one call per floor holding" --> SM
+    TB -. "ToolNode executes" .-> PF
+    PF --> GR
+    LH -- "write_note / render_memory" --> ST
+    MW -- "absorb summaries" --> ST
+    SM -. "on_llm_end" .-> MT
+    PG -- "engine events" --> TEE
+    MT -- "llm_call" --> TEE
+    LH -- "agent_reasoning, memory_write" --> TEE
+    PF -- "message_sent, guardrail_triggered" --> TEE
+    TEE --> WIN
+```
+
+Reading the arrows:
+
+- **The engine's half is untouched a third time** — same `Protocol`, same three hooks, and every box on the right could be swapped for either other stack's without the left half noticing. Three stacks in, that boundary has now held under three different architectures.
+- **The harness holds no conversation.** `invoke(thread_id="red")` *selects* one — the checkpointer owns the state and loads/saves it around every step. Spring AI's `CONVERSATION_ID` was the same idea one layer up; Strands' agent-owns-its-messages was the opposite.
+- **Two dashed arrow families, both the framework calling us:** `ToolNode` executing `pass_floor` (as Spring AI's `ToolCallingManager` did), and the callback system firing `on_llm_end` into the `Meter` for *every* model call made anywhere under an invoke — the summariser's included, which is precisely the property Strands' summariser lacked.
+- **Beliefs finally have a first-class home.** The `Store` is the only dedicated belief-store primitive among the three frameworks — Strands repurposed `AgentState`, Spring AI hand-rolled a class. Both the harness (reflect notes) and the middleware (compaction summaries) write to it.
+
+### 11.2 One `choose`, as calls
+
+Same arrow as §3, §9.2, §10.2. The budget gate and the compactor ride *inside* the framework's loop as middleware — the harness checks nothing at call time.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant G as Game
+    participant H as LudoHarness
+    participant A as player agent red
+    participant BG as BudgetGate
+    participant CM as Compactor
+    participant CP as checkpointer
+    participant M as model
+    participant MT as Meter
+    participant E as TeeSink
+
+    G->>H: choose(TurnContext) via _Decider
+    alt token ceiling spent
+        H--xG: raise BudgetExceeded — the engine records a forfeit
+    end
+    H->>H: render decide.md — board, legal moves, recent events, memory
+    H->>A: invoke(messages=[prompt], thread_id=red, callbacks=[Meter])
+    A->>CP: load thread state
+    A->>BG: before_model — ceiling spent mid-phase? jump to end
+    A->>CM: before_model — thread over max_context_tokens?
+    opt over budget
+        CM->>M: summary call (the agent's own model)
+        M-->>MT: on_llm_end — llm_call, purpose compact
+        CM->>CM: rewrite thread: RemoveMessage(ALL) + summary + preserved
+        CM->>E: emit context_compacted, absorb summary into Store
+    end
+    A->>M: model call
+    M-->>MT: on_llm_end — llm_call, purpose move
+    A->>CP: save the new exchange
+    A-->>H: final state
+    H->>E: emit agent_reasoning
+    H-->>G: Move
+    Note over G,H: engine validates. Illegal? attempt 2 invokes the SAME thread with retry.md — the model sees its own rejected answer because the checkpointer says so
+```
+
+What this makes obvious:
+
+- **Middleware is where hooks and advisors were.** The budget backstop and the compactor sit at the framework's documented extension point, inside its loop — the same job `GameHooks` did by event and `MessageChatMemoryAdvisor` did by wrapping, done here by declaration.
+- **The compaction moment belongs to the framework.** The harness never checks the budget before a call the way the other two stacks do — the middleware fires inside the invocation when its trigger says so. The trigger is the *game's* number; the moment is the framework's.
+- **Metering is subscription, not discipline.** One callback handler passed at the top propagates to every model call underneath, however deep. Strands made forgetting impossible by hook; Spring AI made it a call-site habit; LangGraph makes it a property of config propagation.
+
+### 11.3 One table round — the protocol as a drawn graph
+
+The other two stacks *describe* ADR-0009's floor-passing protocol in code. This stack **draws it** — the graph below is not documentation of `table.py`, it *is* `table.py`, node for node, edge for edge:
+
+```mermaid
+flowchart LR
+    S((START)) --> B["brief<br/>wipe the channel, seed the<br/>holder's PRIVATE context"]
+    B --> K["speak<br/>one model call,<br/>pass_floor bound"]
+    K -- "tool call" --> T["tools<br/>ToolNode runs pass_floor:<br/>cap · validity · guardrail · deliver"]
+    K -- "plain text — the floor lapses" --> E((END))
+    T -- "delivered, under the cap<br/>(floor moves via Command)" --> B
+    T -- "blocked — the model reads why" --> K
+    T -- "pass cap reached" --> E
+```
+
+And one delivered pass through it, as calls:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant H as LudoHarness
+    participant TG as Table graph
+    participant M as model (holder)
+    participant TN as ToolNode
+    participant PF as pass_floor
+    participant GR as guardrails
+    participant E as TeeSink
+
+    H->>TG: invoke(holder=red, callbacks=[Meter], recursion_limit)
+    TG->>TG: brief — RemoveMessage(ALL) + red's briefing, task, incoming message
+    TG->>M: speak — bind_tools([pass_floor]), one call
+    M-->>TG: AIMessage with a pass_floor tool call
+    TG->>TN: route: tools_condition
+    TN->>PF: execute(to=blue, message, note)
+    PF->>GR: check(message), check(note)
+    alt out-of-fiction attack
+        PF->>E: emit guardrail_triggered
+        PF-->>TN: "message not delivered: reason" — state unchanged
+        Note over TG: edge routes back to speak — same holder reads why
+    else clean — cunning included
+        PF->>E: emit message_sent (and the note, to null)
+        PF-->>TN: Command(update: holder=blue, passes+1, delivered)
+        Note over TG: edge routes to brief — the floor has moved
+    end
+```
+
+- **The framework executes the tool and applies its state update.** `pass_floor` returns a `Command` — the same mechanism the rejected swarm package's handoff uses — and `ToolNode` folds it into graph state. The harness wrote the tool body; everything around it is the framework's.
+- **Privacy is a wipe, not a wall.** `brief` starts every holding with `RemoveMessage(REMOVE_ALL_MESSAGES)` — the identical primitive the framework's own summariser rewrites history with — so no holder ever sees another's words except the one message addressed to them. This is what `langgraph-swarm` structurally could not do, and why it was [rejected on evidence](../../architecture/stack-comparison.md#finding-langgraph-swarm-cannot-carry-ludos-negotiation-protocol--the-primitive-underneath-can).
+- **Every invocation is visible.** A delivered pass is one metered call; a blocked attempt is two (the model reads the rejection and answers again). Spring AI's internal tool execution hid the middle of exactly this loop; LangGraph's graph *is* the middle, drawn.
+- **The runaway bound is the framework's.** A live model stuck retrying a blocked pass burns down `recursion_limit` and the phase is abandoned (harness-contract §2.1) — no hand-rolled attempt counter.
+
+### 11.4 Who calls whom — and the same turn on three grains
+
+| Caller | Callee | When |
+|---|---|---|
+| `Game` | `_Decider` → `LudoHarness` | the three engine hooks, per turn — by shape, no `implements` |
+| `LudoHarness` | `player_agent.invoke(thread_id=colour)` | choose and reflect — the framework loads and saves the thread |
+| **LangGraph** | `BudgetGate` / `Compactor` `.before_model` | inside every player invocation — middleware, the extension point |
+| **LangGraph** | `pass_floor` — harness code | when the table model calls the tool: `ToolNode` executes it |
+| **LangChain** | `Meter.on_llm_end` | after every model call anywhere under an invoke — summariser included |
+| `LudoHarness`, `Compactor` | `Store.put` / `search` | reflect notes, compaction folds, memory renders |
+| `pass_floor`, `Meter`, `LudoHarness`, `Game` | `TeeSink.emit` | one shared sequence |
+
+Three bolded rows — between §9's three and §10's one — and now the full comparison the two earlier sections could only start:
+
+| | Strands (§9) | LangGraph (§11) | Spring AI (§10) |
+|---|---|---|---|
+| The grain | a loop you decorate | a graph you draw | a toolkit you drive |
+| The framework calls us… | at every lifecycle point | at middleware, tools, callbacks | during tool execution — once |
+| Negotiation | prebuilt `Swarm` orchestrates | the protocol drawn as a `StateGraph` | harness while-loop orchestrates |
+| Conversation memory | the `Agent` *is* its conversation | a checkpointer thread, selected per call | `ChatMemory`, selected per call via advisor |
+| Beliefs | `AgentState`, repurposed | the `Store` — a dedicated primitive | hand-rolled class — nothing to repurpose |
+| Compaction | Native summariser, hook-bypass trap | Native middleware, no trap — both pre-registered questions answered yes | hand-rolled — the framework only truncates |
+| Metering seam | `AfterModelCallEvent`: unforgettable | callback propagation: subscription | the call site: discipline, blind to internal invocations |
+| Session persistence | one store, everything, framework's sync schedule | swap two stores for sqlite twins — **no save call exists** | conversations write through; beliefs saved by hand |
+
+No column wins — the [capability matrix](../../architecture/stack-comparison.md) keeps the scoreboard with evidence. What the three sections show together is that the *same observable game* — same prompts, same events, same protocol — sits naturally on three architectures that agree about almost nothing else.
+
+---
+
 ## What comes next
 
 This diagram will grow. Expected additions, roughly in build order:
 
 | Component | Shape it will take |
 |---|---|
-| **Agent stacks** | ✅ `stack-strands` drawn (§9) · ✅ `stack-springai` drawn (§10) — and the diffs between the two sections are already [capability-matrix](../../architecture/stack-comparison.md) material. 🚧 LangGraph attaches at the same `Decider` arrow and contributes its own section when built. |
+| **Agent stacks** | ✅ All three drawn — `stack-strands` (§9), `stack-springai` (§10), `stack-langgraph` (§11) — ending in §11.4's three-grain table. The diffs between the sections are [capability-matrix](../../architecture/stack-comparison.md) material, and every future stack-side change updates its section in the same commit. |
 | **`engine-java`** | ✅ **Built.** Mirrors this graph, with `Protocol` becoming an `interface` and frozen dataclasses becoming `record`s — see [engine-design.md](engine-design.md#porting-to-java). The optional hooks became `default` methods, and `Game` gained an `IntSupplier` seam Python did not need. |
 | **Eval harness** | Reads transcripts only. Should appear with *no* arrow into the engine at all. |
 | **UI** | Same — consumes the event stream, never the classes. |

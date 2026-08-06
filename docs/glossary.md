@@ -66,6 +66,12 @@ Definitions are short on purpose — each links to the doc that goes deeper.
 
 **Advisor (Spring AI)** — Spring AI's interception seam: a component wrapped around a `ChatClient` call that can rewrite the request before the model sees it and react to the response after. The framework's conversation memory *is* an advisor — `MessageChatMemoryAdvisor` loads history in before the call and saves the exchange after. Same job as a lifecycle hook, opposite grain: an advisor wraps calls **you** make; a hook fires inside a loop the **framework** runs. → [class-design §10](projects/ludo/class-design.md#10-the-harness-layer-second-take-the-same-turn-on-spring-ai)
 
+**Middleware (agent)** — LangChain 1.x's extension seam for its agent loop: a class whose methods (`before_model`, and friends) the framework calls at named points inside every invocation, able to rewrite state or jump the loop. The third member of the family with hooks and advisors — this repo meets all three doing the same two jobs (budget gate, compaction) on three frameworks. → [class-design §11](projects/ludo/class-design.md#11-the-harness-layer-third-take-the-same-turn-on-langgraph)
+
+**Callback handler (LangChain)** — an observer object passed with an invocation and *propagated by the framework* to everything underneath it: every model call, however deep — a summariser's included — reports into `on_llm_end`. How the LangGraph stack meters tokens without the turn loop carrying any metering code. Observation only: callbacks watch the loop, middleware can steer it.
+
+**Checkpointer / thread (LangGraph)** — LangGraph's persistence layer. The framework saves graph state after every step into a *checkpointer*, keyed by a caller-chosen `thread_id`; invoking the same graph on the same thread resumes that state. In this repo each agent's decide/reflect conversation is simply a thread named after its colour — the harness holds no conversation at all, it names one.
+
 **Agent memory** — what an agent remembers across turns beyond the raw conversation: opponent behaviour, promises made, standing plans. Here it's deliberately private and *unreliable* — it records what an agent believes, including things it was successfully lied to about.
 
 **Context compaction** — summarising older conversation into something shorter so the important parts survive when history outgrows the context window. Also called compression or summarisation. Watching an agent play worse after compaction is a genuine, visible failure mode.

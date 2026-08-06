@@ -57,7 +57,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 | **New to Python** | [What the files and folders are](learning/python/00-files-and-folders.md) → [learning/python](learning/python/) → [`Game` walkthrough](learning/python/01-walkthrough-game.md) |
 | **New to Java, or curious how it compares** | [learning/java](learning/java/) → [the same engine, twice](learning/java/01-same-engine-twice.md) — identical rules in both languages, so every difference isolates a language property |
 | **Coming from Java/Spring to Python** | [Python for the Spring developer](learning/python/04-for-spring-developers.md) — `implements`, the container, `@Qualifier`, all mapped side by side onto this codebase |
-| **Trying to read the agent harness** | [learning/strands](learning/strands/) — the agent loop, one turn traced, the swarm table, then [the full picture](learning/strands/03-the-full-picture.md) → [class-design §9](docs/projects/ludo/class-design.md#9-the-harness-layer-the-same-turn-on-strands) for the reference diagrams, and [§10](docs/projects/ludo/class-design.md#10-the-harness-layer-second-take-the-same-turn-on-spring-ai) for the same turn on Spring AI |
+| **Trying to read the agent harness** | [learning/strands](learning/strands/) — the agent loop, one turn traced, the swarm table, then [the full picture](learning/strands/03-the-full-picture.md) → [class-design §9](docs/projects/ludo/class-design.md#9-the-harness-layer-the-same-turn-on-strands) for the reference diagrams, [§10](docs/projects/ludo/class-design.md#10-the-harness-layer-second-take-the-same-turn-on-spring-ai) for the same turn on Spring AI, [§11](docs/projects/ludo/class-design.md#11-the-harness-layer-third-take-the-same-turn-on-langgraph) for the same turn on LangGraph — ending in the three-grains table |
 | **Curious about design patterns** | [Class design §7](docs/projects/ludo/class-design.md#7-design-patterns-from-the-problem-up) — each one taught from the problem up |
 | **Interested in experiment design** | [ADR-0005](docs/decisions/adr-0005-model-access-control.md) → [ADR-0006](docs/decisions/adr-0006-seat-rotation.md) — how to keep a comparison from quietly meaning nothing |
 | **About to write code** | [Engine design](docs/projects/ludo/engine-design.md) → [Class design](docs/projects/ludo/class-design.md) → [Open questions](docs/open-questions.md) |
@@ -80,7 +80,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 - [Brief](docs/projects/ludo/brief.md) · [Game rules](docs/projects/ludo/game-rules.md) · [Agent design](docs/projects/ludo/agent-design.md) · [Evaluation](docs/projects/ludo/evaluation.md)
 - [Harness contract](docs/projects/ludo/harness-contract.md) — the normative spec all three agent stacks implement
 - [Engine design](docs/projects/ludo/engine-design.md) — how the built engine is structured, and what a Java port must preserve
-- [Class design](docs/projects/ludo/class-design.md) — diagrams: the object graph, a turn traced as calls, module layering, and both built harness layers (§§9–10)
+- [Class design](docs/projects/ludo/class-design.md) — diagrams: the object graph, a turn traced as calls, module layering, and all three harness layers (§§9–11)
 
 **New to a language or framework here?**
 - [learning/python/](learning/python/) — runnable examples and a line-by-line walkthrough of the engine's densest class. Standalone; no dependencies.
@@ -95,7 +95,7 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 
 ## Status
 
-🚧 **Scripted era.** Two of the three stacks play full games end to end — swarm negotiation, memory, compaction, guardrails, the lot — against *scripted* models, so every run is free and byte-reproducible. **No live model call has been made yet:** the last blocker is two model IDs ([open questions](docs/open-questions.md)).
+🚧 **Scripted era — all three stacks now play.** The comparison is complete at the scripted tier: every stack runs full games end to end — negotiation, memory, compaction, guardrails, session persistence — against *scripted* models, so every run is free and byte-reproducible, and the capability matrix has all three columns filled. **No live model call has been made yet:** the last blocker is two model IDs ([open questions](docs/open-questions.md)).
 
 | | |
 |---|---|
@@ -106,9 +106,10 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 | ✅ | [CI](.github/workflows/ci.yml) — tests, conformance, schema, docs, mermaid diagrams, prompt invariants. No model calls, no cost. |
 | ✅ | [Cross-engine conformance vectors](shared/conformance/) |
 | ✅ | [Strands stack](projects/ludo/stack-strands/) — feature-complete on scripted models: turn loop, swarm negotiation, compaction, lenient guardrails, session persistence, events. 40 tests, [schema-valid fixture](projects/ludo/games/scripted-strands-seed7.jsonl). **No live game yet** — waiting only on Nova + DeepSeek model IDs. |
-| ✅ | [UI](projects/ludo/ui/) — transcript player (React + Vite), offline against the committed fixtures; [ADR-0007](docs/decisions/adr-0007-ui-alongside-first-stack.md)'s rules **proven**: the Spring AI fixture landed and the suite grew by four tests with zero UI changes |
+| ✅ | [UI](projects/ludo/ui/) — transcript player (React + Vite), offline against the committed fixtures; [ADR-0007](docs/decisions/adr-0007-ui-alongside-first-stack.md)'s rules **proven three times**: each new stack's fixture landed and the suite grew (now 23 tests) with zero UI changes |
 | ✅ | [Spring AI stack](projects/ludo/stack-springai/) — feature-complete on scripted models: tool-driven floor passing, conversation memory, hand-rolled compaction, guardrails, split session persistence (conversations through the framework's JDBC repository, beliefs by hand), [fixture committed](projects/ludo/games/scripted-springai-seed7.jsonl). Its predicted findings all recorded — no orchestrator, no belief store, truncation-only memory, the simplest model seam of the three. **No live game yet** — waiting only on model IDs |
-| ⬜ | LangGraph stack · eval harness |
+| ✅ | [LangGraph stack](projects/ludo/stack-langgraph/) — feature-complete on scripted models: the negotiation table **drawn as a StateGraph** (the family's own swarm package rejected on the privacy rule — a headline matrix finding), checkpointer threads, beliefs in the framework Store, compaction on its summarisation middleware, sqlite session persistence with **no save call at all**, [fixture committed](projects/ludo/games/scripted-langgraph-seed7.jsonl). **No live game yet** — same two model IDs |
+| ⬜ | eval harness · LLM judge |
 
 Try it without installing anything but [uv](https://docs.astral.sh/uv/) — no API keys, no cost:
 

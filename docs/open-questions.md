@@ -68,7 +68,7 @@ Should be chosen from what LUDO's [capability matrix](architecture/stack-compari
 
 ## 🟢 17. Should the transcript record the framework version?
 
-[ADR-0008](decisions/adr-0008-framework-native-harness.md) makes framework behaviour part of game behaviour — a Strands upgrade can change how compaction summarises, and therefore how a game goes. Each stack's lockfile pins the version, but the transcript doesn't name it: `game_started` records the stack, engine, prompt-set hash, and served model, so two games played under different framework versions are indistinguishable from the file alone.
+[ADR-0008](decisions/adr-0008-framework-native-harness.md) makes framework behaviour part of game behaviour — a Strands upgrade can change how compaction summarises, and therefore how a game goes. Each stack's lockfile pins the version, but the transcript doesn't name it: `game_started` records the stack, engine, seed and players — not the framework version — so two games played under different framework versions are indistinguishable from the file alone. (It doesn't record the prompt-set hash either; that is [question 19](#-19-game_started-promises-prompt-provenance-nobody-emits), same schema bump.)
 
 > **Recommendation:** add `framework: {name, version}` to `game_started` when the first turn loop lands. A schema change is cheapest while there is one emitter — the same argument as [ADR-0007](decisions/adr-0007-ui-alongside-first-stack.md).
 
@@ -83,6 +83,16 @@ The mechanism now exists — `FileSessionManager` persists each agent's beliefs 
 - **Restore scope.** The persisted conversation is the appended history — table fragments included — not the curated one (see the [session-sync finding](architecture/stack-comparison.md)). Restoring beliefs without conversation is probably the honest unit.
 
 > **Recommendation:** keep games independent by default (persistence stays opt-in and off). If a campaign mode is ever wanted, it is an ADR — new seat-keyed identity, beliefs-only restore, and its own eval treatment — not a flag flip.
+
+---
+
+## 🟢 19. game_started promises prompt provenance nobody emits
+
+All three stacks' prompt loaders compute a digest over `shared/prompts` and long claimed, in their docstrings, that it is "recorded in `game_started`". It is not: `game_started` is emitted by the *engine* from `GameConfig`, which has no prompt field — the committed fixtures carry `engine, max_turns, players, ruleset, seed, stack` and nothing about prompts. Surfaced building the LangGraph stack, whose digest-parity test went looking for the recorded hash and found none; the docstrings now say "intended for" rather than "recorded in".
+
+Two transcripts recorded under different prompt sets are therefore indistinguishable from the files alone — the exact failure the digest exists to prevent.
+
+> **Recommendation:** fold into [question 17](#-17-should-the-transcript-record-the-framework-version)'s schema change: one coordinated bump gives `game_started` both `framework: {name, version}` and `prompt_set: {version, hash}`. It touches `GameConfig` in both engines, all three stacks, the schema, and every fixture — exactly why it should happen once, together, and soon, while the emitter count is still three.
 
 ---
 

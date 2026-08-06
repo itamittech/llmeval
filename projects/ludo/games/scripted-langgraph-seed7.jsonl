@@ -1,0 +1,49 @@
+{"seq":0,"turn":0,"type":"game_started","payload":{"seed":7,"max_turns":4,"ruleset":"baseline","stack":"langgraph","engine":{"language":"python","version":"0.1.0"},"players":[{"color":"red","agent":"langgraph:scripted","seat":1,"model":"scripted","access":"bedrock"},{"color":"green","agent":"langgraph:scripted","seat":2,"model":"scripted","access":"bedrock"},{"color":"yellow","agent":"langgraph:scripted","seat":3,"model":"scripted","access":"direct"},{"color":"blue","agent":"langgraph:scripted","seat":4,"model":"scripted","access":"direct"}]}}
+{"seq":1,"turn":1,"type":"turn_started","payload":{"player":"red"}}
+{"seq":2,"turn":1,"type":"llm_call","payload":{"player":"red","model":"scripted","access":"bedrock","purpose":"negotiate","tokens":{"input":1414,"output":20,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":3,"turn":1,"type":"message_sent","payload":{"player":"red","to":"blue","text":"ally against yellow?"}}
+{"seq":4,"turn":1,"type":"message_sent","payload":{"player":"red","to":null,"text":"I want a quiet table"}}
+{"seq":5,"turn":1,"type":"llm_call","payload":{"player":"blue","model":"scripted","access":"direct","purpose":"negotiate","tokens":{"input":1431,"output":12,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":6,"turn":1,"type":"message_sent","payload":{"player":"blue","to":"red","text":"agreed - yellow first"}}
+{"seq":7,"turn":1,"type":"llm_call","payload":{"player":"red","model":"scripted","access":"bedrock","purpose":"negotiate","tokens":{"input":1431,"output":3,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":8,"turn":1,"type":"dice_rolled","payload":{"player":"red","value":5,"roll_index":0}}
+{"seq":9,"turn":1,"type":"turn_ended","payload":{"player":"red","reason":"no_legal_move"}}
+{"seq":10,"turn":1,"type":"llm_call","payload":{"player":"red","model":"scripted","access":"bedrock","purpose":"reflect","tokens":{"input":1407,"output":11,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":11,"turn":2,"type":"turn_started","payload":{"player":"green"}}
+{"seq":12,"turn":2,"type":"llm_call","payload":{"player":"green","model":"scripted","access":"bedrock","purpose":"negotiate","tokens":{"input":1425,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":13,"turn":2,"type":"dice_rolled","payload":{"player":"green","value":6,"roll_index":0}}
+{"seq":14,"turn":2,"type":"llm_call","payload":{"player":"green","model":"scripted","access":"bedrock","purpose":"move","tokens":{"input":1842,"output":11,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":15,"turn":2,"type":"agent_reasoning","payload":{"player":"green","text":"press on"}}
+{"seq":16,"turn":2,"type":"move_made","payload":{"player":"green","token":0,"from":-1,"to":0,"from_square":null,"to_square":13}}
+{"seq":17,"turn":2,"type":"extra_roll_granted","payload":{"player":"green","reason":"six"}}
+{"seq":18,"turn":2,"type":"dice_rolled","payload":{"player":"green","value":4,"roll_index":1}}
+{"seq":19,"turn":2,"type":"llm_call","payload":{"player":"green","model":"scripted","access":"bedrock","purpose":"move","tokens":{"input":2518,"output":11,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":20,"turn":2,"type":"agent_reasoning","payload":{"player":"green","text":"press on"}}
+{"seq":21,"turn":2,"type":"illegal_move_rejected","payload":{"player":"green","token":0,"requested_to":0,"reason":"not a legal move for this roll","attempt":1}}
+{"seq":22,"turn":2,"type":"llm_call","payload":{"player":"green","model":"scripted","access":"bedrock","purpose":"move","tokens":{"input":2626,"output":11,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":23,"turn":2,"type":"agent_reasoning","payload":{"player":"green","text":"press on"}}
+{"seq":24,"turn":2,"type":"illegal_move_rejected","payload":{"player":"green","token":0,"requested_to":0,"reason":"not a legal move for this roll","attempt":2}}
+{"seq":25,"turn":2,"type":"turn_ended","payload":{"player":"green","reason":"illegal_move"}}
+{"seq":26,"turn":2,"type":"llm_call","payload":{"player":"green","model":"scripted","access":"bedrock","purpose":"reflect","tokens":{"input":2904,"output":11,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":27,"turn":3,"type":"turn_started","payload":{"player":"yellow"}}
+{"seq":28,"turn":3,"type":"llm_call","payload":{"player":"yellow","model":"scripted","access":"direct","purpose":"negotiate","tokens":{"input":1416,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":29,"turn":3,"type":"dice_rolled","payload":{"player":"yellow","value":6,"roll_index":0}}
+{"seq":30,"turn":3,"type":"llm_call","payload":{"player":"yellow","model":"scripted","access":"direct","purpose":"move","tokens":{"input":2285,"output":11,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":31,"turn":3,"type":"agent_reasoning","payload":{"player":"yellow","text":"press on"}}
+{"seq":32,"turn":3,"type":"move_made","payload":{"player":"yellow","token":0,"from":-1,"to":0,"from_square":null,"to_square":26}}
+{"seq":33,"turn":3,"type":"extra_roll_granted","payload":{"player":"yellow","reason":"six"}}
+{"seq":34,"turn":3,"type":"dice_rolled","payload":{"player":"yellow","value":5,"roll_index":1}}
+{"seq":35,"turn":3,"type":"llm_call","payload":{"player":"yellow","model":"scripted","access":"direct","purpose":"move","tokens":{"input":3260,"output":11,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":36,"turn":3,"type":"agent_reasoning","payload":{"player":"yellow","text":"press on"}}
+{"seq":37,"turn":3,"type":"illegal_move_rejected","payload":{"player":"yellow","token":0,"requested_to":0,"reason":"not a legal move for this roll","attempt":1}}
+{"seq":38,"turn":3,"type":"llm_call","payload":{"player":"yellow","model":"scripted","access":"direct","purpose":"move","tokens":{"input":3368,"output":11,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":39,"turn":3,"type":"agent_reasoning","payload":{"player":"yellow","text":"press on"}}
+{"seq":40,"turn":3,"type":"illegal_move_rejected","payload":{"player":"yellow","token":0,"requested_to":0,"reason":"not a legal move for this roll","attempt":2}}
+{"seq":41,"turn":3,"type":"turn_ended","payload":{"player":"yellow","reason":"illegal_move"}}
+{"seq":42,"turn":3,"type":"llm_call","payload":{"player":"yellow","model":"scripted","access":"direct","purpose":"reflect","tokens":{"input":3648,"output":11,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":43,"turn":4,"type":"turn_started","payload":{"player":"blue"}}
+{"seq":44,"turn":4,"type":"llm_call","payload":{"player":"blue","model":"scripted","access":"direct","purpose":"negotiate","tokens":{"input":1413,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":45,"turn":4,"type":"dice_rolled","payload":{"player":"blue","value":4,"roll_index":0}}
+{"seq":46,"turn":4,"type":"turn_ended","payload":{"player":"blue","reason":"no_legal_move"}}
+{"seq":47,"turn":4,"type":"llm_call","payload":{"player":"blue","model":"scripted","access":"direct","purpose":"reflect","tokens":{"input":1408,"output":11,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":48,"turn":4,"type":"game_ended","payload":{"reason":"turn_cap","turns_played":4,"standings":[{"player":"green","rank":1,"tokens_home":0,"progress":1,"finished":false,"captures_made":0,"captures_suffered":0,"turns_forfeited":1},{"player":"yellow","rank":2,"tokens_home":0,"progress":1,"finished":false,"captures_made":0,"captures_suffered":0,"turns_forfeited":1},{"player":"red","rank":3,"tokens_home":0,"progress":0,"finished":false,"captures_made":0,"captures_suffered":0,"turns_forfeited":0},{"player":"blue","rank":4,"tokens_home":0,"progress":0,"finished":false,"captures_made":0,"captures_suffered":0,"turns_forfeited":0}]}}

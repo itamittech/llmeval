@@ -1,8 +1,9 @@
 """Loading the shared prompt set.
 
 Every stack loads the same files from ``shared/prompts/ludo`` and sends them
-verbatim. This module is the Python half of that contract; the Spring AI stack
-will need an equivalent, and the two must agree on rendering exactly.
+verbatim. This module is this stack's copy of that contract — stacks cannot
+share code (a shortcut between them would destroy the comparison), so each
+carries its own loader and the digest proves they agree byte for byte.
 
 The whole template language is ``{{name}}`` -> string. No conditionals, no
 loops, no filters — see shared/prompts/README.md for why: template logic would

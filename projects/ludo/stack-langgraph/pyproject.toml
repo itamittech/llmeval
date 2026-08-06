@@ -1,0 +1,49 @@
+[project]
+name = "ludo-langgraph"
+version = "0.1.0"
+description = "LUDO agent harness built on LangChain's LangGraph."
+readme = "README.md"
+license = "Apache-2.0"
+# Pinned, not a range. Both Python stacks run the SAME interpreter so it cannot
+# become a variable in the comparison — see docs/open-questions.md #8.
+requires-python = "==3.12.*"
+
+dependencies = [
+    # langgraph-swarm was evaluated for ADR-0009's table and REJECTED on
+    # evidence: its shared-messages state publishes every directed message to
+    # every agent, which the harness contract forbids. The table is a custom
+    # StateGraph instead — the verdict is in the capability matrix and the
+    # README, and the package deliberately does not ship in this venv.
+    "langgraph>=1.0",
+    # Required, not optional, for the same reason as the Strands stack's
+    # [anthropic] extra: ADR-0005's control needs the SAME model on both
+    # routes, and the direct Anthropic API lives in this provider package.
+    "langchain-anthropic>=0.3",
+    "pyyaml>=6.0",
+    "ludo-engine",
+    # Opt-in session persistence: the sqlite checkpointer AND sqlite Store —
+    # both framework state holders become durable. See session.py.
+    "langgraph-checkpoint-sqlite>=3.1.1",
+    "langchain>=1.0",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
+
+[tool.uv.sources]
+# A path dependency, NOT a workspace member. A uv workspace would give the two
+# Python stacks one shared lockfile and one shared venv, which is exactly what
+# environment-strategy.md forbids: the stacks must be able to disagree about
+# every transitive dependency except the engine.
+ludo-engine = { path = "../engine-python", editable = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ludo_langgraph"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

@@ -21,6 +21,7 @@ This project exists to teach. A doc describing code that no longer exists is *wo
 | Anything a stack does — turn loop, events, memory, budgets | [harness-contract.md](docs/projects/ludo/harness-contract.md) **first** (it's the normative spec all three stacks bind to), then the stack |
 | `stack-strands` harness classes or call flow | [class-design.md §9](docs/projects/ludo/class-design.md) diagrams · **[learning/strands](learning/strands/)** — 00 quotes the agent construction, 01–02 trace the turn and the swarm, 03 is the assembled map (wiring, turn flowchart, memory stores, cast lifetimes), and the README's class table names what's wired vs pending · the stack README module map · [learning/python/04](learning/python/04-for-spring-developers.md) quotes the `_Decider` wiring |
 | `stack-springai` harness classes or call flow | [class-design.md §10](docs/projects/ludo/class-design.md) — the object graph, both call traces, and the two-grains table · its [README](projects/ludo/stack-springai/README.md) design section + status table · the [matrix](docs/architecture/stack-comparison.md) springai column and its finding |
+| `stack-langgraph` harness classes or call flow | [class-design.md §11](docs/projects/ludo/class-design.md) — the object graph, both call traces, the drawn table graph, and the three-grains table · its [README](projects/ludo/stack-langgraph/README.md) design section + status table · the [matrix](docs/architecture/stack-comparison.md) langgraph column and its findings |
 | The event schema | [shared/schemas/README.md](shared/schemas/README.md) · [ADR-0003](docs/decisions/adr-0003-shared-event-stream.md) if the contract itself changed · every stack that emits |
 | Dependencies, tooling, environment layout | [environment-strategy.md](docs/architecture/environment-strategy.md) · [repository-layout.md](docs/architecture/repository-layout.md) · [learning/python/03](learning/python/03-environments-and-packaging.md) |
 | Prompts, `models.yaml`, or anything in `shared/` | [shared/prompts/README.md](shared/prompts/README.md) · [agent-design.md](docs/projects/ludo/agent-design.md) · re-run `check_prompts.py` · a rule-number change means [game-rules.md](docs/projects/ludo/game-rules.md) first |
@@ -68,7 +69,7 @@ Say so explicitly in your response, naming the file and what's now wrong. An ack
 
 ## Repository status
 
-The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack is feature-complete against scripted models** — swarm negotiation, memory in agent state, budgets and events in lifecycle hooks, context compaction via each agent summarising itself, lenient content guardrails at the message boundary, opt-in session persistence — all Strands-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)/[0009](docs/decisions/adr-0009-swarm-negotiation.md). The **Spring AI stack is feature-complete against scripted models** — the floor-passing loop is harness code (its predicted Manual finding) but the pass is a real framework tool with the guardrail gate inside it; conversation memory on `ChatMemory`; compaction hand-rolled because the framework only truncates; opt-in session persistence split down the memory line (conversations through the framework's JDBC repository over embedded H2, beliefs saved by the harness); live Anthropic options pinned and read back. The **UI transcript player is built**, and ADR-0007's rules are proven: the Spring AI fixture landed and the UI suite grew by four tests with zero source changes. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in.
+The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack is feature-complete against scripted models** — swarm negotiation, memory in agent state, budgets and events in lifecycle hooks, context compaction via each agent summarising itself, lenient content guardrails at the message boundary, opt-in session persistence — all Strands-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)/[0009](docs/decisions/adr-0009-swarm-negotiation.md). The **Spring AI stack is feature-complete against scripted models** — the floor-passing loop is harness code (its predicted Manual finding) but the pass is a real framework tool with the guardrail gate inside it; conversation memory on `ChatMemory`; compaction hand-rolled because the framework only truncates; opt-in session persistence split down the memory line (conversations through the framework's JDBC repository over embedded H2, beliefs saved by the harness); live Anthropic options pinned and read back. The **LangGraph stack is feature-complete against scripted models** — ADR-0009's table drawn as a `StateGraph` (the family's own swarm package rejected on the contract's privacy rule — a matrix finding), conversation threads on the checkpointer, beliefs in the framework `Store`, compaction on the framework's `SummarizationMiddleware` with the game budget as trigger, session persistence by swapping both stores for their sqlite twins (no save call exists) — all LangGraph-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md). The **UI transcript player is built**, and ADR-0007's rules are proven three times over: each new stack's fixture landed and the suite grew (now 23 tests) with zero source changes. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in.
 
 | Component | State |
 |---|---|
@@ -82,7 +83,8 @@ The **shared event schema**, **both engines** (Python and Java, cross-checked by
 | `projects/ludo/stack-strands/` | ✅ Feature-complete scripted — turn loop, swarm negotiation, compaction, guardrails, session persistence, events; 40 tests, schema-valid fixture. **No live game** (model IDs TBD) |
 | `projects/ludo/ui/` | ✅ Transcript player (React + Vite), 19 tests; ADR-0007's fixture rules enforced in CI — proven when the Spring AI fixture landed and the suite grew by four with zero UI changes |
 | `projects/ludo/stack-springai/` | ✅ Feature-complete scripted — tool-driven floor passing, conversation memory, hand-rolled compaction, guardrails, split session persistence, pinned live options; 12 tests, schema-valid fixture. **No live game** (model IDs TBD) |
-| `stack-langgraph`, `eval/` | ❌ Not started |
+| `projects/ludo/stack-langgraph/` | ✅ Feature-complete scripted — table as a StateGraph, checkpointer threads, Store beliefs, middleware compaction, sqlite session persistence, pinned live options; 16 tests, schema-valid fixture. **No live game** (model IDs TBD) |
+| `eval/` | ❌ Not started |
 | Judge prompt | ❌ Waits for the eval harness |
 
 ## Commands
@@ -113,6 +115,16 @@ A full scripted game, offline and free — regenerates the committed fixture byt
 
 ```bash
 uv run --directory projects/ludo/stack-strands python -m ludo_strands.demo out.jsonl
+```
+
+The LangGraph stack (its own venv and lockfile — the two Python stacks never share one):
+
+```bash
+uv run --directory projects/ludo/stack-langgraph pytest
+```
+
+```bash
+uv run --directory projects/ludo/stack-langgraph python -m ludo_langgraph.demo out.jsonl
 ```
 
 Cross-engine conformance, plus a random-bot game and transcript validation:
