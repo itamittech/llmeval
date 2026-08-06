@@ -26,12 +26,20 @@ def test_prompts_load_with_parity_invariants(prompt_set):
                                         legal_moves="m", extra="smuggled")
 
 
-def test_the_digest_is_deterministic(prompt_set):
-    # Two loads, one hash. (A cross-stack equality test wants the digest
-    # RECORDED somewhere — and no stack currently emits prompt provenance
-    # into game_started, a gap logged in docs/open-questions.md when this
-    # stack's build surfaced it.)
-    assert prompts.load().digest == prompt_set.digest
+def test_the_digest_matches_every_stack_and_language(prompt_set):
+    # The parity claim, mechanically: three independent loaders (two Python
+    # copies, one Java port) hashed shared/prompts and RECORDED the result in
+    # their fixtures' game_started (this very test originally went looking
+    # for that record, found none, and became open question 19 — answered).
+    import json
+    root = prompts.repo_root()
+    for fixture in ("scripted-strands-seed7.jsonl",
+                    "scripted-langgraph-seed7.jsonl",
+                    "scripted-springai-seed7.jsonl"):
+        first = json.loads(
+            (root / "projects" / "ludo" / "games" / fixture)
+            .read_text(encoding="utf-8").splitlines()[0])
+        assert first["payload"]["prompt_set"]["hash"] == prompt_set.digest, fixture
 
 
 def test_seat_rotation_cycles_in_four_games():

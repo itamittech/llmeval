@@ -132,6 +132,16 @@
             "hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$", "description": "Over the rendered template set. A version can be forgotten on the way out; a hash cannot." }
           }
         },
+        "framework": {
+          "type": "object",
+          "required": ["name", "version"],
+          "additionalProperties": false,
+          "description": "The agent framework build that drove this game. ADR-0008 makes framework behaviour part of game behaviour — a version bump can change how compaction summarises, and therefore how a game goes — so the transcript names what the lockfile pinned (open question 17). Absent on engine-only runs.",
+          "properties": {
+            "name": { "enum": ["strands", "langgraph", "springai"] },
+            "version": { "type": "string" }
+          }
+        },
         "players": {
           "type": "array", "minItems": 4, "maxItems": 4,
           "description": "Seat assignment for THIS game. The seat-to-colour mapping rotates between games (ADR-0006), so this array is the record of who sat where — never assume red is the same model as in the previous transcript.",

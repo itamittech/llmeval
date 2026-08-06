@@ -84,8 +84,7 @@ class PromptSet:
                            for t in self.system)
 
     def provenance(self) -> dict[str, Any]:
-        """The provenance payload — intended for ``game_started``, which does
-        not yet carry it in any stack (open question 19)."""
+        """The ``game_started.prompt_set`` payload."""
         return {"version": self.version, "hash": self.digest}
 
 
@@ -128,8 +127,7 @@ def load(base: Path | None = None) -> PromptSet:
 def digest(base: Path, manifest: dict[str, Any]) -> str:
     """Content hash over the manifest and every template it names.
 
-    Intended for ``game_started`` (not yet emitted by any stack — open
-    question 19) so a transcript names exactly the prompts that
+    Recorded in ``game_started`` so a transcript names exactly the prompts that
     produced it. A version number alone can be forgotten on the way out the
     door; a hash cannot. Order is taken from the manifest rather than from the
     filesystem, so two checkouts hash the same regardless of directory order.

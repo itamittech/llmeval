@@ -36,6 +36,7 @@ import asyncio
 import json
 import re
 from collections import deque
+from importlib.metadata import version as _pkg_version
 from typing import Any
 
 from ludo_engine.board import COLORS, HOME
@@ -217,6 +218,10 @@ class LudoHarness:
                 seed=seed,
                 max_turns=max_turns or self.budgets.max_turns,
                 stack="strands",
+                profile=profile.name,
+                prompt_set=prompts.provenance(),
+                framework={"name": "strands",
+                           "version": _pkg_version("strands-agents")},
                 players={
                     color: {
                         "agent": f"strands:{labels[color]}",

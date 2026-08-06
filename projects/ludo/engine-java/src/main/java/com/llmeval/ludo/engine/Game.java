@@ -294,6 +294,17 @@ public final class Game {
         payload.put("stack", config.stack());
         payload.put("engine", engine);
         payload.put("players", players);
+        // Provenance the harness supplied; omitted when absent, so
+        // engine-only transcripts (and the conformance vectors) are unchanged.
+        if (config.profile() != null) {
+            payload.put("profile", config.profile());
+        }
+        if (config.promptSet() != null) {
+            payload.put("prompt_set", config.promptSet());
+        }
+        if (config.framework() != null) {
+            payload.put("framework", config.framework());
+        }
         emit("game_started", payload);
     }
 }

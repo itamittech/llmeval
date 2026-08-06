@@ -161,11 +161,27 @@ public final class Harness {
         }
 
         int cap = maxTurns != null ? maxTurns : budgets.maxTurns();
-        this.game = new Game(new GameConfig(seed, cap, "baseline", "springai", players), sink);
+        // Provenance for game_started (open questions 17+19): key order must
+        // match the Python engines' insertion order for cross-language
+        // byte-parity of the transcript line, hence LinkedHashMap, never Map.of.
+        Map<String, Object> promptSet = new LinkedHashMap<>();
+        promptSet.put("version", prompts.version());
+        promptSet.put("hash", prompts.digest());
+        Map<String, Object> framework = new LinkedHashMap<>();
+        framework.put("name", "springai");
+        framework.put("version", springAiVersion());
+        this.game = new Game(new GameConfig(seed, cap, "baseline", "springai", players,
+                profile.name(), promptSet, framework), sink);
     }
 
     public Map<Color, Decider> deciders() {
         return deciders;
+    }
+
+    /** The framework build the lockfile pinned, read from the jar manifest. */
+    static String springAiVersion() {
+        String version = ChatModel.class.getPackage().getImplementationVersion();
+        return version == null ? "unknown" : version;
     }
 
     public Outcome play() {

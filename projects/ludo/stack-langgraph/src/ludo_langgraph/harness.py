@@ -34,6 +34,7 @@ from __future__ import annotations
 import json
 import re
 from collections import deque
+from importlib.metadata import version as _pkg_version
 from pathlib import Path
 from typing import Any
 
@@ -218,6 +219,10 @@ class LudoHarness:
                 seed=seed,
                 max_turns=max_turns or self.budgets.max_turns,
                 stack="langgraph",
+                profile=profile.name,
+                prompt_set=prompts.provenance(),
+                framework={"name": "langgraph",
+                           "version": _pkg_version("langgraph")},
                 players={
                     color: {
                         "agent": f"langgraph:{labels[color]}",

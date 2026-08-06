@@ -34,6 +34,13 @@ class GameConfig:
     stack: str = "none"
     #: Per-colour metadata for the game_started event (agent name, model, access).
     players: dict[Color, dict] = field(default_factory=dict)
+    #: Provenance the harness supplies and the schema defines — profile name,
+    #: {"version", "hash"} of the prompt set, {"name", "version"} of the
+    #: framework. None on engine-only runs, and then OMITTED from the event,
+    #: which is what keeps the conformance vectors byte-stable.
+    profile: str | None = None
+    prompt_set: dict | None = None
+    framework: dict | None = None
 
 
 @dataclass
@@ -228,11 +235,16 @@ class Game:
             meta.setdefault("agent", getattr(deciders.get(color), "name", "unknown"))
             players.append({"color": color, **meta})
 
-        self._emit("game_started", {
+        payload = {
             "seed": self.config.seed,
             "max_turns": self.config.max_turns,
             "ruleset": self.config.ruleset,
             "stack": self.config.stack,
             "engine": {"language": "python", "version": ENGINE_VERSION},
             "players": players,
-        })
+        }
+        for key in ("profile", "prompt_set", "framework"):
+            value = getattr(self.config, key)
+            if value is not None:
+                payload[key] = value
+        self._emit("game_started", payload)
