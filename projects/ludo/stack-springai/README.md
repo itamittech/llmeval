@@ -2,7 +2,7 @@
 
 The third agent harness: [harness-contract.md](../../../docs/projects/ludo/harness-contract.md) on [Spring AI](https://spring.io/projects/spring-ai), over the [Java engine](../engine-java/README.md). Same shared prompts, same `models.yaml`, same event schema as the two Python stacks — the framework is the only variable.
 
-> **🚧 Nearly feature-complete against scripted models.** Turn loop, tool-driven floor passing, conversation memory, compaction, guardrails, budgets, events — the [fixture](../games/scripted-springai-seed7.jsonl) is committed and rendered by the UI **with zero UI changes** (ADR-0007's rule, proven against a third emitter). Session persistence and live provider calls remain. See [Status](#status).
+> **🚧 Feature-complete against scripted models.** Turn loop, tool-driven floor passing, conversation memory, compaction, guardrails, budgets, events, opt-in session persistence — the [fixture](../games/scripted-springai-seed7.jsonl) is committed and rendered by the UI **with zero UI changes** (ADR-0007's rule, proven against a third emitter). Only live provider calls remain, blocked on model IDs. See [Status](#status).
 
 ## Build and test
 
@@ -38,6 +38,8 @@ The reference diagrams for this whole layer — the object graph, one `choose` a
 
 **Beliefs are hand-rolled, and recorded as such.** `ChatMemory` is conversation history, not a key-value belief store — there is no `AgentState` equivalent — so [`Memory`](src/main/java/com/llmeval/ludo/springai/Memory.java) is a plain class: notes with kinds, durable facts, the never-reconciled rule, rendered byte-identically to the Python stacks' `{{memory}}`.
 
+**Session persistence is split down the same line as memory — and that's the finding.** Opt-in via a session directory, like the Strands stack. Conversations persist through the framework's own primitive: [`Session.java`](src/main/java/com/llmeval/ludo/springai/Session.java) backs `ChatMemory` with `JdbcChatMemoryRepository` over an embedded H2 file database, so every exchange the advisor saves is **written through as it happens** — there is no sync moment to forget, the exact inverse of Strands' sync-schedule trap. Beliefs can't use any of that: the framework has no place to hold them, so `beliefs.json` is written by `Harness.persist()` in `play()`'s finally and read back at construction. [`SessionTest.java`](src/test/java/com/llmeval/ludo/springai/SessionTest.java) pins the asymmetry: skip the save and conversations survive while every note vanishes. Constructing over an existing directory *is* the restore — no load call exists. (Without Boot, the repository's table is created by running the module's own DDL — two lines in `Session.open` the starter would have hidden.)
+
 **Live settings are pinned before live calls exist.** [`LiveModels`](src/main/java/com/llmeval/ludo/springai/LiveModels.java) builds the ADR-0005 control seat's `AnthropicChatOptions` from `models.yaml` and a test reads every setting back — the same discipline as the Strands stack's `strands_client.py`, and for the same reason: an unpinned parameter is a parity break that never announces itself. Bedrock, Nova, and DeepSeek bindings arrive with live play.
 
 ## Status
@@ -55,7 +57,7 @@ The reference diagrams for this whole layer — the object graph, one `choose` a
 | Token accounting + forfeit-out budget ceiling | ✅ usage from `ChatResponse` metadata |
 | Agent events, one sequence with engine events | ✅ schema-validated [fixture](../games/scripted-springai-seed7.jsonl) |
 | Live provider settings pinned + read back (Anthropic control seat) | ✅ [`LiveModels.java`](src/main/java/com/llmeval/ludo/springai/LiveModels.java) |
-| Session persistence | ⬜ |
+| Session persistence (opt-in) | ✅ **Split** — conversations Native ([`Session.java`](src/main/java/com/llmeval/ludo/springai/Session.java): `JdbcChatMemoryRepository` + embedded H2), beliefs Manual (`beliefs.json`) — see the matrix finding |
 | Live calls (Boot + provider starters; Bedrock, Nova, DeepSeek) | ⬜ blocked on model IDs |
 
 Everything above runs offline against the scripted model; nothing costs anything. `learning/springai` follows once the code stops moving, per the repo's rule against documenting half-built code.

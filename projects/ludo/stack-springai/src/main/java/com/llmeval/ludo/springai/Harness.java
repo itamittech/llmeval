@@ -1,5 +1,6 @@
 package com.llmeval.ludo.springai;
 
+import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -64,6 +65,10 @@ import com.llmeval.ludo.engine.TurnStart;
  * into one {@code llm_call}. With internal tool execution, a tool round-trip
  * is two invocations inside one call — usage is aggregated by the scripted
  * model and the granularity loss is a capability-matrix finding.
+ *
+ * <p>Session persistence is opt-in via the {@code sessionDir} constructor:
+ * conversations persist through the framework's JDBC repository, beliefs
+ * through {@link #persist()} — the split lives in {@link Session}.
  */
 public final class Harness {
 
@@ -94,6 +99,7 @@ public final class Harness {
     private final Map<Color, Decider> deciders = new EnumMap<>(Color.class);
     private final ChatMemory conversations;
     private final MessageChatMemoryAdvisor memoryAdvisor;
+    private final Session session;
     private final EventSink sink;
     private final RecentWindow window;
     private final Game game;
@@ -104,6 +110,18 @@ public final class Harness {
     public Harness(ModelsConfig.Profile profile, Prompts prompts,
                    Map<Color, ChatModel> models, EventSink destination,
                    int seed, int gameIndex, Integer maxTurns) {
+        this(profile, prompts, models, destination, seed, gameIndex, maxTurns, null);
+    }
+
+    /**
+     * With a {@code sessionDir}, agent-side state survives the process:
+     * conversations through the framework's JDBC repository, beliefs through
+     * {@link #persist()}. Constructing over a directory that already holds a
+     * session IS the restore — see {@link Session}.
+     */
+    public Harness(ModelsConfig.Profile profile, Prompts prompts,
+                   Map<Color, ChatModel> models, EventSink destination,
+                   int seed, int gameIndex, Integer maxTurns, Path sessionDir) {
         this.prompts = prompts;
         this.budgets = profile.budgets();
         this.seatByColor = ModelsConfig.seating(profile, gameIndex);
@@ -115,13 +133,21 @@ public final class Harness {
         // The framework's conversation memory, one conversation per colour.
         // The window is set far above the game's own budget so OUR compaction
         // triggers first — the framework's only strategy is silent truncation.
-        this.conversations = MessageWindowChatMemory.builder().maxMessages(400).build();
+        // With a session, the memory is backed by the framework's JDBC
+        // repository instead of the in-memory default: every exchange the
+        // advisor saves is then written through to disk as it happens.
+        this.session = sessionDir == null ? null : Session.open(sessionDir);
+        MessageWindowChatMemory.Builder memoryBuilder =
+                MessageWindowChatMemory.builder().maxMessages(400);
+        if (session != null) memoryBuilder.chatMemoryRepository(session.conversations());
+        this.conversations = memoryBuilder.build();
         this.memoryAdvisor = MessageChatMemoryAdvisor.builder(conversations).build();
 
+        Map<Color, Memory> restored = session == null ? Map.of() : session.loadBeliefs();
         Map<Color, Map<String, Object>> players = new EnumMap<>(Color.class);
         for (Color color : Color.values()) {
             clients.put(color, ChatClient.create(models.get(color)));
-            memories.put(color, new Memory());
+            memories.put(color, restored.getOrDefault(color, new Memory()));
             inbox.put(color, new ArrayList<>());
             deciders.put(color, new SpringDecider(color));
 
@@ -143,11 +169,30 @@ public final class Harness {
     }
 
     public Outcome play() {
-        return game.play(deciders);
+        try {
+            return game.play(deciders);
+        } finally {
+            persist();
+        }
+    }
+
+    /**
+     * Save what the framework does not hold. Conversations need no call here —
+     * with a session, the JDBC repository wrote every exchange as it happened.
+     * Beliefs do: {@link Memory} never touches the framework, so skipping this
+     * would lose every note silently while the conversations survived. That
+     * asymmetry is the capability-matrix finding, pinned by a test.
+     */
+    public void persist() {
+        if (session != null) session.saveBeliefs(memories);
     }
 
     List<Message> conversation(Color color) {
         return conversations.get(color.label());
+    }
+
+    Memory memory(Color color) {
+        return memories.get(color);
     }
 
     private boolean exhausted() {

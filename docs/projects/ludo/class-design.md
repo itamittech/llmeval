@@ -1208,6 +1208,7 @@ flowchart LR
         SCM["ScriptedChatModel /<br/>AnthropicChatModel"]
         GR["Guardrails"]
         MEM["Memory ×4"]
+        SES["Session — opt-in<br/>JdbcChatMemoryRepository → H2 file<br/>+ beliefs.json"]
         TEE["EventSink.TeeSink"]
         WIN["RecentWindow"]
     end
@@ -1218,6 +1219,8 @@ flowchart LR
     HA -- "constructs, one per table run" --> PF
     CC -- "advised calls" --> ADV
     ADV -- "load before, save after" --> CM
+    CM -. "backed by, when a session dir is given" .-> SES
+    HA -- "persist() saves beliefs" --> SES
     CC -- "call(Prompt)" --> SCM
     SCM -. "executeToolCalls" .-> TCM
     TCM -. "execute" .-> PF
@@ -1232,7 +1235,7 @@ Reading the arrows:
 
 - **The engine's half is untouched again — but this time the plug is written down.** `SpringDecider implements Decider` is a line the Python stacks never needed: Java's nominal typing demands it, and because of it the whole stack depends on the engine jar. The [capability matrix](../../architecture/stack-comparison.md#finding-the-java-agent-must-depend-on-the-engine-the-python-agents-need-not) predicted that row before any stack existed.
 - **The dashed arrows are the only place the framework calls us.** In §9.1 the dashed arrow carried *every* lifecycle event. Here there is a single callback path: the model answers with a tool call, and the framework's `ToolCallingManager` executes `pass_floor` — harness code — before the caller ever sees a response.
-- **Memory splits across two boxes.** The framework's `ChatMemory` holds *conversations* — decide and reflect, one per colour, selected per call by a conversation id. The hand-rolled `Memory` holds *beliefs* — notes and durable facts rendered into `{{memory}}`. Spring AI has no `AgentState` equivalent, so the second box is plain Java, recorded as **Manual** in the matrix.
+- **Memory splits across two boxes — and the split runs all the way down into persistence.** The framework's `ChatMemory` holds *conversations* — decide and reflect, one per colour, selected per call by a conversation id. The hand-rolled `Memory` holds *beliefs* — notes and durable facts rendered into `{{memory}}`. Spring AI has no `AgentState` equivalent, so the second box is plain Java, recorded as **Manual** in the matrix. Give the harness a session directory and each box persists on its own terms: the conversation box backs itself with the framework's `JdbcChatMemoryRepository` (an embedded H2 file, written through on every exchange — no sync moment exists), while the belief box is saved by `Harness.persist()` in `play()`'s finally and reloaded at construction. Skip the save and conversations survive while beliefs vanish — the [recorded finding](../../architecture/stack-comparison.md#finding-spring-ai-persists-the-conversation-into-a-database--and-nothing-else), pinned by `SessionTest`.
 - **The harness taps the stream by being a sink.** `RecentWindow extends EventSink`, and the tee's second child is the harness's own rolling window — the same trick as the Python stack's `_EventWindow`, spelled as inheritance because that's the Java engine's extension point (§2).
 
 ### 10.2 One `choose`, as calls
@@ -1335,6 +1338,7 @@ sequenceDiagram
 | `ChatClient` | `ChatModel.call(Prompt)` | every model invocation the harness *makes* |
 | **Spring AI** | `pass_floor` — harness code | when the model answers with a tool call: the framework's one call into us |
 | `pass_floor` | `Guardrails.check` | every message and table note, before anything delivers |
+| `Harness.persist()` | `Session.saveBeliefs` | `play()`'s finally — the half the framework cannot save |
 | `Harness`, `pass_floor`, `Game` | `EventSink.TeeSink.emit` | one shared sequence |
 
 One bolded row, where §9.4 had three — and that count *is* the comparison, at class level:
@@ -1346,6 +1350,7 @@ One bolded row, where §9.4 had three — and that count *is* the comparison, at
 | Conversation memory | the `Agent` *is* its conversation | `ChatMemory`, selected per call through an advisor |
 | Compaction | Native summariser — with the hook-bypass trap | hand-rolled — the framework only truncates |
 | Metering seam | `AfterModelCallEvent`: impossible to forget | the call site: disciplined, and blind to internal invocations |
+| Session persistence | `FileSessionManager`: one store, everything, on the framework's sync schedule | JDBC repository: conversations write through continuously; beliefs saved by hand |
 
 Neither column is "the better framework" — the [capability matrix](../../architecture/stack-comparison.md) keeps the full scoreboard, with evidence links. What the two sections show side by side is the **grain**: Strands is a loop you decorate; Spring AI is a toolkit you drive.
 

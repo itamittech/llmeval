@@ -42,6 +42,10 @@ public final class Memory {
         return List.copyOf(notes);
     }
 
+    public List<String> durable() {
+        return List.copyOf(durable);
+    }
+
     /** The {@code {{memory}}} variable: durable facts first, freshest notes last. */
     public String render(int limit) {
         List<String> lines = new ArrayList<>();

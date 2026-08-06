@@ -53,6 +53,21 @@
       <version>2.3</version>
     </dependency>
 
+    <!-- Session persistence (opt-in): the framework's own JDBC-backed
+         ChatMemoryRepository, over an embedded H2 file database. Conversations
+         persist through the framework; beliefs never touch it — Session.java
+         tells that story, and the capability matrix records it. -->
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-model-chat-memory-repository-jdbc</artifactId>
+      <version>${spring-ai.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>2.3.232</version>
+    </dependency>
+
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>

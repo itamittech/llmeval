@@ -58,6 +58,8 @@ Definitions are short on purpose — each links to the doc that goes deeper.
 
 **Internal tool execution** — a framework running the model's tool calls *itself*, inside one call to it, and handing back only the final answer: the caller sees one response where two or more model invocations actually happened. Spring AI does this by default. Usage is aggregated so cost survives, but per-invocation metering is lost — a recorded [matrix finding](architecture/stack-comparison.md#finding-spring-ais-internal-tool-execution-hides-model-invocations-from-the-caller), with an opt-out for live play.
 
+**Embedded database** — a database that runs inside your process as a library and stores to a local file: nothing to install, no server to start. The Spring AI stack's session store is one (H2); SQLite is the household name. The trade against Strands' plain-JSON session files: real SQL semantics, but you need a client to peek inside the store.
+
 **Harness** — the scaffolding around the model that makes an agent work: memory, context management, retries, budgets, tool wiring. "Harness engineering" is the craft of building it well, and how much of it each framework gives you free is one of this project's main questions — which is why each stack must build its harness from the framework's own parts. → [ADR-0008](decisions/adr-0008-framework-native-harness.md)
 
 **Hook (lifecycle)** — a callback a framework fires at named points in its own loop: before a model call, after a message is added, when a tool runs. Hooks let you meter tokens, enforce budgets, or emit events without rewriting the loop — and how rich a framework's hook surface is decides how much of that you can do at all.

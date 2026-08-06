@@ -44,7 +44,7 @@ One more rule, from [ADR-0008](../decisions/adr-0008-framework-native-harness.md
 | Context compaction / summarisation | **Native** — [players.py](../../projects/ludo/stack-strands/src/ludo_strands/players.py) + [harness.py](../../projects/ludo/stack-strands/src/ludo_strands/harness.py) | — | **Manual** — [Harness.java](../../projects/ludo/stack-springai/src/main/java/com/llmeval/ludo/springai/Harness.java) `maybeCompact` | The cleanest split so far: Strands ships a summarising manager; Spring AI's only strategy is silent truncation, so the summariser is harness code |
 | Prompt templating & versioning | — | — | — | |
 | Prompt caching | — | — | — | Provider- and framework-dependent |
-| State persistence / resume | **Native** — [harness.py](../../projects/ludo/stack-strands/src/ludo_strands/harness.py) + [test_session.py](../../projects/ludo/stack-strands/tests/test_session.py) | — | — | `FileSessionManager`, opt-in; see finding — the sync schedule is the framework's, not yours |
+| State persistence / resume | **Native** — [harness.py](../../projects/ludo/stack-strands/src/ludo_strands/harness.py) + [test_session.py](../../projects/ludo/stack-strands/tests/test_session.py) | — | **Split** — [Session.java](../../projects/ludo/stack-springai/src/main/java/com/llmeval/ludo/springai/Session.java) + [SessionTest.java](../../projects/ludo/stack-springai/src/test/java/com/llmeval/ludo/springai/SessionTest.java) | Both opt-in. Strands: `FileSessionManager`, everything in one store, on the framework's sync schedule (see finding). Spring AI: conversations **Native** (`JdbcChatMemoryRepository` over embedded H2, write-through), beliefs **Manual** (`beliefs.json`) — see finding |
 | Human-in-the-loop interrupt | — | — | — | |
 
 ### Operations
@@ -133,7 +133,7 @@ Strands syncs an agent to its session store at two moments: when a message is ap
 
 The mirror asymmetry on messages: persistence hangs off the *append* chokepoint, so the swarm's activation messages (appended by real invocations) **are** captured, while this harness's curation — briefing seeds and the post-table restore, both plain assignments — is invisible to the store. The persisted conversation is therefore the *appended* history, table fragments included, not the curated conversation the agent actually carries. Harmless for state-only restore; a real semantic wrinkle for conversation restore, and one input to [open question 18](../open-questions.md) on cross-game memory.
 
-**What to check in LangGraph and Spring AI:** when their checkpointers/persistence actually write (per step? per graph run? explicit?), and whether state mutated outside the framework's own moments survives a restart without a manual flush.
+**What to check in LangGraph and Spring AI:** when their checkpointers/persistence actually write (per step? per graph run? explicit?), and whether state mutated outside the framework's own moments survives a restart without a manual flush. *Spring AI's answer is [below](#finding-spring-ai-persists-the-conversation-into-a-database--and-nothing-else): its repository writes through on every exchange, so the trap inverts.*
 
 ### Finding: Spring AI's missing harness primitives — and its simplest seam
 
@@ -152,6 +152,20 @@ Found making `pass_floor` a real framework tool, and it matters for anyone doing
 Spring AI executes tools *inside* the `ChatModel` — the provider binding loops (model → tool → model) and hands the caller **one** `ChatResponse` for what was **two or more** model invocations. Client-level metering therefore cannot see the individual calls: this stack's scripted model aggregates usage across its internal chain so nothing goes unmetered, but per-invocation granularity is gone, and one `llm_call` event covers a whole tool round-trip. Contrast Strands, whose lifecycle hooks fired around *every* invocation, tool rounds included — the two frameworks disagree about what "one call" even is.
 
 The escape hatch exists and is the plan for live play: `ToolCallingChatOptions.setInternalToolExecutionEnabled(false)` returns the tool call to the caller, who runs the loop — per-invocation metering restored, at the price of owning the loop. **What to check in LangGraph:** where its tool execution sits relative to its callbacks, and what a "call" means to its token accounting.
+
+### Finding: Spring AI persists the conversation into a database — and nothing else
+
+Found answering the Strands session finding's own question — *when does persistence actually write, and does state mutated outside the framework's moments survive?* — and the answers came back inverted.
+
+Spring AI's persistence primitive is a repository **behind** the memory, not a store **beside** the agent: `ChatMemory` delegates every read and write to a `ChatMemoryRepository`, so swapping the in-memory default for [`JdbcChatMemoryRepository`](../../projects/ludo/stack-springai/src/main/java/com/llmeval/ludo/springai/Session.java) makes the database the conversation's *actual backing store*. There is no sync moment to forget, because there is no sync: every exchange the advisor saves is written through as it happens, and [`SessionTest.java`](../../projects/ludo/stack-springai/src/test/java/com/llmeval/ludo/springai/SessionTest.java) shows a conversation surviving a "process" that never called save. The Strands trap — writes after the last sync silently lost — cannot exist here.
+
+Three prices for that inversion, all read from the module itself:
+
+- **Every shipped backend is a database.** Eight SQL dialects in the JDBC module (this stack runs H2 in file mode — embedded, serverless, pure Java), Cassandra and Neo4j elsewhere — but no file store. Strands' inspectable JSON session directory has no counterpart: reading a persisted conversation means SQL. And without Boot, the table doesn't create itself — `Session.open` runs the module's own `schema-h2.sql` by hand, the one line of glue the starter would have hidden.
+- **Only text survives.** The schema is `(conversation_id, content, type, timestamp)` — a message's text and role, nothing else. Metadata and tool-call structure are not columns, so they do not exist after a restart. Plain exchanges (this game's decide/reflect conversations) round-trip perfectly; anything richer would come back flattened.
+- **Beliefs never enter the framework at all.** There is no `AgentState` for `Memory` to live in, so nothing the framework offers can persist it: `beliefs.json` is written by `Harness.persist()` in `play()`'s finally and read back at construction. The asymmetry is pinned by a test — skip the save and the conversations survive while every note silently vanishes.
+
+One framework persists everything, on its own schedule; the other persists half of everything, continuously. Neither gives you resume for free — you either flush at the end or save your own half. **What to check in LangGraph:** its checkpointer writes per graph step — whose moments are those, and does any of this harness's state live outside them?
 
 ### Finding: the Java agent must depend on the engine; the Python agents need not
 
