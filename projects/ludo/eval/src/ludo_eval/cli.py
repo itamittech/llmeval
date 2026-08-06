@@ -33,7 +33,22 @@ def main(argv: list[str] | None = None) -> int:
     compare = sub.add_parser("compare", help="the same matchup across stacks")
     compare.add_argument("transcripts", nargs="+")
 
+    conf = sub.add_parser(
+        "conformance",
+        help="harness-contract §8: normalise and diff event sequences across stacks")
+    conf.add_argument("transcripts", nargs="+")
+
     args = parser.parse_args(argv)
+
+    if args.command == "conformance":
+        from . import conformance
+        named = []
+        for path in args.transcripts:
+            events = transcript.load(path)
+            game = transcript.fold(events)
+            named.append((game.stack or Path(path).stem, events))
+        print(conformance.render(conformance.compare(named)))
+        return 0
 
     if args.command == "score":
         events = transcript.load(args.transcript)

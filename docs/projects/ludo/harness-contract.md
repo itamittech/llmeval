@@ -152,11 +152,13 @@ Compared after normalising away what cannot match:
 |---|---|
 | `ts` | wall-clock |
 | `llm_call.latency_ms`, `cost_usd` | no real call was made |
-| `game_started.stack` | the one field that is *supposed* to differ |
+| `game_started.stack`, `.framework` | the fields that are *supposed* to differ |
+| `game_started.players[].agent` | names the stack by construction (`strands:scripted`) — found by the comparison tool's own first run |
+| `game_started.engine` | names the language: the Java stack runs the Java engine (ADR-0002), and the conformance vectors are what prove the engines interchangeable |
 
 What remains — event order, event types, payload contents, how many calls each turn took — is exactly the surface where a harness can silently diverge.
 
-All three stacks now carry the seam — a custom `Model` in Strands, a `BaseChatModel` subclass in LangGraph, a stubbed `ChatModel` in Spring AI — each at its framework's own extension point, each driving the committed fixture. The comparison *harness* itself (normalise, diff, assert) is still unbuilt; it is the natural next step now that there are three sequences to compare. **If a stack cannot accept an injected model client, that is a capability-matrix finding**, and a significant one — none of the three tripped it.
+All three stacks carry the seam — a custom `Model` in Strands, a `BaseChatModel` subclass in LangGraph, a stubbed `ChatModel` in Spring AI — each at its framework's own extension point, each driving the committed fixture. **The comparison harness is built**: `ludo_eval conformance` ([`conformance.py`](../../../projects/ludo/eval/src/ludo_eval/conformance.py)) normalises per the table above, diffs the engine layer, and profiles the agent-event rhythm per turn. Its first results, from the committed fixtures: the **LangGraph and Spring AI games are engine-identical** — a Python-engine game and a Java-engine game agreeing event for event, ADR-0002's interchangeability shown on whole games and pinned by a test; the Strands game diverges at engine-event #6 because its scripts consumed the dice differently (different decisions, a script-alignment fact the report names in one line — not drift); and all three deliver the identical story (same messages, same recipients) in three different call rhythms. **If a stack cannot accept an injected model client, that is a capability-matrix finding**, and a significant one — none of the three tripped it.
 
 ## Status
 
