@@ -222,8 +222,8 @@ Filled from recorded games. Same seeds, same models, same rules — so these num
 
 | Metric | Strands | LangGraph | Spring AI |
 |---|---|---|---|
-| Lines of code (agent + orchestration layer) | — | — | — |
-| Direct dependencies | — | — | — |
+| Lines of code (agent + orchestration layer)† | **1,316** | **1,547** | **1,525** |
+| Direct dependencies (runtime)‡ | **3** | **6** | **6** |
 | Cold start to first move | — | — | — |
 | Median agent turn latency | — | — | — |
 | Tokens per game (same seed, scripted*) | **12,902** | **33,944** | **36,812** |
@@ -231,6 +231,10 @@ Filled from recorded games. Same seeds, same models, same rules — so these num
 | Cost per game | — | — | — |
 
 Engine and UI code are excluded from the LOC count — they're shared, so counting them would flatter everyone equally and tell you nothing.
+
+† Raw `wc -l` over each stack's `src` tree at feature-complete-scripted, tests excluded, comments and docstrings **included** — this is a teaching repo and the commentary is deliberate, so a count that rewarded stripping it would measure the wrong thing. Remarkably close for three frameworks that agree on almost nothing.
+
+‡ Runtime dependencies declared in each manifest, test-only excluded. Strands: the SDK (with its anthropic extra), pyyaml, the engine. LangGraph: langgraph, langchain, langchain-anthropic, the sqlite checkpoint package, pyyaml, the engine. Spring AI: client-chat, the anthropic binding, the JDBC memory module, H2, snakeyaml, the engine. The spread is the "batteries included vs. composed from packages" axis made countable — Strands ships one box; the other two are assembled.
 
 \* Scripted tier, measured by [`ludo_eval compare`](../../projects/ludo/eval/README.md) over the three committed fixtures — the same seed and the same four-turn story in all three. These are chars//4 estimates of what each harness **actually sent**, so they measure prompt-volume overhead, not provider billing. The 2.6–2.9× spread is real architecture, not noise: Strands' swarm resets each activation to a short briefing, while LangGraph and Spring AI carry growing per-agent conversations into every call. Live numbers replace these when live games exist.
 

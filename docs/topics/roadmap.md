@@ -15,7 +15,7 @@ This page tracks which project covers what, so gaps are visible and projects don
 | 5 | Inference analysis | LUDO (latency, cold start) | 📋 Planned |
 | 6 | Observability & monitoring | LUDO | 📋 Planned |
 | 7 | Prompt tuning & templates | LUDO — [shared versioned prompts](../../shared/prompts/README.md) built; tuning waits for a stack | 🔲 Partial |
-| 8 | Agentic AI | LUDO | 📋 Planned |
+| 8 | Agentic AI | LUDO — three feature-complete agent harnesses over one contract, scripted tier | 🔲 Partial |
 | 9 | Agentic architectures | LUDO covers **swarm** only | 🔲 Partial |
 | 10 | Voice agents | — | 🔲 Unassigned |
 | 11 | RAG | — | 🔲 Unassigned |
@@ -24,7 +24,7 @@ This page tracks which project covers what, so gaps are visible and projects don
 | 14 | AWS SageMaker features | — | 🔲 Unassigned |
 | 15 | LLM fine-tuning | — | 🔲 Unassigned |
 | 16 | Continued pre-training | — | 🔲 Unassigned |
-| 17 | LLM evals | LUDO (LLM-as-judge, mid-game) | 📋 Planned |
+| 17 | LLM evals | LUDO — [deterministic scoring + judge machinery built](../projects/ludo/evaluation.md#status), rubric hash-stamped; live judging waits on the judge id | 🔲 Partial |
 
 Beyond the original list, LUDO also covers **harness engineering** — agent memory, context compaction, prompt caching — which the brief calls out separately as a requirement.
 
