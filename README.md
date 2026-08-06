@@ -86,6 +86,8 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 - [learning/python/](learning/python/) — runnable examples and a line-by-line walkthrough of the engine's densest class. Standalone; no dependencies.
 - [learning/java/](learning/java/) — the same engine in Java, read against the Python one. Examples run with a bare JDK: `java learning/java/examples/03_signed_shift.java`.
 - [learning/strands/](learning/strands/) — the first agent harness: what the framework does when you call an agent, how a turn flows through it, and how the swarm negotiation actually works. Its examples are the stack's own tests.
+- [learning/springai/](learning/springai/) — the Java harness: the flattest model seam of the three, the advisor that *is* the conversation memory, and the tool-form table with the guardrail gate inside it.
+- [learning/langgraph/](learning/langgraph/) — the graph-shaped harness: state that belongs to the runtime, middleware where hooks used to be, and ADR-0009's protocol literally drawn as nodes and edges. Read all three folders and you've read the capability matrix in prose.
 
 **Other**
 - [Contributing](CONTRIBUTING.md) — setup, and the six rules that are easy to break by accident

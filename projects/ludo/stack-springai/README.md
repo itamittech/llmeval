@@ -60,4 +60,4 @@ The reference diagrams for this whole layer — the object graph, one `choose` a
 | Session persistence (opt-in) | ✅ **Split** — conversations Native ([`Session.java`](src/main/java/com/llmeval/ludo/springai/Session.java): `JdbcChatMemoryRepository` + embedded H2), beliefs Manual (`beliefs.json`) — see the matrix finding |
 | Live calls (Boot + provider starters; Bedrock, Nova, DeepSeek) | ⬜ blocked on model IDs |
 
-Everything above runs offline against the scripted model; nothing costs anything. `learning/springai` follows once the code stops moving, per the repo's rule against documenting half-built code.
+Everything above runs offline against the scripted model; nothing costs anything. The guided tour — the seam, the conversation, the tool-form table, problem-first — is [learning/springai](../../../learning/springai/).

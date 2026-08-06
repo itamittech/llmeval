@@ -59,4 +59,4 @@ The reference diagrams for this layer — the object graph, one `choose` as call
 | Live provider settings pinned + read back (Anthropic control seat) | ✅ [`langgraph_client.py`](src/ludo_langgraph/langgraph_client.py) |
 | Live calls (langchain-aws for Bedrock; Nova, DeepSeek) | ⬜ blocked on model IDs |
 
-Everything above runs offline against the scripted model; nothing costs anything. `learning/langgraph` follows once the code stops moving, per the repo's rule against documenting half-built code.
+Everything above runs offline against the scripted model; nothing costs anything. The guided tour — the graph model, one turn on a thread, the drawn table, problem-first — is [learning/langgraph](../../../learning/langgraph/).

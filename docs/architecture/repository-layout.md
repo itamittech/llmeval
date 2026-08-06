@@ -68,7 +68,7 @@ That constraint is why prompt templates use literal `{{name}}` substitution with
 
 **Engines are libraries with no LLM dependency.** `engine-python/` and `engine-java/` know nothing about agents, prompts, or providers. They should be testable at speed with zero API calls, and a human-vs-random-bot game should be runnable straight from the engine. If an engine ever needs to import an LLM SDK, something has gone wrong.
 
-**`learning/` is teaching material, not code.** Nothing imports it and no build includes it. Its Python and Java examples stay dependency-free so a bare interpreter or JDK runs them; the Strands folder deliberately has no examples at all — a framework example can't be dependency-free, so it teaches against the stack's own tests instead.
+**`learning/` is teaching material, not code.** Nothing imports it and no build includes it. Its Python and Java examples stay dependency-free so a bare interpreter or JDK runs them; the three framework folders (strands, springai, langgraph) deliberately have no examples at all — a framework example can't be dependency-free, so each teaches against its stack's own tests instead.
 
 **`platform/` starts empty on purpose.** Cross-project abstractions get *extracted* after a second project proves they generalise, not designed upfront. Premature shared infrastructure is how teaching repos become unreadable.
 
