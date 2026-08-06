@@ -5,16 +5,23 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Board } from "./Board";
+import { EvalPanel, parseEvalResult, type EvalResult } from "./Eval";
 import { Feed, Header, Spend, Standings } from "./Panels";
 import { project } from "./projector";
 import { parseTranscript, type GameEvent } from "./types";
 
 import scriptedRaw from "../../games/scripted-strands-seed7.jsonl?raw";
 import sampleRaw from "../../games/sample-seed7.jsonl?raw";
+import scriptedEvalRaw from "../../games/scripted-strands-seed7.eval.json?raw";
+import sampleEvalRaw from "../../games/sample-seed7.eval.json?raw";
 
-const BUNDLED: Record<string, string> = {
-  "scripted-strands-seed7 — agents negotiating (43 events)": scriptedRaw,
-  "sample-seed7 — engine-only random bots (1803 events)": sampleRaw,
+// Each bundled game ships with its committed eval result — the pipeline's
+// second artifact. An uploaded transcript has none (run `just score` on it).
+const BUNDLED: Record<string, { transcript: string; evalRaw?: string }> = {
+  "scripted-strands-seed7 — agents negotiating (43 events)":
+    { transcript: scriptedRaw, evalRaw: scriptedEvalRaw },
+  "sample-seed7 — engine-only random bots (1803 events)":
+    { transcript: sampleRaw, evalRaw: sampleEvalRaw },
 };
 
 export function Player({ events, position }: { events: GameEvent[]; position: number }) {
@@ -39,16 +46,22 @@ export function Player({ events, position }: { events: GameEvent[]; position: nu
 
 export function App() {
   const [name, setName] = useState(Object.keys(BUNDLED)[0]);
-  const [events, setEvents] = useState<GameEvent[]>(() => parseTranscript(BUNDLED[name]));
+  const [events, setEvents] = useState<GameEvent[]>(
+    () => parseTranscript(BUNDLED[name].transcript));
+  const [evalResult, setEvalResult] = useState<EvalResult | null>(() => {
+    const raw = BUNDLED[name].evalRaw;
+    return raw ? parseEvalResult(raw) : null;
+  });
   const [position, setPosition] = useState(events.length);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(8);
   const timer = useRef<number | null>(null);
 
-  const load = (label: string, raw: string) => {
+  const load = (label: string, raw: string, evalRaw?: string) => {
     const parsed = parseTranscript(raw);
     setName(label);
     setEvents(parsed);
+    setEvalResult(evalRaw ? parseEvalResult(evalRaw) : null);
     setPosition(0);
     setPlaying(true);
   };
@@ -72,7 +85,8 @@ export function App() {
         only thing this page reads. Offline, no keys, no backend.
       </p>
       <div className="controls">
-        <select value={name} onChange={(e) => load(e.target.value, BUNDLED[e.target.value])}>
+        <select value={name} onChange={(e) => load(e.target.value,
+            BUNDLED[e.target.value].transcript, BUNDLED[e.target.value].evalRaw)}>
           {Object.keys(BUNDLED).map((label) => <option key={label}>{label}</option>)}
         </select>
         <input type="file" accept=".jsonl" aria-label="open a transcript"
@@ -91,6 +105,7 @@ export function App() {
           {position}/{events.length}</label>
       </div>
       <Player events={events} position={position} />
+      {evalResult && <EvalPanel result={evalResult} />}
     </main>
   );
 }

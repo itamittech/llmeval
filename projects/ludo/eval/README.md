@@ -50,6 +50,7 @@ uv run --directory projects/ludo/eval python -m ludo_eval compare projects/ludo/
 | Result schema + validation + CLI (`score`, `compare`) | ✅ [`eval-result.schema.json`](../../../shared/schemas/eval-result.schema.json) · [`cli.py`](src/ludo_eval/cli.py) |
 | Live judge call (OpenAI) | ⬜ blocked on the judge model id — [`judge_client.py`](src/ludo_eval/judge_client.py) fails loudly until then |
 | Judge validation runs (inter-judge, human spot-checks) | ⬜ need live games first |
-| Eval view in the UI | ⬜ the UI renders transcripts today; the eval JSON is its future input |
+| Eval view in the UI | ✅ every committed `games/*.eval.json` renders below the player — [`Eval.tsx`](../ui/src/Eval.tsx), held to the fixture rules by [`eval.test.tsx`](../ui/tests/eval.test.tsx) |
+| Cross-stack §8 comparison (`ludo_eval conformance`) | ✅ [`conformance.py`](src/ludo_eval/conformance.py) — normalise, diff the engine layer, profile the rhythm; the Python-engine and Java-engine games agree event for event |
 
 32 tests, all offline. Nothing here costs anything until the judge id lands — and when it does, judging stays opt-in and priced, never a default.

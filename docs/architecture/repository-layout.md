@@ -45,7 +45,7 @@ llmeval/
 │       ├── stack-springai/
 │       ├── eval/                 # LLM-as-judge + deterministic scoring
 │       ├── ui/                   # transcript player (React + Vite) — own package.json
-│       └── games/                # recorded event streams (sample matches)
+│       └── games/                # recorded event streams + their .eval.json results
 │
 ├── scripts/
 │   ├── check_docs.py             # links, anchors, mermaid structure — Rule #1

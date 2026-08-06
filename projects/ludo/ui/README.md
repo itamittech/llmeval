@@ -37,6 +37,10 @@ All four of [ADR-0007](../../../docs/decisions/adr-0007-ui-alongside-first-stack
 
 One more that ADR-0007 didn't have to ask for: [`tests/geometry.test.ts`](tests/geometry.test.ts) checks the hand-drawn board mapping against **every `from_square`/`to_square` the fixtures record** — the engine has already computed the absolute square for thousands of real moves, so the grid is verified against the engine rather than trusted.
 
+## The eval report
+
+Below the player, the app renders the pipeline's *second* artifact: each bundled game ships with its committed eval result (`games/<name>.eval.json`, produced by [the eval harness](../eval/README.md) and schema-validated before commit). [`src/Eval.tsx`](src/Eval.tsx) is pure like `Player` — parsed result in, markup out — and held to the same rules by [`tests/eval.test.tsx`](tests/eval.test.tsx): every committed result in `games/` must render (the suite grows when a result lands, zero source changes), `stack` is displayed never branched on, and rank is shown verbatim from the result — which the eval harness in turn guarantees is the engine's own standings. No judge has scored a committed game yet, and the panel says so honestly instead of rendering an empty table; judge scores land in the same panel when the judge model id does. An uploaded transcript has no result and shows no panel — run `just score` on it to make one.
+
 ## How it works
 
 | Module | Job |

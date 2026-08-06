@@ -1,0 +1,156 @@
+{
+  "eval_version": 1,
+  "game": {
+    "file": "scripted-strands-seed7.jsonl",
+    "stack": "strands",
+    "seed": 7,
+    "turns_played": 4,
+    "reason": "turn_cap"
+  },
+  "players": {
+    "red": {
+      "seat": 1,
+      "rank": 2,
+      "position": {
+        "tokens_home": 0,
+        "progress": 0,
+        "tokens_in_base": 4,
+        "score": -40
+      },
+      "play": {
+        "captures_made": 0,
+        "captures_suffered": 0,
+        "turns_forfeited": 0,
+        "three_sixes": 0,
+        "home_entries": 0,
+        "block_turns": 0
+      },
+      "efficiency": {
+        "llm_calls": 4,
+        "tokens_in": 883,
+        "tokens_out": 44,
+        "progress_per_turn": 0.0,
+        "progress_per_1k_tokens": 0.0,
+        "cost_usd": null,
+        "reasoning_chars": 0
+      },
+      "negotiation": {
+        "messages_sent": 1,
+        "table_notes": 1,
+        "memory_writes": 0,
+        "compactions": 0,
+        "guardrails_triggered": 0
+      }
+    },
+    "green": {
+      "seat": 2,
+      "rank": 3,
+      "position": {
+        "tokens_home": 0,
+        "progress": 0,
+        "tokens_in_base": 4,
+        "score": -40
+      },
+      "play": {
+        "captures_made": 0,
+        "captures_suffered": 0,
+        "turns_forfeited": 1,
+        "three_sixes": 0,
+        "home_entries": 0,
+        "block_turns": 0
+      },
+      "efficiency": {
+        "llm_calls": 3,
+        "tokens_in": 2353,
+        "tokens_out": 13,
+        "progress_per_turn": 0.0,
+        "progress_per_1k_tokens": 0.0,
+        "cost_usd": null,
+        "reasoning_chars": 0
+      },
+      "negotiation": {
+        "messages_sent": 0,
+        "table_notes": 0,
+        "memory_writes": 0,
+        "compactions": 0,
+        "guardrails_triggered": 0
+      }
+    },
+    "yellow": {
+      "seat": 3,
+      "rank": 4,
+      "position": {
+        "tokens_home": 0,
+        "progress": 0,
+        "tokens_in_base": 4,
+        "score": -40
+      },
+      "play": {
+        "captures_made": 0,
+        "captures_suffered": 0,
+        "turns_forfeited": 0,
+        "three_sixes": 0,
+        "home_entries": 0,
+        "block_turns": 0
+      },
+      "efficiency": {
+        "llm_calls": 1,
+        "tokens_in": 153,
+        "tokens_out": 1,
+        "progress_per_turn": 0.0,
+        "progress_per_1k_tokens": 0.0,
+        "cost_usd": null,
+        "reasoning_chars": 0
+      },
+      "negotiation": {
+        "messages_sent": 0,
+        "table_notes": 0,
+        "memory_writes": 0,
+        "compactions": 0,
+        "guardrails_triggered": 0
+      }
+    },
+    "blue": {
+      "seat": 4,
+      "rank": 1,
+      "position": {
+        "tokens_home": 0,
+        "progress": 1,
+        "tokens_in_base": 3,
+        "score": -29
+      },
+      "play": {
+        "captures_made": 0,
+        "captures_suffered": 0,
+        "turns_forfeited": 1,
+        "three_sixes": 0,
+        "home_entries": 0,
+        "block_turns": 0
+      },
+      "efficiency": {
+        "llm_calls": 7,
+        "tokens_in": 9393,
+        "tokens_out": 62,
+        "progress_per_turn": 1.0,
+        "progress_per_1k_tokens": 0.106,
+        "cost_usd": null,
+        "reasoning_chars": 24
+      },
+      "negotiation": {
+        "messages_sent": 1,
+        "table_notes": 0,
+        "memory_writes": 0,
+        "compactions": 0,
+        "guardrails_triggered": 0
+      }
+    }
+  },
+  "judge": null,
+  "totals": {
+    "events": 43,
+    "llm_calls": 15,
+    "tokens_in": 12782,
+    "tokens_out": 120,
+    "cost_usd": null
+  }
+}
