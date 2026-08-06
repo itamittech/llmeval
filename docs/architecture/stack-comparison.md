@@ -226,11 +226,13 @@ Filled from recorded games. Same seeds, same models, same rules — so these num
 | Direct dependencies | — | — | — |
 | Cold start to first move | — | — | — |
 | Median agent turn latency | — | — | — |
-| Tokens per game (same seed) | — | — | — |
+| Tokens per game (same seed, scripted*) | **12,902** | **33,944** | **36,812** |
 | Cache hit rate | — | — | — |
 | Cost per game | — | — | — |
 
 Engine and UI code are excluded from the LOC count — they're shared, so counting them would flatter everyone equally and tell you nothing.
+
+\* Scripted tier, measured by [`ludo_eval compare`](../../projects/ludo/eval/README.md) over the three committed fixtures — the same seed and the same four-turn story in all three. These are chars//4 estimates of what each harness **actually sent**, so they measure prompt-volume overhead, not provider billing. The 2.6–2.9× spread is real architecture, not noise: Strands' swarm resets each activation to a short briefing, while LangGraph and Spring AI carry growing per-agent conversations into every call. Live numbers replace these when live games exist.
 
 ## Narrative findings
 

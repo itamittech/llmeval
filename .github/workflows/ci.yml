@@ -53,6 +53,13 @@ jobs:
           uv sync --directory projects/ludo/stack-langgraph
           uv run --directory projects/ludo/stack-langgraph pytest
 
+      - name: Eval harness
+        # Consumes the committed transcripts only — its fold self-verifies
+        # against game_ended, so this step also cross-checks every fixture.
+        run: |
+          uv sync --directory projects/ludo/eval
+          uv run --directory projects/ludo/eval pytest
+
   engine-java:
     name: Java engine
     runs-on: ubuntu-latest

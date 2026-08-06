@@ -92,6 +92,8 @@ Definitions are short on purpose — each links to the doc that goes deeper.
 
 **LLM-as-judge** — using a model to score things a metric can't capture, like whether a move was strategically sound. Powerful and biased; the biases are named and mitigated rather than assumed away. → [evaluation](projects/ludo/evaluation.md#judge-bias--and-what-we-do-about-it)
 
+**Rubric (with anchors)** — the fixed ruler a judge scores against: each dimension gets a question and *anchors* — concrete descriptions of what a 1, a 3, and a 5 look like — so two runs (or two judges) measure with the same instrument instead of two private opinions of "good". Ludo's judge rubric lives in [shared/prompts/ludo/judge](../shared/prompts/ludo/judge/scoring.md), and its hash is recorded in every result, because scores made under different rubrics are not comparable.
+
 **Eval** — short for evaluation: measuring how well a model or agent performs, ideally with a rubric and evidence rather than a vibe.
 
 **Observability / tracing** — recording what a system did in enough detail to explain its behaviour afterwards. A *trace* follows one operation end to end; a *span* is one step within it.

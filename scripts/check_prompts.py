@@ -24,6 +24,9 @@ what it says it is.
      conclusion becomes uninterpretable. (ADR-0005)
   6. The judge is not a family that played. (evaluation.md)
   7. No secrets in models.yaml. It is public and committed.
+  8. The judge prompt (judge/, deliberately outside the manifest — it is the
+     eval's, not the stacks') obeys the same template law, with its variables
+     checked against the eval's fixed contract instead of a manifest entry.
 
 Exits non-zero on failure, so it can gate CI.
 """
@@ -93,6 +96,10 @@ def check_prompts() -> None:
     on_disk = {
         str(p.relative_to(PROMPTS)).replace("\\", "/")
         for p in PROMPTS.rglob("*.md")
+        # judge/ is the eval's, not the stacks': single consumer, provenance
+        # by content hash in each result rather than by manifest version.
+        # Checked by check_judge_prompt below, not exempted.
+        if not str(p.relative_to(PROMPTS)).replace("\\", "/").startswith("judge/")
     }
     for orphan in sorted(on_disk - listed):
         fail(f"{orphan} is not in manifest.yaml — no stack would ever load it")
@@ -125,6 +132,26 @@ def check_prompts() -> None:
                      f"{{{{color}}}} as a variable; personas are not hand-coded")
 
     check_rule_numbers()
+    check_judge_prompt()
+
+
+#: The eval renders exactly these into the judge prompt — its fixed contract,
+#: mirrored in projects/ludo/eval/src/ludo_eval/judge.py.
+JUDGE_VARIABLES = {"players", "rubric", "transcript"}
+
+
+def check_judge_prompt() -> None:
+    path = PROMPTS / "judge" / "scoring.md"
+    if not path.exists():
+        fail("judge/scoring.md is missing — the eval's rubric prompt")
+        return
+    text = path.read_text(encoding="utf-8")
+    if LOGIC.search(text):
+        fail("judge/scoring.md: template logic found — same law as every prompt")
+    used = set(VARIABLE.findall(text))
+    if used != JUDGE_VARIABLES:
+        fail(f"judge/scoring.md: uses {sorted(used)}, the eval renders "
+             f"{sorted(JUDGE_VARIABLES)} — they must match exactly")
 
 
 def check_rule_numbers() -> None:

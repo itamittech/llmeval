@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/itamittech/llmeval/shared/schemas/eval-result.schema.json",
+  "title": "LUDO eval result",
+  "description": "One game, evaluated. Layer 1 (deterministic) is always present; layer 2 (judge) is null until a judge ran. Produced by projects/ludo/eval, consumed by the UI and by anyone comparing runs.",
+  "type": "object",
+  "required": ["eval_version", "game", "players", "judge", "totals"],
+  "additionalProperties": false,
+  "properties": {
+    "eval_version": { "const": 1 },
+    "game": {
+      "type": "object",
+      "required": ["file", "stack", "seed", "turns_played", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "file": { "type": "string" },
+        "stack": { "type": ["string", "null"] },
+        "seed": { "type": ["integer", "null"] },
+        "turns_played": { "type": "integer", "minimum": 0 },
+        "reason": { "enum": ["completed", "turn_cap", "unknown"] }
+      }
+    },
+    "players": {
+      "type": "object",
+      "required": ["red", "green", "yellow", "blue"],
+      "additionalProperties": false,
+      "properties": {
+        "red": { "$ref": "#/$defs/player" },
+        "green": { "$ref": "#/$defs/player" },
+        "yellow": { "$ref": "#/$defs/player" },
+        "blue": { "$ref": "#/$defs/player" }
+      }
+    },
+    "judge": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["model", "prompt_hash", "runs", "failed_runs",
+                       "discarded_unsourced", "agreement_with_outcome", "scores"],
+          "additionalProperties": false,
+          "properties": {
+            "model": { "type": "string" },
+            "prompt_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+            "runs": { "type": "integer", "minimum": 1 },
+            "failed_runs": { "type": "integer", "minimum": 0 },
+            "discarded_unsourced": { "type": "integer", "minimum": 0 },
+            "agreement_with_outcome": { "type": ["number", "null"], "minimum": -1, "maximum": 1 },
+            "scores": {
+              "type": "object",
+              "required": ["red", "green", "yellow", "blue"],
+              "additionalProperties": false,
+              "properties": {
+                "red": { "$ref": "#/$defs/dimensions" },
+                "green": { "$ref": "#/$defs/dimensions" },
+                "yellow": { "$ref": "#/$defs/dimensions" },
+                "blue": { "$ref": "#/$defs/dimensions" }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "totals": {
+      "type": "object",
+      "required": ["events", "llm_calls", "tokens_in", "tokens_out", "cost_usd"],
+      "additionalProperties": false,
+      "properties": {
+        "events": { "type": "integer", "minimum": 1 },
+        "llm_calls": { "type": "integer", "minimum": 0 },
+        "tokens_in": { "type": "integer", "minimum": 0 },
+        "tokens_out": { "type": "integer", "minimum": 0 },
+        "cost_usd": { "type": ["number", "null"], "minimum": 0 }
+      }
+    }
+  },
+  "$defs": {
+    "player": {
+      "type": "object",
+      "required": ["seat", "rank", "position", "play", "efficiency", "negotiation"],
+      "additionalProperties": false,
+      "properties": {
+        "seat": { "type": ["integer", "null"] },
+        "rank": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "position": {
+          "type": "object",
+          "required": ["tokens_home", "progress", "tokens_in_base", "score"],
+          "additionalProperties": false,
+          "properties": {
+            "tokens_home": { "type": "integer", "minimum": 0, "maximum": 4 },
+            "progress": { "type": "integer", "minimum": 0 },
+            "tokens_in_base": { "type": "integer", "minimum": 0, "maximum": 4 },
+            "score": { "type": "integer" }
+          }
+        },
+        "play": {
+          "type": "object",
+          "required": ["captures_made", "captures_suffered", "turns_forfeited",
+                       "three_sixes", "home_entries", "block_turns"],
+          "additionalProperties": false,
+          "properties": {
+            "captures_made": { "type": "integer", "minimum": 0 },
+            "captures_suffered": { "type": "integer", "minimum": 0 },
+            "turns_forfeited": { "type": "integer", "minimum": 0 },
+            "three_sixes": { "type": "integer", "minimum": 0 },
+            "home_entries": { "type": "integer", "minimum": 0 },
+            "block_turns": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "efficiency": {
+          "type": "object",
+          "required": ["llm_calls", "tokens_in", "tokens_out", "progress_per_turn",
+                       "progress_per_1k_tokens", "cost_usd", "reasoning_chars"],
+          "additionalProperties": false,
+          "properties": {
+            "llm_calls": { "type": "integer", "minimum": 0 },
+            "tokens_in": { "type": "integer", "minimum": 0 },
+            "tokens_out": { "type": "integer", "minimum": 0 },
+            "progress_per_turn": { "type": "number", "minimum": 0 },
+            "progress_per_1k_tokens": { "type": ["number", "null"], "minimum": 0 },
+            "cost_usd": { "type": ["number", "null"], "minimum": 0 },
+            "reasoning_chars": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "negotiation": {
+          "type": "object",
+          "required": ["messages_sent", "table_notes", "memory_writes",
+                       "compactions", "guardrails_triggered"],
+          "additionalProperties": false,
+          "properties": {
+            "messages_sent": { "type": "integer", "minimum": 0 },
+            "table_notes": { "type": "integer", "minimum": 0 },
+            "memory_writes": { "type": "integer", "minimum": 0 },
+            "compactions": { "type": "integer", "minimum": 0 },
+            "guardrails_triggered": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^(decision_quality|strategic_coherence|negotiation|trust_calibration|betrayal_timing|reasoning_integrity|adaptability)$": {
+          "type": "object",
+          "required": ["mean", "min", "max", "n"],
+          "additionalProperties": false,
+          "properties": {
+            "mean": { "type": ["number", "null"], "minimum": 1, "maximum": 5 },
+            "min": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+            "max": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+            "n": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    }
+  }
+}

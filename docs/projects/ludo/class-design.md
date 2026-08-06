@@ -1548,8 +1548,8 @@ This diagram will grow. Expected additions, roughly in build order:
 |---|---|
 | **Agent stacks** | ✅ All three drawn — `stack-strands` (§9), `stack-springai` (§10), `stack-langgraph` (§11) — ending in §11.4's three-grain table. The diffs between the sections are [capability-matrix](../../architecture/stack-comparison.md) material, and every future stack-side change updates its section in the same commit. |
 | **`engine-java`** | ✅ **Built.** Mirrors this graph, with `Protocol` becoming an `interface` and frozen dataclasses becoming `record`s — see [engine-design.md](engine-design.md#porting-to-java). The optional hooks became `default` methods, and `Game` gained an `IntSupplier` seam Python did not need. |
-| **Eval harness** | Reads transcripts only. Should appear with *no* arrow into the engine at all. |
-| **UI** | Same — consumes the event stream, never the classes. |
+| **Eval harness** | ✅ **Built** ([`projects/ludo/eval`](../../../projects/ludo/eval/README.md)) — and the prediction held: it reads transcripts only, with *no* arrow into the engine, no stack imports, no SDK. Its fold self-verifies against `game_ended.standings`, which is the discipline that replaces the arrow. |
+| **UI** | ✅ Same — consumes the event stream, never the classes. Proven three times over by fixture growth without source changes (ADR-0007). |
 
 If a future component needs an arrow *into* the engine that isn't `Decider`, that's worth challenging: it likely means something is bypassing the event stream.
 

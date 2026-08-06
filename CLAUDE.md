@@ -31,6 +31,7 @@ This project exists to teach. A doc describing code that no longer exists is *wo
 | Started or finished a component | Status tables in [README.md](README.md) **and** this file · [repository-layout.md](docs/architecture/repository-layout.md) |
 | A project claimed a topic | [topics/roadmap.md](docs/topics/roadmap.md) |
 | The UI | [its README](projects/ludo/ui/README.md) · ADR-0007's rules are UI **tests** — if adding a stack's transcript forces a UI source change, that is the failure the fixture set exists to catch, not something to code around |
+| Eval scoring, judge machinery, or the rubric | [evaluation.md](docs/projects/ludo/evaluation.md) Status · the eval [README](projects/ludo/eval/README.md) design + status table · [schemas README](shared/schemas/README.md) if the result shape changed · the judge prompt's hash makes rubric edits visible — bump nothing, the hash IS the version |
 | Added a new doc | Link it from [README.md](README.md) and from the Related section of any sibling doc |
 
 ### Then verify
@@ -69,7 +70,7 @@ Say so explicitly in your response, naming the file and what's now wrong. An ack
 
 ## Repository status
 
-The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack is feature-complete against scripted models** — swarm negotiation, memory in agent state, budgets and events in lifecycle hooks, context compaction via each agent summarising itself, lenient content guardrails at the message boundary, opt-in session persistence — all Strands-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)/[0009](docs/decisions/adr-0009-swarm-negotiation.md). The **Spring AI stack is feature-complete against scripted models** — the floor-passing loop is harness code (its predicted Manual finding) but the pass is a real framework tool with the guardrail gate inside it; conversation memory on `ChatMemory`; compaction hand-rolled because the framework only truncates; opt-in session persistence split down the memory line (conversations through the framework's JDBC repository over embedded H2, beliefs saved by the harness); live Anthropic options pinned and read back. The **LangGraph stack is feature-complete against scripted models** — ADR-0009's table drawn as a `StateGraph` (the family's own swarm package rejected on the contract's privacy rule — a matrix finding), conversation threads on the checkpointer, beliefs in the framework `Store`, compaction on the framework's `SummarizationMiddleware` with the game budget as trigger, session persistence by swapping both stores for their sqlite twins (no save call exists) — all LangGraph-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md). The **UI transcript player is built**, and ADR-0007's rules are proven three times over: each new stack's fixture landed and the suite grew (now 23 tests) with zero source changes. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in.
+The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack is feature-complete against scripted models** — swarm negotiation, memory in agent state, budgets and events in lifecycle hooks, context compaction via each agent summarising itself, lenient content guardrails at the message boundary, opt-in session persistence — all Strands-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)/[0009](docs/decisions/adr-0009-swarm-negotiation.md). The **Spring AI stack is feature-complete against scripted models** — the floor-passing loop is harness code (its predicted Manual finding) but the pass is a real framework tool with the guardrail gate inside it; conversation memory on `ChatMemory`; compaction hand-rolled because the framework only truncates; opt-in session persistence split down the memory line (conversations through the framework's JDBC repository over embedded H2, beliefs saved by the harness); live Anthropic options pinned and read back. The **LangGraph stack is feature-complete against scripted models** — ADR-0009's table drawn as a `StateGraph` (the family's own swarm package rejected on the contract's privacy rule — a matrix finding), conversation threads on the checkpointer, beliefs in the framework `Store`, compaction on the framework's `SummarizationMiddleware` with the game budget as trigger, session persistence by swapping both stores for their sqlite twins (no save call exists) — all LangGraph-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md). The **UI transcript player is built**, and ADR-0007's rules are proven three times over: each new stack's fixture landed and the suite grew (now 23 tests) with zero source changes. The **eval harness is built** — deterministic scoring whose fold self-verifies against `game_ended.standings`, judge machinery (anonymisation down to colour words in message text, citation enforcement, multi-run spread, outcome agreement) tested through scripted callers, every result validated against its shared schema; the judge prompt is written and hash-stamped into results. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in — the judge's OpenAI id gates live judging the same way.
 
 | Component | State |
 |---|---|
@@ -84,8 +85,8 @@ The **shared event schema**, **both engines** (Python and Java, cross-checked by
 | `projects/ludo/ui/` | ✅ Transcript player (React + Vite), 19 tests; ADR-0007's fixture rules enforced in CI — proven when the Spring AI fixture landed and the suite grew by four with zero UI changes |
 | `projects/ludo/stack-springai/` | ✅ Feature-complete scripted — tool-driven floor passing, conversation memory, hand-rolled compaction, guardrails, split session persistence, pinned live options; 12 tests, schema-valid fixture. **No live game** (model IDs TBD) |
 | `projects/ludo/stack-langgraph/` | ✅ Feature-complete scripted — table as a StateGraph, checkpointer threads, Store beliefs, middleware compaction, sqlite session persistence, pinned live options; 16 tests, schema-valid fixture. **No live game** (model IDs TBD) |
-| `eval/` | ❌ Not started |
-| Judge prompt | ❌ Waits for the eval harness |
+| `projects/ludo/eval/` | ✅ Built — deterministic scoring on every committed game (fold self-verifies against `game_ended`), judge machinery tested through scripted callers, schema-validated results, `score`/`compare` CLI; 32 tests. **Live judge call** ⬜ blocked on the judge model ID |
+| Judge prompt | ✅ [`shared/prompts/ludo/judge/scoring.md`](shared/prompts/ludo/judge/scoring.md) — 7 dimensions with anchors, outside the manifest (single consumer), hash recorded per judged result |
 
 ## Commands
 
@@ -139,6 +140,20 @@ uv run --directory projects/ludo/engine-python python -m ludo_engine.cli play --
 
 ```bash
 uv run --directory projects/ludo/engine-python python -m ludo_engine.cli validate ../games/g.jsonl
+```
+
+The eval harness (own venv; consumes transcripts only — free, no keys):
+
+```bash
+uv run --directory projects/ludo/eval pytest
+```
+
+```bash
+uv run --directory projects/ludo/eval python -m ludo_eval score projects/ludo/games/scripted-strands-seed7.jsonl
+```
+
+```bash
+uv run --directory projects/ludo/eval python -m ludo_eval compare projects/ludo/games/scripted-strands-seed7.jsonl projects/ludo/games/scripted-langgraph-seed7.jsonl projects/ludo/games/scripted-springai-seed7.jsonl
 ```
 
 The UI (own package.json under `projects/ludo/ui` — the root one is repo tooling only):

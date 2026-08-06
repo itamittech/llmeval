@@ -81,6 +81,10 @@ Every game produces a machine-readable eval result validated against a schema in
 
 Because evaluation runs entirely off recorded event streams, **rubrics can be revised and re-run against past games for free** (aside from judge calls). Games are recorded once; evals are cheap to iterate. That separation is deliberate, and it's the single most useful habit to carry into other projects.
 
+## Status
+
+Built, in [`projects/ludo/eval`](../../../projects/ludo/eval/README.md) — a standalone consumer of the event stream with no engine, stack, or SDK imports (the no-arrow rule held). **Layer 1 runs in full** on every committed game, and its fold self-verifies against `game_ended.standings` — which is how we learned the engine does not count three-sixes as a forfeited turn. **Layer 2's machinery is built and tested through scripted judges**: anonymisation (colour words inside message text included), per-run label shuffles, citation enforcement with discards counted, mean-and-spread aggregation, and outcome agreement via Kendall's tau on finished games. The rubric lives in [`shared/prompts/ludo/judge/scoring.md`](../../../shared/prompts/ludo/judge/scoring.md) and its hash rides every judged result. The position weights in `scoring.py` are provisional, like every number in `models.yaml`. Still waiting: the judge model id (the live OpenAI caller fails loudly until it lands), the validation runs that need live games, and the UI's eval view.
+
 ## Related
 
 - [Brief](brief.md) · [Agent design](agent-design.md) · [Game rules](game-rules.md)

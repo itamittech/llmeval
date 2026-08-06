@@ -5,6 +5,7 @@ The integration contract between the three stack implementations, the UI, and th
 | File | Purpose |
 |---|---|
 | [`event.schema.json`](event.schema.json) | One LUDO transcript event. JSON Schema 2020-12. |
+| [`eval-result.schema.json`](eval-result.schema.json) | One game's evaluation: deterministic scores always, judge scores when a judge ran. Produced by [`projects/ludo/eval`](../../projects/ludo/eval/README.md), which validates every result against this before emitting it. |
 
 ## Transcript format
 

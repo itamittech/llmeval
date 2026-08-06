@@ -70,6 +70,8 @@ Then:
 uv run scripts/check_prompts.py
 ```
 
-## Not written yet
+## The judge prompt — in `judge/`, deliberately outside the manifest
 
-**The judge prompt.** It belongs with the [evaluation harness](../../docs/projects/ludo/evaluation.md), which doesn't exist. Writing it now would mean guessing at the shape of an interface nothing implements. `shared/models.yaml` already reserves the judge seat.
+[`judge/scoring.md`](ludo/judge/scoring.md) is the LLM judge's rubric — seven dimensions with anchors, the citation rule, the reply contract. It follows the same template law as everything here (literal `{{name}}`, no logic; the [eval](../../projects/ludo/eval/README.md) renders lists in code and passes one variable), but it is **not** in `manifest.yaml`, because the manifest is *stack-parity* machinery: it exists so three implementations provably send identical bytes. The judge has one implementation, and its provenance rides a different vehicle — the eval hashes the prompt itself and records `prompt_hash` in every judged result, because scores made under different rubrics are not comparable.
+
+Change it like a prompt, not like code: the meaning of every recorded judge score depends on the exact bytes that produced it.
