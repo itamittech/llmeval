@@ -44,14 +44,6 @@ Currently `llmeval` locally. Public from the first commit, or after LUDO works?
 
 ---
 
-## 🟡 20. ALIBI's name, theme, and cast
-
-[ADR-0010](decisions/adr-0010-project-two-alibi.md) proposes **ALIBI** as project two's name, with an original theft-at-a-gala fiction, because Cluedo's name and cast are Hasbro's protected expression while the deduction mechanics are common property. The [draft rules](projects/alibi/game-rules.md) carry a placeholder element set (six suspects, five methods, eight places).
-
-> **Recommendation:** ratify the name and theme; treat the v0 cast as replaceable flavour that can change freely until the first conformance vector is recorded, and not after — element names will be baked into corpus bytes.
-
----
-
 ## 🟡 23. Retrieval parity — what must be pinned, and what is allowed to be the finding?
 
 LUDO pinned prompts and inference settings so the framework was the only variable. ALIBI adds retrieval, and three frameworks with three vector-store stories will not produce identical retrievals. Pinning too little makes the comparison meaningless; pinning too much means hand-rolling one retriever three times, which [ADR-0008](decisions/adr-0008-framework-native-harness.md) forbids.
@@ -65,22 +57,6 @@ LUDO pinned prompts and inference settings so the framework was the only variabl
 The brief lists Lambda, API Gateway, AgentCore, and SageMaker. [Architecture](architecture/overview.md#local-first-cloud-when-it-earns-it) and the [roadmap](topics/roadmap.md) assume LUDO runs locally against real model APIs, with deployment as a later project's subject.
 
 > **Recommendation:** keep LUDO local. It already carries swarm agents, three-stack parity, LLM-as-judge, and the harness features. Deployment is a strong project-two topic on its own.
-
----
-
-## 🟢 21. ALIBI's pace — case dimensions, query allowance, turn cap
-
-The [draft rules](projects/alibi/game-rules.md) fix 6 + 5 + 8 elements (an even four-exhibit deal), 2 archive queries per turn, and a 24-turn cap — all guesses. A game random play solves in six rounds is too easy; one that never converges busts the budget.
-
-> **Recommendation:** the LUDO discipline ([question 7](#-7-turn-cap-negotiation-budget-and-game-length)): build a deduction bot bench into the engine CLI, measure rounds-to-solve distributions, then derive the cap from a per-game token budget. Numbers live in config, never in prompts.
-
----
-
-## 🟢 22. Does ALIBI keep LUDO's negotiation channels?
-
-LUDO's floor-passing table ([ADR-0009](decisions/adr-0009-swarm-negotiation.md)) could be lifted wholesale — but negotiation phases cost the most tokens of anything in LUDO, and ALIBI's deception already lives in bluff suggestions, table notes, and the archive's unreliable testimony.
-
-> **Recommendation:** v1 ships without directed messages or floor passing — one table note per suggestion is the only free-text channel. If alliances between detectives turn out to matter (they can: sharing eliminations is rational), reopen with an ADR rather than a flag.
 
 ---
 
@@ -105,6 +81,18 @@ The mechanism now exists — `FileSessionManager` persists each agent's beliefs 
 ---
 
 ## Answered
+
+### ✅ 21. ALIBI's pace — case dimensions, query allowance, turn cap
+
+**Answered by the bench, exactly as recommended.** Over 500 elimination-bot games (`alibi_engine.cli bench --games 500`): min 1, median 21, p90 36, p99 45, max 45 turns to a correct accusation — **all 500 solved**, because every refutation teaches the suggester at least one new elimination and an unrefuted suggestion by a non-holder *is* the solution. Caps derived and recorded in [game-rules.md → The numbers](projects/alibi/game-rules.md#the-numbers) and `shared/models.yaml`: **24** turns on `dev` (just above median — mid-game belief scoring does the rest), **48** on `headline` (above p99), **60** for conformance vectors (every vector must end `solved`). The 6+5+8 element split and 2-queries-of-3-documents allowance survived the bench unchanged.
+
+### ✅ 20. ALIBI's name, theme, and cast
+
+**Answered: ratified as proposed, under the maintainer's delegation** (2026-08-07, "whatever is best you can take those decisions"). The project is **ALIBI**, original theft-at-a-gala fiction, because Cluedo's name and cast are Hasbro's protected expression while the deduction mechanics are common property. The v0 cast in the [rules](projects/alibi/game-rules.md) is now load-bearing: element and cast names are baked into corpus bytes the moment the first conformance vector is recorded, and renaming after that is a vector regeneration, not a search-and-replace.
+
+### ✅ 22. Does ALIBI keep LUDO's negotiation channels?
+
+**Answered: no — v1 ships without directed messages or floor passing.** One public table note per suggestion is the only free-text channel. Decided under the same delegation, on the recommendation's own grounds: negotiation phases were LUDO's biggest token cost, and ALIBI's deception already lives in bluff suggestions, table-note spin, and the archive's unreliable testimony. The consequence taken knowingly: detective alliances (sharing eliminations is rational) cannot form in v1 — if that turns out to matter, it reopens as an ADR, not a flag. This is also what removes the swarm orchestrator from ALIBI's stacks entirely: each detective is a single-agent loop with tools, which is exactly the contrast with LUDO the comparison wants.
 
 ### ✅ 12. What is project two?
 

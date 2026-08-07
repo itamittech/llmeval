@@ -68,11 +68,12 @@ Deterministic first: accusation correctness, rounds-to-solve, and calibration of
 
 ## Status
 
-📋 **Design phase.** This brief and the [draft rules](game-rules.md) are the whole project so far — no code exists. Open decisions are [questions 20–23](../../open-questions.md); the rules numbers are provisional until benched.
+🚧 **In build.** The name and channel decisions are ratified (answered questions 20 and 22); [questions 21 and 23](../../open-questions.md) — pace numbers and retrieval parity — stay open until the engine's bench and the stacks answer them with measurements.
 
 ## Related
 
-- [Game rules](game-rules.md) — the normative spec (draft)
+- [Game rules](game-rules.md) — the normative spec
+- [Engine design](engine-design.md) — the built engine, read against LUDO's
 - [ADR-0010](../../decisions/adr-0010-project-two-alibi.md) — why this project, this name, these two new hard things
 - [LUDO brief](../ludo/brief.md) — the template this project inherits from
 - [Capability matrix](../../architecture/stack-comparison.md) — the scoreboard ALIBI's RAG columns will join

@@ -1,0 +1,476 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/llmeval/llmeval/shared/schemas/alibi-event.schema.json",
+  "title": "ALIBI Event",
+  "description": "One event in an ALIBI game transcript. A transcript is a JSON Lines file: one event object per line, ordered by seq. Same contract discipline as LUDO's event.schema.json (ADR-0003): the UI and the eval harness consume only this.",
+  "type": "object",
+  "required": ["seq", "type", "payload"],
+  "additionalProperties": false,
+
+  "properties": {
+    "seq": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Monotonic index within the transcript, starting at 0. Gaps are an error."
+    },
+    "turn": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Turn number this event belongs to. 0 before the first turn starts."
+    },
+    "type": { "$ref": "#/$defs/eventType" },
+    "ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional wall-clock timestamp. Never emitted by the engine: same-seed transcripts must diff cleanly. Agent-layer events may set it."
+    },
+    "payload": { "type": "object" }
+  },
+
+  "allOf": [
+    { "if": { "properties": { "type": { "const": "game_started" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/gameStarted" } } } },
+    { "if": { "properties": { "type": { "const": "case_dealt" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/caseDealt" } } } },
+    { "if": { "properties": { "type": { "const": "archive_generated" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/archiveGenerated" } } } },
+    { "if": { "properties": { "type": { "const": "turn_started" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/turnStarted" } } } },
+    { "if": { "properties": { "type": { "const": "archive_searched" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/archiveSearched" } } } },
+    { "if": { "properties": { "type": { "const": "suggestion_made" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/suggestionMade" } } } },
+    { "if": { "properties": { "type": { "const": "refutation_made" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/refutationMade" } } } },
+    { "if": { "properties": { "type": { "const": "accusation_made" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/accusationMade" } } } },
+    { "if": { "properties": { "type": { "const": "detective_eliminated" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/detectiveEliminated" } } } },
+    { "if": { "properties": { "type": { "const": "belief_declared" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/beliefDeclared" } } } },
+    { "if": { "properties": { "type": { "const": "invalid_action" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/invalidAction" } } } },
+    { "if": { "properties": { "type": { "const": "turn_ended" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/turnEnded" } } } },
+    { "if": { "properties": { "type": { "const": "game_ended" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/gameEnded" } } } },
+    { "if": { "properties": { "type": { "const": "agent_reasoning" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/agentReasoning" } } } },
+    { "if": { "properties": { "type": { "const": "memory_write" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/memoryWrite" } } } },
+    { "if": { "properties": { "type": { "const": "context_compacted" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/contextCompacted" } } } },
+    { "if": { "properties": { "type": { "const": "llm_call" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/llmCall" } } } },
+    { "if": { "properties": { "type": { "const": "guardrail_triggered" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/guardrailTriggered" } } } }
+  ],
+
+  "$defs": {
+    "eventType": {
+      "description": "Engine events are emitted by engine-python / engine-java. Agent events are emitted by the stack implementations. An engine-only run (deduction bots, no models) is a valid transcript with no agent events at all.",
+      "enum": [
+        "game_started", "case_dealt", "archive_generated", "turn_started",
+        "archive_searched", "suggestion_made", "refutation_made", "accusation_made",
+        "detective_eliminated", "belief_declared", "invalid_action", "turn_ended",
+        "game_ended",
+        "agent_reasoning", "memory_write", "context_compacted", "llm_call",
+        "guardrail_triggered"
+      ]
+    },
+
+    "color": {
+      "enum": ["red", "green", "yellow", "blue"],
+      "description": "A detective's badge colour — the in-game identity. The seat-to-colour mapping rotates between games (ADR-0006), exactly as in LUDO."
+    },
+
+    "whoElement": {
+      "enum": ["curator", "magician", "heiress", "chef", "photographer", "inspector"]
+    },
+    "howElement": {
+      "enum": ["sleight-of-hand", "duplicate-key", "service-hatch", "blackout", "forged-pass"]
+    },
+    "whereElement": {
+      "enum": ["ballroom", "vault-room", "kitchen", "terrace", "library", "cloakroom", "gallery", "garden"]
+    },
+    "element": {
+      "anyOf": [
+        { "$ref": "#/$defs/whoElement" },
+        { "$ref": "#/$defs/howElement" },
+        { "$ref": "#/$defs/whereElement" }
+      ],
+      "description": "Any case element. The three enums are normative — they mirror game-rules.md, and renaming one is a corpus-byte change that regenerates the conformance vectors."
+    },
+
+    "triple": {
+      "type": "object",
+      "required": ["who", "how", "where"],
+      "additionalProperties": false,
+      "properties": {
+        "who": { "$ref": "#/$defs/whoElement" },
+        "how": { "$ref": "#/$defs/howElement" },
+        "where": { "$ref": "#/$defs/whereElement" }
+      }
+    },
+
+    "confidence": {
+      "type": "number", "minimum": 0, "maximum": 1,
+      "description": "Self-declared probability that the named element is correct. Scored against ground truth by the eval (Brier), which is why it is required per dimension."
+    },
+
+    "access": { "enum": ["bedrock", "direct"] },
+
+    "gameStarted": {
+      "type": "object",
+      "required": ["seed", "max_turns", "players", "engine", "case"],
+      "additionalProperties": false,
+      "properties": {
+        "seed": { "type": "integer", "description": "Case RNG seed. Same seed + same decisions replays the game exactly — deal, archive, and all." },
+        "max_turns": { "type": "integer", "minimum": 1 },
+        "max_searches_per_turn": { "type": "integer", "minimum": 0, "description": "Archive query allowance per turn. In config, never in prompts." },
+        "ruleset": { "type": "string", "default": "baseline" },
+        "engine": {
+          "type": "object",
+          "required": ["language", "version"],
+          "properties": {
+            "language": { "enum": ["python", "java"] },
+            "version": { "type": "string" }
+          }
+        },
+        "stack": { "enum": ["strands", "langgraph", "springai", "none"] },
+        "case": {
+          "type": "object",
+          "required": ["suspects", "methods", "places", "archive_documents"],
+          "additionalProperties": false,
+          "description": "Shape of this game's case, so a reader of the transcript alone knows the deal arithmetic.",
+          "properties": {
+            "suspects": { "type": "integer", "const": 6 },
+            "methods": { "type": "integer", "const": 5 },
+            "places": { "type": "integer", "const": 8 },
+            "archive_documents": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "profile": { "type": "string", "description": "Named profile from shared/models.yaml. Absent on engine-only runs." },
+        "prompt_set": {
+          "type": "object",
+          "required": ["version", "hash"],
+          "additionalProperties": false,
+          "properties": {
+            "version": { "type": "integer", "minimum": 1 },
+            "hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+          }
+        },
+        "framework": {
+          "type": "object",
+          "required": ["name", "version"],
+          "additionalProperties": false,
+          "properties": {
+            "name": { "enum": ["strands", "langgraph", "springai"] },
+            "version": { "type": "string" }
+          }
+        },
+        "players": {
+          "type": "array", "minItems": 4, "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["color"],
+            "properties": {
+              "color": { "$ref": "#/$defs/color" },
+              "agent": { "type": "string" },
+              "seat": { "type": "integer", "minimum": 1, "maximum": 4 },
+              "model": { "type": "string" },
+              "access": { "$ref": "#/$defs/access" }
+            }
+          }
+        },
+        "archivist": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The non-playing retrieval specialist, when one served this game. Absent on engine-only runs, where deciders call the baseline retriever directly.",
+          "properties": {
+            "agent": { "type": "string" },
+            "model": { "type": "string" },
+            "access": { "$ref": "#/$defs/access" },
+            "retrieval_profile": { "type": "string", "description": "Which retrieval strategy served this game ('baseline' = the engine's deterministic keyword retriever; embedding profiles are live-tier)." }
+          }
+        }
+      }
+    },
+
+    "caseDealt": {
+      "type": "object",
+      "required": ["hands"],
+      "additionalProperties": false,
+      "description": "The exhibits dealt to each detective. Spectator-visible in the transcript; no stack may reveal one detective's hand to another (harness contract).",
+      "properties": {
+        "hands": {
+          "type": "object",
+          "required": ["red", "green", "yellow", "blue"],
+          "additionalProperties": false,
+          "properties": {
+            "red":    { "$ref": "#/$defs/hand" },
+            "green":  { "$ref": "#/$defs/hand" },
+            "yellow": { "$ref": "#/$defs/hand" },
+            "blue":   { "$ref": "#/$defs/hand" }
+          }
+        }
+      }
+    },
+
+    "hand": {
+      "type": "array", "minItems": 4, "maxItems": 4,
+      "items": { "$ref": "#/$defs/element" }
+    },
+
+    "archiveGenerated": {
+      "type": "object",
+      "required": ["documents"],
+      "additionalProperties": false,
+      "description": "The full public archive, embedded so the transcript is self-contained — the UI and eval need no other file. Reliability is deliberately NOT here: which documents were red herrings is revealed only in game_ended.",
+      "properties": {
+        "documents": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "kind", "text"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "pattern": "^doc-[0-9]{3}$" },
+              "kind": { "enum": ["witness_statement", "staff_log", "forensic_note", "gossip"] },
+              "text": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "turnStarted": {
+      "type": "object", "required": ["player"], "additionalProperties": false,
+      "properties": { "player": { "$ref": "#/$defs/color" } }
+    },
+
+    "archiveSearched": {
+      "type": "object",
+      "required": ["player", "query", "results", "quota_left"],
+      "additionalProperties": false,
+      "description": "One archive query. Content is private to the asking detective; that it happened is public — like a visit to the library everyone can see.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "query": { "type": "string" },
+        "results": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^doc-[0-9]{3}$" }
+        },
+        "quota_left": { "type": "integer", "minimum": 0 }
+      }
+    },
+
+    "suggestionMade": {
+      "type": "object",
+      "required": ["player", "who", "how", "where", "note"],
+      "additionalProperties": false,
+      "description": "The interrogation move. May name elements the suggester secretly holds — legal bluffing. The note is public table talk and may be a lie; nothing downstream treats it as fact.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "who": { "$ref": "#/$defs/whoElement" },
+        "how": { "$ref": "#/$defs/howElement" },
+        "where": { "$ref": "#/$defs/whereElement" },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+
+    "refutationMade": {
+      "type": "object",
+      "required": ["suggester", "refuter", "element"],
+      "additionalProperties": false,
+      "description": "Engine-mediated and therefore fact. refuter null = nobody could refute (the loudest information in the game). The shown element is spectator-visible here; stacks reveal it ONLY to the suggester.",
+      "properties": {
+        "suggester": { "$ref": "#/$defs/color" },
+        "refuter": { "oneOf": [{ "$ref": "#/$defs/color" }, { "type": "null" }] },
+        "element": { "oneOf": [{ "$ref": "#/$defs/element" }, { "type": "null" }] },
+        "chosen_by": {
+          "enum": ["detective", "engine"],
+          "description": "'engine' when the refuter's own choice was invalid and the engine enforced the canonical one — refutation is compulsory, so it cannot be forfeited like a LUDO move."
+        }
+      }
+    },
+
+    "accusationMade": {
+      "type": "object",
+      "required": ["player", "who", "how", "where", "correct"],
+      "additionalProperties": false,
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "who": { "$ref": "#/$defs/whoElement" },
+        "how": { "$ref": "#/$defs/howElement" },
+        "where": { "$ref": "#/$defs/whereElement" },
+        "correct": { "type": "boolean" }
+      }
+    },
+
+    "detectiveEliminated": {
+      "type": "object", "required": ["player"], "additionalProperties": false,
+      "description": "A wrong accusation. The detective takes no further turns and makes no suggestions, but still refutes.",
+      "properties": { "player": { "$ref": "#/$defs/color" } }
+    },
+
+    "beliefDeclared": {
+      "type": "object",
+      "required": ["player", "who", "how", "where", "confidence"],
+      "additionalProperties": false,
+      "description": "The detective's declared best guess at end of turn, with per-dimension confidence. Because ground truth exists, calibration is a deterministic eval score — no judge involved.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "who": { "$ref": "#/$defs/whoElement" },
+        "how": { "$ref": "#/$defs/howElement" },
+        "where": { "$ref": "#/$defs/whereElement" },
+        "confidence": {
+          "type": "object",
+          "required": ["who", "how", "where"],
+          "additionalProperties": false,
+          "properties": {
+            "who": { "$ref": "#/$defs/confidence" },
+            "how": { "$ref": "#/$defs/confidence" },
+            "where": { "$ref": "#/$defs/confidence" }
+          }
+        }
+      }
+    },
+
+    "invalidAction": {
+      "type": "object",
+      "required": ["player", "phase", "reason", "attempt"],
+      "additionalProperties": false,
+      "description": "The engine rejects rather than corrects (ADR-0004), except where the rules make an action compulsory — see refutation_made.chosen_by.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "phase": { "enum": ["suggest", "show", "accuse", "conclude", "search"] },
+        "reason": { "type": "string" },
+        "attempt": { "type": "integer", "minimum": 1 }
+      }
+    },
+
+    "turnEnded": {
+      "type": "object", "required": ["player", "reason"], "additionalProperties": false,
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "reason": {
+          "enum": ["played", "passed", "solved", "eliminated", "error"],
+          "description": "'passed' = no suggestion made; 'solved' = correct accusation ended the game; 'eliminated' = wrong accusation this turn."
+        }
+      }
+    },
+
+    "gameEnded": {
+      "type": "object",
+      "required": ["reason", "turns_played", "solution", "red_herrings", "standings"],
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "enum": ["solved", "all_eliminated", "turn_cap"],
+          "description": "'turn_cap' is a normal outcome: final beliefs are scored against the revealed solution, so a detective can lose the race yet demonstrably have solved the case."
+        },
+        "turns_played": { "type": "integer", "minimum": 0 },
+        "solution": { "$ref": "#/$defs/triple" },
+        "red_herrings": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^doc-[0-9]{3}$" },
+          "description": "Which archive documents contradicted the truth — revealed only now, so the UI can replay the game showing who was fooled."
+        },
+        "standings": {
+          "type": "array", "minItems": 4, "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["player", "rank", "solved", "eliminated", "belief_dimensions_correct"],
+            "additionalProperties": false,
+            "properties": {
+              "player": { "$ref": "#/$defs/color" },
+              "rank": { "type": "integer", "minimum": 1, "maximum": 4 },
+              "solved": { "type": "boolean" },
+              "eliminated": { "type": "boolean" },
+              "belief_dimensions_correct": {
+                "type": "integer", "minimum": 0, "maximum": 3,
+                "description": "How many dimensions of the final declared belief matched the solution. 0 when no belief was ever declared."
+              },
+              "suggestions_made": { "type": "integer", "minimum": 0 },
+              "refutations_given": { "type": "integer", "minimum": 0 },
+              "searches_made": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+
+    "agentReasoning": {
+      "type": "object", "required": ["player", "text"], "additionalProperties": false,
+      "description": "Private to the detective; other detectives never see it. Shown to the viewer, read by the judge.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "text": { "type": "string" }
+      }
+    },
+
+    "memoryWrite": {
+      "type": "object", "required": ["player", "kind", "text"], "additionalProperties": false,
+      "description": "The detective's notebook — private and deliberately unreliable: it records beliefs, including ones planted by a red herring. Never corrected.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "kind": { "enum": ["deduction", "suspicion", "plan", "observation"] },
+        "about": { "oneOf": [{ "$ref": "#/$defs/element" }, { "$ref": "#/$defs/color" }, { "type": "null" }] },
+        "text": { "type": "string" }
+      }
+    },
+
+    "contextCompacted": {
+      "type": "object", "required": ["player", "tokens_before", "tokens_after"], "additionalProperties": false,
+      "description": "Defined for schema symmetry with LUDO; the ALIBI v1 harness contract deliberately does not require compaction.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "tokens_before": { "type": "integer", "minimum": 0 },
+        "tokens_after": { "type": "integer", "minimum": 0 },
+        "turns_summarised": { "type": "integer", "minimum": 0 },
+        "summary": { "type": "string" }
+      }
+    },
+
+    "llmCall": {
+      "type": "object",
+      "required": ["player", "model", "access", "tokens"],
+      "additionalProperties": false,
+      "description": "One model invocation. Archivist calls carry the asking detective's colour (cost lands on the seat that asked) with actor: 'archivist' and the archivist's own model.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "actor": { "enum": ["detective", "archivist"], "default": "detective" },
+        "model": { "type": "string" },
+        "model_version": { "type": "string" },
+        "access": { "$ref": "#/$defs/access" },
+        "purpose": { "enum": ["suggest", "show", "accuse", "conclude", "reflect", "archivist", "compact", "judge"] },
+        "tokens": {
+          "type": "object",
+          "required": ["input", "output"],
+          "properties": {
+            "input": { "type": "integer", "minimum": 0 },
+            "output": { "type": "integer", "minimum": 0 },
+            "cache_read": { "type": "integer", "minimum": 0 },
+            "cache_write": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "latency_ms": { "type": "number", "minimum": 0 },
+        "cost_usd": { "type": "number", "minimum": 0 },
+        "retries": { "type": "integer", "minimum": 0 }
+      }
+    },
+
+    "guardrailTriggered": {
+      "type": "object", "required": ["player", "rule", "action"], "additionalProperties": false,
+      "description": "Fires only on out-of-fiction attacks (ADR-0004). Bluff suggestions and lying table notes are in-fiction and must never appear here.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "rule": { "type": "string" },
+        "action": { "enum": ["blocked", "flagged", "rewritten"] },
+        "source": { "enum": ["bedrock_guardrails", "harness"] },
+        "detail": { "type": "string" }
+      }
+    }
+  }
+}

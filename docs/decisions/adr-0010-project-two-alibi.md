@@ -1,6 +1,6 @@
 # ADR-0010 — Project two is ALIBI: a deduction game built on retrieval
 
-**Status:** Proposed — the deduction-game direction is the maintainer's (2026-08-07); the name, theme, and rules baseline recorded here await ratification
+**Status:** Accepted — the deduction-game direction is the maintainer's (2026-08-07); the maintainer then delegated the remaining decisions ("whatever is best"), and the name, theme, and rules baseline were ratified under that delegation the same day
 **Date:** 2026-08-07
 
 ## Context

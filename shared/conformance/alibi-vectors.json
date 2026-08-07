@@ -1,0 +1,807 @@
+{
+  "schema": "alibi-conformance/1",
+  "engine_version": "0.1.0",
+  "note": "Regenerate only when the rules or the corpus change deliberately. An unexpected diff here is a bug, not a refresh.",
+  "vectors": [
+    {
+      "seed": 1,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 5,
+      "events": 34,
+      "solution": {
+        "who": "curator",
+        "how": "sleight-of-hand",
+        "where": "terrace"
+      },
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        }
+      ],
+      "digest": "e5b8aea37bc43605d9f2af4d4e947943f400dd4e07be58308aeb3e936377fcb8"
+    },
+    {
+      "seed": 2,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 5,
+      "events": 34,
+      "solution": {
+        "who": "curator",
+        "how": "service-hatch",
+        "where": "ballroom"
+      },
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        }
+      ],
+      "digest": "b9594b0386f2b0e463d614b20a7d8e244260f65879999c4cd0a31cb4cdf68ce9"
+    },
+    {
+      "seed": 3,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 13,
+      "events": 82,
+      "solution": {
+        "who": "chef",
+        "how": "sleight-of-hand",
+        "where": "kitchen"
+      },
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "blue",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "green",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 1
+        }
+      ],
+      "digest": "1a9a100559d3e01595613ca2b2da556335d299b18ed7d4c3d8468212c5e387fb"
+    },
+    {
+      "seed": 4,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 21,
+      "events": 130,
+      "solution": {
+        "who": "photographer",
+        "how": "service-hatch",
+        "where": "kitchen"
+      },
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "blue",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "green",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        }
+      ],
+      "digest": "dbdcb43c1fd670bb3e44164c6dd0a23d86eeeef5ed227e0ab34d1983b9a3b9d6"
+    },
+    {
+      "seed": 5,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 33,
+      "events": 202,
+      "solution": {
+        "who": "magician",
+        "how": "forged-pass",
+        "where": "garden"
+      },
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        }
+      ],
+      "digest": "f6e1eb4c208dbcb9fa1f97198e7c5dd5e2e8b4b15e43b6fac13571e8ae958f20"
+    },
+    {
+      "seed": 6,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 30,
+      "events": 184,
+      "solution": {
+        "who": "heiress",
+        "how": "forged-pass",
+        "where": "library"
+      },
+      "standings": [
+        {
+          "player": "green",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "yellow",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "red",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        }
+      ],
+      "digest": "42e3446aaf04b2904447af640dd1e824398018027b18dcd46b4d16591e1b9516"
+    },
+    {
+      "seed": 7,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 30,
+      "events": 184,
+      "solution": {
+        "who": "photographer",
+        "how": "service-hatch",
+        "where": "cloakroom"
+      },
+      "standings": [
+        {
+          "player": "green",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "yellow",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "blue",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "red",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        }
+      ],
+      "digest": "7e49485fe9e45858045f1a7223ab106d213df1b367d893e97656a16d13c150ce"
+    },
+    {
+      "seed": 8,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 21,
+      "events": 130,
+      "solution": {
+        "who": "curator",
+        "how": "forged-pass",
+        "where": "terrace"
+      },
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "blue",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "yellow",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        }
+      ],
+      "digest": "55967641f288cbe321b36086deed0c5cd6aee25b168ef2f1748ed0fff7399cc9"
+    },
+    {
+      "seed": 9,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 17,
+      "events": 106,
+      "solution": {
+        "who": "curator",
+        "how": "sleight-of-hand",
+        "where": "gallery"
+      },
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "yellow",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "green",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        }
+      ],
+      "digest": "b297313a1c3227c1dc3c04ac69d6c639bba3bf22d3e18422b0ee68031bce221a"
+    },
+    {
+      "seed": 10,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 14,
+      "events": 88,
+      "solution": {
+        "who": "magician",
+        "how": "forged-pass",
+        "where": "ballroom"
+      },
+      "standings": [
+        {
+          "player": "green",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "blue",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "red",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        }
+      ],
+      "digest": "16a3a4f273b51173c43ebf3426609b37a7f159467d4a167208b6a08b55d1ddd5"
+    },
+    {
+      "seed": 11,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 29,
+      "events": 178,
+      "solution": {
+        "who": "photographer",
+        "how": "sleight-of-hand",
+        "where": "garden"
+      },
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        }
+      ],
+      "digest": "413d15268e079190eb135f453de2c1beb7f6958abc420630ce2d6e115492ecb3"
+    },
+    {
+      "seed": 12,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 17,
+      "events": 106,
+      "solution": {
+        "who": "heiress",
+        "how": "service-hatch",
+        "where": "terrace"
+      },
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "blue",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 1
+        }
+      ],
+      "digest": "a3aa2cabac666da6f2e61774265b662168f2860d7d46122ad994e2ca4c02dbec"
+    },
+    {
+      "seed": 13,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 15,
+      "events": 94,
+      "solution": {
+        "who": "inspector",
+        "how": "duplicate-key",
+        "where": "ballroom"
+      },
+      "standings": [
+        {
+          "player": "yellow",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "red",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "blue",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "green",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        }
+      ],
+      "digest": "24b2d05692aa166eb9a8b4ae3e3af4d16941c0c4c1fe64c6cffc2648dab0371c"
+    },
+    {
+      "seed": 14,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 18,
+      "events": 112,
+      "solution": {
+        "who": "chef",
+        "how": "duplicate-key",
+        "where": "terrace"
+      },
+      "standings": [
+        {
+          "player": "green",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "yellow",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "red",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 1
+        }
+      ],
+      "digest": "65c07d9c017aa1dec928bf12e5d339541164a489b33180b35c8a2870d62aeff0"
+    },
+    {
+      "seed": 15,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 6,
+      "events": 40,
+      "solution": {
+        "who": "magician",
+        "how": "sleight-of-hand",
+        "where": "vault-room"
+      },
+      "standings": [
+        {
+          "player": "green",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "yellow",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "red",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        }
+      ],
+      "digest": "85b57d84d6f6570cd2173550cc3f07cadf6cf8e3647088e3d2f5a8dbf9c63a82"
+    },
+    {
+      "seed": 16,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 33,
+      "events": 202,
+      "solution": {
+        "who": "photographer",
+        "how": "sleight-of-hand",
+        "where": "garden"
+      },
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "yellow",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "blue",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "green",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        }
+      ],
+      "digest": "63d415ba7fb0637f2ba0598a7ab345c6366bca182eadca58c45998ab2298a58c"
+    },
+    {
+      "seed": 17,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 13,
+      "events": 82,
+      "solution": {
+        "who": "chef",
+        "how": "duplicate-key",
+        "where": "vault-room"
+      },
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "yellow",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "green",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 1
+        }
+      ],
+      "digest": "498df62d533832e46a4daa99ce81d1ed36a2049367ad94f998b034c561f63e09"
+    },
+    {
+      "seed": 18,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 26,
+      "events": 160,
+      "solution": {
+        "who": "heiress",
+        "how": "sleight-of-hand",
+        "where": "garden"
+      },
+      "standings": [
+        {
+          "player": "green",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "blue",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "red",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        }
+      ],
+      "digest": "e573080b4819c9c6e9805198db071ab05d62fdd0dfdcafff845b8d5a4f03e550"
+    },
+    {
+      "seed": 19,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 16,
+      "events": 100,
+      "solution": {
+        "who": "heiress",
+        "how": "blackout",
+        "where": "ballroom"
+      },
+      "standings": [
+        {
+          "player": "blue",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "red",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "green",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "yellow",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 3
+        }
+      ],
+      "digest": "6f973cf70b8bb58c22e93616a4e9fdc1094b561dfd8658b9a47fa3795887fd3c"
+    },
+    {
+      "seed": 20,
+      "max_turns": 60,
+      "decider": "elimination-bot",
+      "reason": "solved",
+      "turns_played": 21,
+      "events": 130,
+      "solution": {
+        "who": "inspector",
+        "how": "service-hatch",
+        "where": "vault-room"
+      },
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "solved": true,
+          "belief_dimensions_correct": 3
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "solved": false,
+          "belief_dimensions_correct": 2
+        }
+      ],
+      "digest": "0549cdd172d29195e35b7840bfc635f319c33f0b86dfb0fa0fd56e3ecd3b611d"
+    }
+  ]
+}
