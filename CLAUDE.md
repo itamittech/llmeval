@@ -71,7 +71,7 @@ Say so explicitly in your response, naming the file and what's now wrong. An ack
 
 ## Repository status
 
-The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack is feature-complete against scripted models** — swarm negotiation, memory in agent state, budgets and events in lifecycle hooks, context compaction via each agent summarising itself, lenient content guardrails at the message boundary, opt-in session persistence — all Strands-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)/[0009](docs/decisions/adr-0009-swarm-negotiation.md). The **Spring AI stack is feature-complete against scripted models** — the floor-passing loop is harness code (its predicted Manual finding) but the pass is a real framework tool with the guardrail gate inside it; conversation memory on `ChatMemory`; compaction hand-rolled because the framework only truncates; opt-in session persistence split down the memory line (conversations through the framework's JDBC repository over embedded H2, beliefs saved by the harness); live Anthropic options pinned and read back. The **LangGraph stack is feature-complete against scripted models** — ADR-0009's table drawn as a `StateGraph` (the family's own swarm package rejected on the contract's privacy rule — a matrix finding), conversation threads on the checkpointer, beliefs in the framework `Store`, compaction on the framework's `SummarizationMiddleware` with the game budget as trigger, session persistence by swapping both stores for their sqlite twins (no save call exists) — all LangGraph-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md). The **UI transcript player is built** (plus an eval-report panel rendering each game's committed `.eval.json`), and ADR-0007's rules are proven three times over: each new stack's fixture landed and the suite grew (now 29 tests) with zero source changes. The **eval harness is built** — deterministic scoring whose fold self-verifies against `game_ended.standings`, judge machinery (anonymisation down to colour words in message text, citation enforcement, multi-run spread, outcome agreement) tested through scripted callers, every result validated against its shared schema; the judge prompt is written and hash-stamped into results. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in — the judge's OpenAI id gates live judging the same way. **Project two is chosen: ALIBI** ([ADR-0010](docs/decisions/adr-0010-project-two-alibi.md), Proposed) — a deduction game whose two new hard things are RAG and agent-as-tool; its [brief](docs/projects/alibi/brief.md) and [draft rules](docs/projects/alibi/game-rules.md) exist, no code does.
+The **shared event schema**, **both engines** (Python and Java, cross-checked by conformance vectors), and the **shared prompt set + model config** are built and tested. The **Strands stack is feature-complete against scripted models** — swarm negotiation, memory in agent state, budgets and events in lifecycle hooks, context compaction via each agent summarising itself, lenient content guardrails at the message boundary, opt-in session persistence — all Strands-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)/[0009](docs/decisions/adr-0009-swarm-negotiation.md). The **Spring AI stack is feature-complete against scripted models** — the floor-passing loop is harness code (its predicted Manual finding) but the pass is a real framework tool with the guardrail gate inside it; conversation memory on `ChatMemory`; compaction hand-rolled because the framework only truncates; opt-in session persistence split down the memory line (conversations through the framework's JDBC repository over embedded H2, beliefs saved by the harness); live Anthropic options pinned and read back. The **LangGraph stack is feature-complete against scripted models** — ADR-0009's table drawn as a `StateGraph` (the family's own swarm package rejected on the contract's privacy rule — a matrix finding), conversation threads on the checkpointer, beliefs in the framework `Store`, compaction on the framework's `SummarizationMiddleware` with the game budget as trigger, session persistence by swapping both stores for their sqlite twins (no save call exists) — all LangGraph-native per [ADR-0008](docs/decisions/adr-0008-framework-native-harness.md). The **UI transcript player is built** (plus an eval-report panel rendering each game's committed `.eval.json`), and ADR-0007's rules are proven three times over: each new stack's fixture landed and the suite grew (now 29 tests) with zero source changes. The **eval harness is built** — deterministic scoring whose fold self-verifies against `game_ended.standings`, judge machinery (anonymisation down to colour words in message text, citation enforcement, multi-run spread, outcome agreement) tested through scripted callers, every result validated against its shared schema; the judge prompt is written and hash-stamped into results. **No live game has been played**, and none can be until the Nova and DeepSeek model ids are filled in — the judge's OpenAI id gates live judging the same way. **Project two is in build: ALIBI** ([ADR-0010](docs/decisions/adr-0010-project-two-alibi.md), Accepted) — a deduction game whose two new hard things are RAG and agent-as-tool. Its [rules are normative](docs/projects/alibi/game-rules.md) with benched pace numbers (500 games: median 21, p99 45, all solved), **both engines are built and agree on all 20 conformance vectors — corpus bytes included**, since the generated archive rides inside the transcript. Stacks, eval, and UI are not started.
 
 | Component | State |
 |---|---|
@@ -88,7 +88,11 @@ The **shared event schema**, **both engines** (Python and Java, cross-checked by
 | `projects/ludo/stack-langgraph/` | ✅ Feature-complete scripted — table as a StateGraph, checkpointer threads, Store beliefs, middleware compaction, sqlite session persistence, pinned live options; 16 tests, schema-valid fixture. **No live game** (model IDs TBD) |
 | `projects/ludo/eval/` | ✅ Built — deterministic scoring on every committed game (fold self-verifies against `game_ended`), judge machinery tested through scripted callers, schema-validated results, `score`/`compare`/`conformance` CLI (§8 mechanised — the Python-engine and Java-engine games agree event for event); 37 tests. **Live judge call** ⬜ blocked on the judge model ID |
 | Judge prompt | ✅ [`shared/prompts/ludo/judge/scoring.md`](shared/prompts/ludo/judge/scoring.md) — 7 dimensions with anchors, outside the manifest (single consumer), hash recorded per judged result |
-| `docs/projects/alibi/` — project two design | 📋 [Brief](docs/projects/alibi/brief.md) + [draft rules](docs/projects/alibi/game-rules.md) ([ADR-0010](docs/decisions/adr-0010-project-two-alibi.md), Proposed). No code — rules numbers provisional until benched (questions 20–23) |
+| `docs/projects/alibi/` — project two design | ✅ [Brief](docs/projects/alibi/brief.md) · [normative rules](docs/projects/alibi/game-rules.md) with benched numbers · [engine design](docs/projects/alibi/engine-design.md) ([ADR-0010](docs/decisions/adr-0010-project-two-alibi.md), Accepted) |
+| `projects/alibi/engine-python/` | ✅ Built — deal, archive generator, referee, baseline retriever, CLI, 37 tests; 500-game bench answered question 21 |
+| `projects/alibi/engine-java/` | ✅ Built, 9 tests; **matches Python on all 20 vectors, corpus bytes included** |
+| `shared/schemas/alibi-event.schema.json` | ✅ Built — element enums normative; archive rides in the transcript |
+| `projects/alibi/` stacks · eval · ui | ⬜ Not started |
 
 ## Commands
 
@@ -170,6 +174,26 @@ npm test --prefix projects/ludo/ui
 
 ```bash
 npm run dev --prefix projects/ludo/ui
+```
+
+The ALIBI engine (own venv, same pattern):
+
+```bash
+uv run --directory projects/alibi/engine-python pytest
+```
+
+```bash
+uv run --directory projects/alibi/engine-python python -m alibi_engine.cli play --seed 7
+```
+
+```bash
+uv run --directory projects/alibi/engine-python python -m alibi_engine.cli conformance --check
+```
+
+The ALIBI Java engine, from `projects/alibi/engine-java`:
+
+```bash
+./mvnw -B test
 ```
 
 The Java engine builds with the committed Maven wrapper — no global Maven needed, and Java 21 is already installed here. Run from `projects/ludo/engine-java`:

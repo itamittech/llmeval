@@ -80,7 +80,7 @@ That constraint is why prompt templates use literal `{{name}}` substitution with
 
 Every project under `projects/` follows the same shape: `engine-*`, `stack-*`, `eval/`, `ui/`, `games/`. Consistency across projects matters more than a bespoke fit for each one — a reader who has understood LUDO should be able to navigate project two without re-learning anything.
 
-Project two — **[ALIBI](../projects/alibi/brief.md)** ([ADR-0010](../decisions/adr-0010-project-two-alibi.md)) — currently exists only as design docs under `docs/projects/alibi/`. Its `projects/alibi/` tree is created when its engine starts, in this same shape, plus one addition the shape already anticipates: its prompts land under `shared/prompts/alibi/` beside LUDO's.
+Project two — **[ALIBI](../projects/alibi/brief.md)** ([ADR-0010](../decisions/adr-0010-project-two-alibi.md)) — follows the shape: `projects/alibi/engine-python/` and `engine-java/` exist (built, conformance-checked against [`alibi-vectors.json`](../../shared/conformance/alibi-vectors.json)); its stacks, `eval/`, `ui/`, and `games/` land in the same places as LUDO's, and its prompts under `shared/prompts/alibi/` beside LUDO's.
 
 ## Related
 

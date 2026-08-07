@@ -2,9 +2,11 @@
 
 [ADR-0002](../../docs/decisions/adr-0002-engine-per-language.md) keeps **one engine per language** — Python shared by both Python stacks, Java for Spring AI — rather than one per stack. These vectors are what stop the two engines drifting apart.
 
+Two files, one per game: [`vectors.json`](vectors.json) holds LUDO's twenty (the file predates project two, so no prefix), [`alibi-vectors.json`](alibi-vectors.json) holds ALIBI's twenty. ALIBI's raise the stakes: its archive rides inside the transcript, so **the digest covers generated prose** — a Java template rendering one comma differently from the Python one fails every vector, which is exactly the guarantee a two-language corpus generator needs.
+
 ## How they work
 
-Each vector records a **seed** and the result of playing that game with the deterministic `first-legal` decider (always take the first legal move, ordered by token index).
+Each vector records a **seed** and the result of playing that game with the deterministic decider — LUDO's `first-legal` (always take the first legal move, ordered by token index), ALIBI's `elimination-bot` (strict-logic deduction: eliminate what you hold and are shown, suggest the first open candidates, accuse only at certainty).
 
 Because both the dice and the decider are deterministic, the seed alone reproduces the entire game — a vector needs no move list. Both engines must produce:
 
