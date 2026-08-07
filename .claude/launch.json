@@ -2,16 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "ludo-ui",
+      "name": "relay-ui",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--prefix", "projects/ludo/ui"],
+      "runtimeArgs": ["run", "dev", "--prefix", "projects/relay/ui"],
       "port": 5173
-    },
-    {
-      "name": "alibi-ui",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--prefix", "projects/alibi/ui", "--", "--port", "5174"],
-      "port": 5174
     }
   ]
 }
