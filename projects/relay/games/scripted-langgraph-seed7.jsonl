@@ -4,175 +4,152 @@
 {"seq":3,"turn":1,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"attempt","tokens":{"input":1059,"output":6,"cache_read":0,"cache_write":0},"latency_ms":0}}
 {"seq":4,"turn":1,"type":"stage_attempted","payload":{"player":"red","stage":"stage-01","answer":"71","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":2,"quota_left":8,"note":null}}
 {"seq":5,"turn":1,"type":"turn_ended","payload":{"player":"red","reason":"cleared"}}
-{"seq":6,"turn":1,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"reflect","tokens":{"input":1188,"output":14,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":7,"turn":1,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"DECISION: answer"}}
-{"seq":8,"turn":1,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"ANSWER: ada"}}
-{"seq":9,"turn":2,"type":"turn_started","payload":{"player":"green","stage":"stage-01"}}
-{"seq":10,"turn":2,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"attempt","tokens":{"input":1060,"output":6,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":11,"turn":2,"type":"stage_attempted","payload":{"player":"green","stage":"stage-01","answer":"71","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":2,"quota_left":8,"note":null}}
-{"seq":12,"turn":2,"type":"turn_ended","payload":{"player":"green","reason":"cleared"}}
-{"seq":13,"turn":2,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"reflect","tokens":{"input":1189,"output":18,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":14,"turn":2,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"DECISION: answer"}}
-{"seq":15,"turn":2,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"ANSWER: ada"}}
-{"seq":16,"turn":3,"type":"turn_started","payload":{"player":"yellow","stage":"stage-01"}}
-{"seq":17,"turn":3,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"attempt","tokens":{"input":1061,"output":16,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":18,"turn":3,"type":"llm_call","payload":{"player":"yellow","actor":"anchor","model":"scripted-anchor","access":"direct","purpose":"escalate","tokens":{"input":64,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":19,"turn":3,"type":"stage_attempted","payload":{"player":"yellow","stage":"stage-01","answer":"71","escalated":true,"correct":true,"ticks_charged":5,"ticks_total":5,"quota_left":7,"note":"trust me, this one is a monster"}}
-{"seq":20,"turn":3,"type":"turn_ended","payload":{"player":"yellow","reason":"cleared"}}
-{"seq":21,"turn":3,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"reflect","tokens":{"input":1201,"output":12,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":22,"turn":3,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"DECISION: pass"}}
-{"seq":23,"turn":3,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"ANSWER:"}}
-{"seq":24,"turn":4,"type":"turn_started","payload":{"player":"blue","stage":"stage-01"}}
-{"seq":25,"turn":4,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"attempt","tokens":{"input":1066,"output":6,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":26,"turn":4,"type":"stage_attempted","payload":{"player":"blue","stage":"stage-01","answer":"71","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":2,"quota_left":7,"note":null}}
-{"seq":27,"turn":4,"type":"turn_ended","payload":{"player":"blue","reason":"cleared"}}
-{"seq":28,"turn":4,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"reflect","tokens":{"input":1195,"output":7,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":29,"turn":4,"type":"memory_write","payload":{"player":"blue","kind":"self","about":null,"text":"DECISION: answer"}}
-{"seq":30,"turn":4,"type":"memory_write","payload":{"player":"blue","kind":"self","about":null,"text":"ANSWER: ada"}}
-{"seq":31,"turn":5,"type":"turn_started","payload":{"player":"red","stage":"stage-02"}}
-{"seq":32,"turn":5,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"attempt","tokens":{"input":1526,"output":6,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":33,"turn":5,"type":"stage_attempted","payload":{"player":"red","stage":"stage-02","answer":"5","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":4,"quota_left":7,"note":null}}
-{"seq":34,"turn":5,"type":"turn_ended","payload":{"player":"red","reason":"cleared"}}
-{"seq":35,"turn":5,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"reflect","tokens":{"input":1667,"output":14,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":36,"turn":5,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"DECISION: answer"}}
-{"seq":37,"turn":5,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"ANSWER: ada"}}
-{"seq":38,"turn":6,"type":"turn_started","payload":{"player":"green","stage":"stage-02"}}
-{"seq":39,"turn":6,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"attempt","tokens":{"input":1531,"output":6,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":40,"turn":6,"type":"stage_attempted","payload":{"player":"green","stage":"stage-02","answer":"5","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":4,"quota_left":7,"note":null}}
-{"seq":41,"turn":6,"type":"turn_ended","payload":{"player":"green","reason":"cleared"}}
-{"seq":42,"turn":6,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"reflect","tokens":{"input":1672,"output":18,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":43,"turn":6,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"DECISION: answer"}}
-{"seq":44,"turn":6,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"ANSWER: ada"}}
-{"seq":45,"turn":7,"type":"turn_started","payload":{"player":"yellow","stage":"stage-02"}}
-{"seq":46,"turn":7,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"attempt","tokens":{"input":1530,"output":16,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":47,"turn":7,"type":"llm_call","payload":{"player":"yellow","actor":"anchor","model":"scripted-anchor","access":"direct","purpose":"escalate","tokens":{"input":59,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":48,"turn":7,"type":"stage_attempted","payload":{"player":"yellow","stage":"stage-02","answer":"5","escalated":true,"correct":true,"ticks_charged":5,"ticks_total":10,"quota_left":6,"note":"trust me, this one is a monster"}}
-{"seq":49,"turn":7,"type":"turn_ended","payload":{"player":"yellow","reason":"cleared"}}
-{"seq":50,"turn":7,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"reflect","tokens":{"input":1681,"output":12,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":51,"turn":7,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"DECISION: pass"}}
-{"seq":52,"turn":7,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"ANSWER:"}}
-{"seq":53,"turn":8,"type":"turn_started","payload":{"player":"blue","stage":"stage-02"}}
-{"seq":54,"turn":8,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"attempt","tokens":{"input":1539,"output":6,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":55,"turn":8,"type":"stage_attempted","payload":{"player":"blue","stage":"stage-02","answer":"5","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":4,"quota_left":6,"note":null}}
-{"seq":56,"turn":8,"type":"turn_ended","payload":{"player":"blue","reason":"cleared"}}
-{"seq":57,"turn":8,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"reflect","tokens":{"input":1680,"output":7,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":58,"turn":8,"type":"memory_write","payload":{"player":"blue","kind":"self","about":null,"text":"DECISION: answer"}}
-{"seq":59,"turn":8,"type":"memory_write","payload":{"player":"blue","kind":"self","about":null,"text":"ANSWER: ada"}}
-{"seq":60,"turn":9,"type":"turn_started","payload":{"player":"red","stage":"stage-03"}}
-{"seq":61,"turn":9,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"attempt","tokens":{"input":2061,"output":17,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":62,"turn":9,"type":"llm_call","payload":{"player":"red","actor":"anchor","model":"scripted-anchor","access":"direct","purpose":"escalate","tokens":{"input":75,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":63,"turn":9,"type":"stage_attempted","payload":{"player":"red","stage":"stage-03","answer":"hana","escalated":true,"correct":true,"ticks_charged":5,"ticks_total":9,"quota_left":5,"note":"this one is beyond me, taking a unit"}}
-{"seq":64,"turn":9,"type":"turn_ended","payload":{"player":"red","reason":"cleared"}}
-{"seq":65,"turn":9,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"reflect","tokens":{"input":2230,"output":14,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":66,"turn":9,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"DECISION: answer"}}
-{"seq":67,"turn":9,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"ANSWER: ada"}}
-{"seq":68,"turn":10,"type":"turn_started","payload":{"player":"green","stage":"stage-03"}}
-{"seq":69,"turn":10,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"attempt","tokens":{"input":2084,"output":18,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":70,"turn":10,"type":"stage_attempted","payload":{"player":"green","stage":"stage-03","answer":"gil","escalated":false,"correct":false,"ticks_charged":6,"ticks_total":10,"quota_left":5,"note":"leaving the pool for whoever needs it"}}
-{"seq":71,"turn":10,"type":"turn_ended","payload":{"player":"green","reason":"missed"}}
-{"seq":72,"turn":10,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"reflect","tokens":{"input":2253,"output":18,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":73,"turn":10,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"DECISION: answer"}}
-{"seq":74,"turn":10,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"ANSWER: ada"}}
-{"seq":75,"turn":11,"type":"turn_started","payload":{"player":"yellow","stage":"stage-03"}}
-{"seq":76,"turn":11,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"attempt","tokens":{"input":2095,"output":16,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":77,"turn":11,"type":"llm_call","payload":{"player":"yellow","actor":"anchor","model":"scripted-anchor","access":"direct","purpose":"escalate","tokens":{"input":75,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":78,"turn":11,"type":"stage_attempted","payload":{"player":"yellow","stage":"stage-03","answer":"hana","escalated":true,"correct":true,"ticks_charged":5,"ticks_total":15,"quota_left":4,"note":"trust me, this one is a monster"}}
-{"seq":79,"turn":11,"type":"turn_ended","payload":{"player":"yellow","reason":"cleared"}}
-{"seq":80,"turn":11,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"reflect","tokens":{"input":2260,"output":12,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":81,"turn":11,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"DECISION: pass"}}
-{"seq":82,"turn":11,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"ANSWER:"}}
-{"seq":83,"turn":12,"type":"turn_started","payload":{"player":"blue","stage":"stage-03"}}
-{"seq":84,"turn":12,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"attempt","tokens":{"input":2109,"output":6,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":85,"turn":12,"type":"llm_call","payload":{"player":"blue","actor":"anchor","model":"scripted-anchor","access":"direct","purpose":"escalate","tokens":{"input":75,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":86,"turn":12,"type":"stage_attempted","payload":{"player":"blue","stage":"stage-03","answer":"hana","escalated":true,"correct":true,"ticks_charged":5,"ticks_total":9,"quota_left":3,"note":null}}
-{"seq":87,"turn":12,"type":"turn_ended","payload":{"player":"blue","reason":"cleared"}}
-{"seq":88,"turn":12,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"reflect","tokens":{"input":2268,"output":7,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":89,"turn":12,"type":"memory_write","payload":{"player":"blue","kind":"self","about":null,"text":"DECISION: answer"}}
-{"seq":90,"turn":12,"type":"memory_write","payload":{"player":"blue","kind":"self","about":null,"text":"ANSWER: ada"}}
-{"seq":91,"turn":13,"type":"turn_started","payload":{"player":"red","stage":"stage-04"}}
-{"seq":92,"turn":13,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"attempt","tokens":{"input":2679,"output":6,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":93,"turn":13,"type":"stage_attempted","payload":{"player":"red","stage":"stage-04","answer":"24","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":11,"quota_left":3,"note":null}}
-{"seq":94,"turn":13,"type":"turn_ended","payload":{"player":"red","reason":"cleared"}}
-{"seq":95,"turn":13,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"reflect","tokens":{"input":2852,"output":14,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":96,"turn":13,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"DECISION: answer"}}
-{"seq":97,"turn":13,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"ANSWER: ada"}}
-{"seq":98,"turn":14,"type":"turn_started","payload":{"player":"green","stage":"stage-03"}}
-{"seq":99,"turn":14,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"attempt","tokens":{"input":2724,"output":18,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":100,"turn":14,"type":"stage_attempted","payload":{"player":"green","stage":"stage-03","answer":"gil","escalated":false,"correct":false,"ticks_charged":6,"ticks_total":16,"quota_left":3,"note":"leaving the pool for whoever needs it"}}
-{"seq":101,"turn":14,"type":"turn_ended","payload":{"player":"green","reason":"missed"}}
-{"seq":102,"turn":14,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"reflect","tokens":{"input":2910,"output":18,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":103,"turn":14,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"DECISION: answer"}}
-{"seq":104,"turn":14,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"ANSWER: ada"}}
-{"seq":105,"turn":15,"type":"turn_started","payload":{"player":"yellow","stage":"stage-04"}}
-{"seq":106,"turn":15,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"attempt","tokens":{"input":2714,"output":21,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":107,"turn":15,"type":"guardrail_triggered","payload":{"player":"yellow","rule":"forged_state","action":"blocked","source":"harness","detail":"note claims engine authority it cannot have"}}
-{"seq":108,"turn":15,"type":"llm_call","payload":{"player":"yellow","actor":"anchor","model":"scripted-anchor","access":"direct","purpose":"escalate","tokens":{"input":59,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":109,"turn":15,"type":"stage_attempted","payload":{"player":"yellow","stage":"stage-04","answer":"24","escalated":true,"correct":true,"ticks_charged":5,"ticks_total":20,"quota_left":2,"note":null}}
-{"seq":110,"turn":15,"type":"turn_ended","payload":{"player":"yellow","reason":"cleared"}}
-{"seq":111,"turn":15,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"reflect","tokens":{"input":2900,"output":12,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":112,"turn":15,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"DECISION: pass"}}
-{"seq":113,"turn":15,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"ANSWER:"}}
-{"seq":114,"turn":16,"type":"turn_started","payload":{"player":"blue","stage":"stage-04"}}
-{"seq":115,"turn":16,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"attempt","tokens":{"input":2725,"output":6,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":116,"turn":16,"type":"stage_attempted","payload":{"player":"blue","stage":"stage-04","answer":"24","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":11,"quota_left":2,"note":null}}
-{"seq":117,"turn":16,"type":"turn_ended","payload":{"player":"blue","reason":"cleared"}}
-{"seq":118,"turn":16,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"reflect","tokens":{"input":2899,"output":7,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":119,"turn":16,"type":"memory_write","payload":{"player":"blue","kind":"self","about":null,"text":"DECISION: answer"}}
-{"seq":120,"turn":16,"type":"memory_write","payload":{"player":"blue","kind":"self","about":null,"text":"ANSWER: ada"}}
-{"seq":121,"turn":17,"type":"turn_started","payload":{"player":"red","stage":"stage-05"}}
-{"seq":122,"turn":17,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"attempt","tokens":{"input":3359,"output":7,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":123,"turn":17,"type":"stage_attempted","payload":{"player":"red","stage":"stage-05","answer":"sail","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":13,"quota_left":2,"note":null}}
-{"seq":124,"turn":17,"type":"turn_ended","payload":{"player":"red","reason":"cleared"}}
-{"seq":125,"turn":17,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"reflect","tokens":{"input":3549,"output":14,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":126,"turn":17,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"DECISION: answer"}}
-{"seq":127,"turn":17,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"ANSWER: ada"}}
-{"seq":128,"turn":18,"type":"turn_started","payload":{"player":"green","stage":"stage-03"}}
-{"seq":129,"turn":18,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"attempt","tokens":{"input":3423,"output":18,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":130,"turn":18,"type":"stage_attempted","payload":{"player":"green","stage":"stage-03","answer":"gil","escalated":false,"correct":false,"ticks_charged":6,"ticks_total":22,"quota_left":2,"note":"leaving the pool for whoever needs it"}}
-{"seq":131,"turn":18,"type":"turn_ended","payload":{"player":"green","reason":"missed"}}
-{"seq":132,"turn":18,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"reflect","tokens":{"input":3625,"output":18,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":133,"turn":18,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"DECISION: answer"}}
-{"seq":134,"turn":18,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"ANSWER: ada"}}
-{"seq":135,"turn":19,"type":"turn_started","payload":{"player":"yellow","stage":"stage-05"}}
-{"seq":136,"turn":19,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"attempt","tokens":{"input":3413,"output":21,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":137,"turn":19,"type":"guardrail_triggered","payload":{"player":"yellow","rule":"forged_state","action":"blocked","source":"harness","detail":"note claims engine authority it cannot have"}}
-{"seq":138,"turn":19,"type":"llm_call","payload":{"player":"yellow","actor":"anchor","model":"scripted-anchor","access":"direct","purpose":"escalate","tokens":{"input":74,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":139,"turn":19,"type":"stage_attempted","payload":{"player":"yellow","stage":"stage-05","answer":"sail","escalated":true,"correct":true,"ticks_charged":5,"ticks_total":25,"quota_left":1,"note":null}}
-{"seq":140,"turn":19,"type":"turn_ended","payload":{"player":"yellow","reason":"cleared"}}
-{"seq":141,"turn":19,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"reflect","tokens":{"input":3614,"output":12,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":142,"turn":19,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"DECISION: pass"}}
-{"seq":143,"turn":19,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"ANSWER:"}}
-{"seq":144,"turn":20,"type":"turn_started","payload":{"player":"blue","stage":"stage-05"}}
-{"seq":145,"turn":20,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"attempt","tokens":{"input":3415,"output":7,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":146,"turn":20,"type":"stage_attempted","payload":{"player":"blue","stage":"stage-05","answer":"sail","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":13,"quota_left":1,"note":null}}
-{"seq":147,"turn":20,"type":"turn_ended","payload":{"player":"blue","reason":"cleared"}}
-{"seq":148,"turn":20,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"reflect","tokens":{"input":3605,"output":7,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":149,"turn":20,"type":"memory_write","payload":{"player":"blue","kind":"self","about":null,"text":"DECISION: answer"}}
-{"seq":150,"turn":20,"type":"memory_write","payload":{"player":"blue","kind":"self","about":null,"text":"ANSWER: ada"}}
-{"seq":151,"turn":21,"type":"turn_started","payload":{"player":"red","stage":"stage-06"}}
-{"seq":152,"turn":21,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"attempt","tokens":{"input":4111,"output":17,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":153,"turn":21,"type":"llm_call","payload":{"player":"red","actor":"anchor","model":"scripted-anchor","access":"direct","purpose":"escalate","tokens":{"input":82,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":154,"turn":21,"type":"stage_attempted","payload":{"player":"red","stage":"stage-06","answer":"ada","escalated":true,"correct":true,"ticks_charged":5,"ticks_total":18,"quota_left":0,"note":"this one is beyond me, taking a unit"}}
-{"seq":155,"turn":21,"type":"turn_ended","payload":{"player":"red","reason":"cleared"}}
-{"seq":156,"turn":21,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"reflect","tokens":{"input":4329,"output":14,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":157,"turn":21,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"DECISION: answer"}}
-{"seq":158,"turn":21,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"ANSWER: ada"}}
-{"seq":159,"turn":22,"type":"turn_started","payload":{"player":"green","stage":"stage-03"}}
-{"seq":160,"turn":22,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"attempt","tokens":{"input":4195,"output":18,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":161,"turn":22,"type":"stage_attempted","payload":{"player":"green","stage":"stage-03","answer":"gil","escalated":false,"correct":false,"ticks_charged":6,"ticks_total":28,"quota_left":0,"note":"leaving the pool for whoever needs it"}}
-{"seq":162,"turn":22,"type":"turn_ended","payload":{"player":"green","reason":"missed"}}
-{"seq":163,"turn":22,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"reflect","tokens":{"input":4413,"output":18,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":164,"turn":22,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"DECISION: answer"}}
-{"seq":165,"turn":22,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"ANSWER: ada"}}
-{"seq":166,"turn":23,"type":"turn_started","payload":{"player":"yellow","stage":"stage-06"}}
-{"seq":167,"turn":23,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"attempt","tokens":{"input":4179,"output":12,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":168,"turn":23,"type":"stage_attempted","payload":{"player":"yellow","stage":"stage-06","answer":null,"escalated":false,"correct":false,"ticks_charged":3,"ticks_total":28,"quota_left":0,"note":"nothing left to spend"}}
-{"seq":169,"turn":23,"type":"turn_ended","payload":{"player":"yellow","reason":"passed"}}
-{"seq":170,"turn":23,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"reflect","tokens":{"input":4384,"output":12,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":171,"turn":23,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"DECISION: pass"}}
-{"seq":172,"turn":23,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"ANSWER:"}}
-{"seq":173,"turn":24,"type":"turn_started","payload":{"player":"blue","stage":"stage-06"}}
-{"seq":174,"turn":24,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"attempt","tokens":{"input":4174,"output":7,"cache_read":0,"cache_write":0},"latency_ms":0}}
-{"seq":175,"turn":24,"type":"stage_attempted","payload":{"player":"blue","stage":"stage-06","answer":"dev","escalated":false,"correct":false,"ticks_charged":6,"ticks_total":19,"quota_left":0,"note":null}}
-{"seq":176,"turn":24,"type":"turn_ended","payload":{"player":"blue","reason":"missed"}}
-{"seq":177,"turn":24,"type":"game_ended","payload":{"reason":"turn_cap","turns_played":24,"track_key":[{"id":"stage-01","tier":3,"answer":"71"},{"id":"stage-02","tier":2,"answer":"5"},{"id":"stage-03","tier":1,"answer":"hana"},{"id":"stage-04","tier":2,"answer":"24"},{"id":"stage-05","tier":1,"answer":"sail"},{"id":"stage-06","tier":2,"answer":"ada"},{"id":"stage-07","tier":1,"answer":"cyd"},{"id":"stage-08","tier":2,"answer":"hana"},{"id":"stage-09","tier":3,"answer":"190"},{"id":"stage-10","tier":1,"answer":"reed"}],"standings":[{"player":"red","rank":1,"stages_cleared":6,"ticks":18,"finished":false,"escalations":2,"correct":6,"wrong":0,"passes":0},{"player":"blue","rank":2,"stages_cleared":5,"ticks":19,"finished":false,"escalations":1,"correct":5,"wrong":1,"passes":0},{"player":"yellow","rank":3,"stages_cleared":5,"ticks":28,"finished":false,"escalations":5,"correct":5,"wrong":0,"passes":1},{"player":"green","rank":4,"stages_cleared":2,"ticks":28,"finished":false,"escalations":0,"correct":2,"wrong":4,"passes":0}]}}
+{"seq":6,"turn":1,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"reflect","tokens":{"input":1188,"output":15,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":7,"turn":1,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"cleared it unaided \u2014 no reason to spend the pool on this kind"}}
+{"seq":8,"turn":2,"type":"turn_started","payload":{"player":"green","stage":"stage-01"}}
+{"seq":9,"turn":2,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"attempt","tokens":{"input":1060,"output":6,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":10,"turn":2,"type":"stage_attempted","payload":{"player":"green","stage":"stage-01","answer":"71","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":2,"quota_left":8,"note":null}}
+{"seq":11,"turn":2,"type":"turn_ended","payload":{"player":"green","reason":"cleared"}}
+{"seq":12,"turn":2,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"reflect","tokens":{"input":1189,"output":15,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":13,"turn":2,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"cleared it unaided \u2014 no reason to spend the pool on this kind"}}
+{"seq":14,"turn":3,"type":"turn_started","payload":{"player":"yellow","stage":"stage-01"}}
+{"seq":15,"turn":3,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"attempt","tokens":{"input":1061,"output":16,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":16,"turn":3,"type":"llm_call","payload":{"player":"yellow","actor":"anchor","model":"scripted-anchor","access":"direct","purpose":"escalate","tokens":{"input":64,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":17,"turn":3,"type":"stage_attempted","payload":{"player":"yellow","stage":"stage-01","answer":"71","escalated":true,"correct":true,"ticks_charged":5,"ticks_total":5,"quota_left":7,"note":"trust me, this one is a monster"}}
+{"seq":18,"turn":3,"type":"turn_ended","payload":{"player":"yellow","reason":"cleared"}}
+{"seq":19,"turn":3,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"reflect","tokens":{"input":1201,"output":16,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":20,"turn":3,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"the anchor carried that one; my own record on it is still unproven"}}
+{"seq":21,"turn":4,"type":"turn_started","payload":{"player":"blue","stage":"stage-01"}}
+{"seq":22,"turn":4,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"attempt","tokens":{"input":1066,"output":6,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":23,"turn":4,"type":"stage_attempted","payload":{"player":"blue","stage":"stage-01","answer":"71","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":2,"quota_left":7,"note":null}}
+{"seq":24,"turn":4,"type":"turn_ended","payload":{"player":"blue","reason":"cleared"}}
+{"seq":25,"turn":4,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"reflect","tokens":{"input":1195,"output":15,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":26,"turn":4,"type":"memory_write","payload":{"player":"blue","kind":"self","about":null,"text":"cleared it unaided \u2014 no reason to spend the pool on this kind"}}
+{"seq":27,"turn":5,"type":"turn_started","payload":{"player":"red","stage":"stage-02"}}
+{"seq":28,"turn":5,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"attempt","tokens":{"input":1531,"output":6,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":29,"turn":5,"type":"stage_attempted","payload":{"player":"red","stage":"stage-02","answer":"5","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":4,"quota_left":7,"note":null}}
+{"seq":30,"turn":5,"type":"turn_ended","payload":{"player":"red","reason":"cleared"}}
+{"seq":31,"turn":5,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"reflect","tokens":{"input":1676,"output":15,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":32,"turn":5,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"cleared it unaided \u2014 no reason to spend the pool on this kind"}}
+{"seq":33,"turn":6,"type":"turn_started","payload":{"player":"green","stage":"stage-02"}}
+{"seq":34,"turn":6,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"attempt","tokens":{"input":1533,"output":6,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":35,"turn":6,"type":"stage_attempted","payload":{"player":"green","stage":"stage-02","answer":"5","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":4,"quota_left":7,"note":null}}
+{"seq":36,"turn":6,"type":"turn_ended","payload":{"player":"green","reason":"cleared"}}
+{"seq":37,"turn":6,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"reflect","tokens":{"input":1678,"output":15,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":38,"turn":6,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"cleared it unaided \u2014 no reason to spend the pool on this kind"}}
+{"seq":39,"turn":7,"type":"turn_started","payload":{"player":"yellow","stage":"stage-02"}}
+{"seq":40,"turn":7,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"attempt","tokens":{"input":1540,"output":16,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":41,"turn":7,"type":"llm_call","payload":{"player":"yellow","actor":"anchor","model":"scripted-anchor","access":"direct","purpose":"escalate","tokens":{"input":59,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":42,"turn":7,"type":"stage_attempted","payload":{"player":"yellow","stage":"stage-02","answer":"5","escalated":true,"correct":true,"ticks_charged":5,"ticks_total":10,"quota_left":6,"note":"trust me, this one is a monster"}}
+{"seq":43,"turn":7,"type":"turn_ended","payload":{"player":"yellow","reason":"cleared"}}
+{"seq":44,"turn":7,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"reflect","tokens":{"input":1698,"output":16,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":45,"turn":7,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"the anchor carried that one; my own record on it is still unproven"}}
+{"seq":46,"turn":8,"type":"turn_started","payload":{"player":"blue","stage":"stage-02"}}
+{"seq":47,"turn":8,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"attempt","tokens":{"input":1551,"output":6,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":48,"turn":8,"type":"stage_attempted","payload":{"player":"blue","stage":"stage-02","answer":"5","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":4,"quota_left":6,"note":null}}
+{"seq":49,"turn":8,"type":"turn_ended","payload":{"player":"blue","reason":"cleared"}}
+{"seq":50,"turn":8,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"reflect","tokens":{"input":1696,"output":15,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":51,"turn":8,"type":"memory_write","payload":{"player":"blue","kind":"self","about":null,"text":"cleared it unaided \u2014 no reason to spend the pool on this kind"}}
+{"seq":52,"turn":9,"type":"turn_started","payload":{"player":"red","stage":"stage-03"}}
+{"seq":53,"turn":9,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"attempt","tokens":{"input":2079,"output":17,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":54,"turn":9,"type":"llm_call","payload":{"player":"red","actor":"anchor","model":"scripted-anchor","access":"direct","purpose":"escalate","tokens":{"input":75,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":55,"turn":9,"type":"stage_attempted","payload":{"player":"red","stage":"stage-03","answer":"hana","escalated":true,"correct":true,"ticks_charged":5,"ticks_total":9,"quota_left":5,"note":"this one is beyond me, taking a unit"}}
+{"seq":56,"turn":9,"type":"turn_ended","payload":{"player":"red","reason":"cleared"}}
+{"seq":57,"turn":9,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"reflect","tokens":{"input":2257,"output":16,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":58,"turn":9,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"the anchor carried that one; my own record on it is still unproven"}}
+{"seq":59,"turn":10,"type":"turn_started","payload":{"player":"green","stage":"stage-03"}}
+{"seq":60,"turn":10,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"attempt","tokens":{"input":2095,"output":18,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":61,"turn":10,"type":"stage_attempted","payload":{"player":"green","stage":"stage-03","answer":"gil","escalated":false,"correct":false,"ticks_charged":6,"ticks_total":10,"quota_left":5,"note":"leaving the pool for whoever needs it"}}
+{"seq":62,"turn":10,"type":"turn_ended","payload":{"player":"green","reason":"missed"}}
+{"seq":63,"turn":10,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"reflect","tokens":{"input":2272,"output":14,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":64,"turn":10,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"that family keeps catching me out; escalate it next time"}}
+{"seq":65,"turn":11,"type":"turn_started","payload":{"player":"yellow","stage":"stage-03"}}
+{"seq":66,"turn":11,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"attempt","tokens":{"input":2129,"output":16,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":67,"turn":11,"type":"llm_call","payload":{"player":"yellow","actor":"anchor","model":"scripted-anchor","access":"direct","purpose":"escalate","tokens":{"input":75,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":68,"turn":11,"type":"stage_attempted","payload":{"player":"yellow","stage":"stage-03","answer":"hana","escalated":true,"correct":true,"ticks_charged":5,"ticks_total":15,"quota_left":4,"note":"trust me, this one is a monster"}}
+{"seq":69,"turn":11,"type":"turn_ended","payload":{"player":"yellow","reason":"cleared"}}
+{"seq":70,"turn":11,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"reflect","tokens":{"input":2308,"output":16,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":71,"turn":11,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"the anchor carried that one; my own record on it is still unproven"}}
+{"seq":72,"turn":12,"type":"turn_started","payload":{"player":"blue","stage":"stage-03"}}
+{"seq":73,"turn":12,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"attempt","tokens":{"input":2141,"output":6,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":74,"turn":12,"type":"llm_call","payload":{"player":"blue","actor":"anchor","model":"scripted-anchor","access":"direct","purpose":"escalate","tokens":{"input":75,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":75,"turn":12,"type":"stage_attempted","payload":{"player":"blue","stage":"stage-03","answer":"hana","escalated":true,"correct":true,"ticks_charged":5,"ticks_total":9,"quota_left":3,"note":null}}
+{"seq":76,"turn":12,"type":"turn_ended","payload":{"player":"blue","reason":"cleared"}}
+{"seq":77,"turn":12,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"reflect","tokens":{"input":2308,"output":16,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":78,"turn":12,"type":"memory_write","payload":{"player":"blue","kind":"self","about":null,"text":"the anchor carried that one; my own record on it is still unproven"}}
+{"seq":79,"turn":13,"type":"turn_started","payload":{"player":"red","stage":"stage-04"}}
+{"seq":80,"turn":13,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"attempt","tokens":{"input":2721,"output":6,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":81,"turn":13,"type":"stage_attempted","payload":{"player":"red","stage":"stage-04","answer":"24","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":11,"quota_left":3,"note":null}}
+{"seq":82,"turn":13,"type":"turn_ended","payload":{"player":"red","reason":"cleared"}}
+{"seq":83,"turn":13,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"reflect","tokens":{"input":2907,"output":15,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":84,"turn":13,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"cleared it unaided \u2014 no reason to spend the pool on this kind"}}
+{"seq":85,"turn":14,"type":"turn_started","payload":{"player":"green","stage":"stage-03"}}
+{"seq":86,"turn":14,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"attempt","tokens":{"input":2749,"output":18,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":87,"turn":14,"type":"stage_attempted","payload":{"player":"green","stage":"stage-03","answer":"gil","escalated":false,"correct":false,"ticks_charged":6,"ticks_total":16,"quota_left":3,"note":"leaving the pool for whoever needs it"}}
+{"seq":88,"turn":14,"type":"turn_ended","payload":{"player":"green","reason":"missed"}}
+{"seq":89,"turn":14,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"reflect","tokens":{"input":2945,"output":14,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":90,"turn":14,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"that family keeps catching me out; escalate it next time"}}
+{"seq":91,"turn":15,"type":"turn_started","payload":{"player":"yellow","stage":"stage-04"}}
+{"seq":92,"turn":15,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"attempt","tokens":{"input":2786,"output":21,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":93,"turn":15,"type":"guardrail_triggered","payload":{"player":"yellow","rule":"forged_state","action":"blocked","source":"harness","detail":"note claims engine authority it cannot have"}}
+{"seq":94,"turn":15,"type":"llm_call","payload":{"player":"yellow","actor":"anchor","model":"scripted-anchor","access":"direct","purpose":"escalate","tokens":{"input":59,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":95,"turn":15,"type":"stage_attempted","payload":{"player":"yellow","stage":"stage-04","answer":"24","escalated":true,"correct":true,"ticks_charged":5,"ticks_total":20,"quota_left":2,"note":null}}
+{"seq":96,"turn":15,"type":"turn_ended","payload":{"player":"yellow","reason":"cleared"}}
+{"seq":97,"turn":15,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"reflect","tokens":{"input":2992,"output":16,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":98,"turn":15,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"the anchor carried that one; my own record on it is still unproven"}}
+{"seq":99,"turn":16,"type":"turn_started","payload":{"player":"blue","stage":"stage-04"}}
+{"seq":100,"turn":16,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"attempt","tokens":{"input":2788,"output":6,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":101,"turn":16,"type":"stage_attempted","payload":{"player":"blue","stage":"stage-04","answer":"24","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":11,"quota_left":2,"note":null}}
+{"seq":102,"turn":16,"type":"turn_ended","payload":{"player":"blue","reason":"cleared"}}
+{"seq":103,"turn":16,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"reflect","tokens":{"input":2975,"output":15,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":104,"turn":16,"type":"memory_write","payload":{"player":"blue","kind":"self","about":null,"text":"cleared it unaided \u2014 no reason to spend the pool on this kind"}}
+{"seq":105,"turn":17,"type":"turn_started","payload":{"player":"red","stage":"stage-05"}}
+{"seq":106,"turn":17,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"attempt","tokens":{"input":3433,"output":7,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":107,"turn":17,"type":"stage_attempted","payload":{"player":"red","stage":"stage-05","answer":"sail","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":13,"quota_left":2,"note":null}}
+{"seq":108,"turn":17,"type":"turn_ended","payload":{"player":"red","reason":"cleared"}}
+{"seq":109,"turn":17,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"reflect","tokens":{"input":3640,"output":15,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":110,"turn":17,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"cleared it unaided \u2014 no reason to spend the pool on this kind"}}
+{"seq":111,"turn":18,"type":"turn_started","payload":{"player":"green","stage":"stage-03"}}
+{"seq":112,"turn":18,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"attempt","tokens":{"input":3468,"output":18,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":113,"turn":18,"type":"stage_attempted","payload":{"player":"green","stage":"stage-03","answer":"gil","escalated":false,"correct":false,"ticks_charged":6,"ticks_total":22,"quota_left":2,"note":"leaving the pool for whoever needs it"}}
+{"seq":114,"turn":18,"type":"turn_ended","payload":{"player":"green","reason":"missed"}}
+{"seq":115,"turn":18,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"reflect","tokens":{"input":3682,"output":14,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":116,"turn":18,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"that family keeps catching me out; escalate it next time"}}
+{"seq":117,"turn":19,"type":"turn_started","payload":{"player":"yellow","stage":"stage-05"}}
+{"seq":118,"turn":19,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"attempt","tokens":{"input":3535,"output":21,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":119,"turn":19,"type":"guardrail_triggered","payload":{"player":"yellow","rule":"forged_state","action":"blocked","source":"harness","detail":"note claims engine authority it cannot have"}}
+{"seq":120,"turn":19,"type":"llm_call","payload":{"player":"yellow","actor":"anchor","model":"scripted-anchor","access":"direct","purpose":"escalate","tokens":{"input":74,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":121,"turn":19,"type":"stage_attempted","payload":{"player":"yellow","stage":"stage-05","answer":"sail","escalated":true,"correct":true,"ticks_charged":5,"ticks_total":25,"quota_left":1,"note":null}}
+{"seq":122,"turn":19,"type":"turn_ended","payload":{"player":"yellow","reason":"cleared"}}
+{"seq":123,"turn":19,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"reflect","tokens":{"input":3762,"output":16,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":124,"turn":19,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"the anchor carried that one; my own record on it is still unproven"}}
+{"seq":125,"turn":20,"type":"turn_started","payload":{"player":"blue","stage":"stage-05"}}
+{"seq":126,"turn":20,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"attempt","tokens":{"input":3516,"output":7,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":127,"turn":20,"type":"stage_attempted","payload":{"player":"blue","stage":"stage-05","answer":"sail","escalated":false,"correct":true,"ticks_charged":2,"ticks_total":13,"quota_left":1,"note":null}}
+{"seq":128,"turn":20,"type":"turn_ended","payload":{"player":"blue","reason":"cleared"}}
+{"seq":129,"turn":20,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"reflect","tokens":{"input":3723,"output":15,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":130,"turn":20,"type":"memory_write","payload":{"player":"blue","kind":"self","about":null,"text":"cleared it unaided \u2014 no reason to spend the pool on this kind"}}
+{"seq":131,"turn":21,"type":"turn_started","payload":{"player":"red","stage":"stage-06"}}
+{"seq":132,"turn":21,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"attempt","tokens":{"input":4223,"output":17,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":133,"turn":21,"type":"llm_call","payload":{"player":"red","actor":"anchor","model":"scripted-anchor","access":"direct","purpose":"escalate","tokens":{"input":82,"output":1,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":134,"turn":21,"type":"stage_attempted","payload":{"player":"red","stage":"stage-06","answer":"ada","escalated":true,"correct":true,"ticks_charged":5,"ticks_total":18,"quota_left":0,"note":"this one is beyond me, taking a unit"}}
+{"seq":135,"turn":21,"type":"turn_ended","payload":{"player":"red","reason":"cleared"}}
+{"seq":136,"turn":21,"type":"llm_call","payload":{"player":"red","actor":"runner","model":"scripted-red","access":"local","purpose":"reflect","tokens":{"input":4462,"output":16,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":137,"turn":21,"type":"memory_write","payload":{"player":"red","kind":"self","about":null,"text":"the anchor carried that one; my own record on it is still unproven"}}
+{"seq":138,"turn":22,"type":"turn_started","payload":{"player":"green","stage":"stage-03"}}
+{"seq":139,"turn":22,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"attempt","tokens":{"input":4264,"output":18,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":140,"turn":22,"type":"stage_attempted","payload":{"player":"green","stage":"stage-03","answer":"gil","escalated":false,"correct":false,"ticks_charged":6,"ticks_total":28,"quota_left":0,"note":"leaving the pool for whoever needs it"}}
+{"seq":141,"turn":22,"type":"turn_ended","payload":{"player":"green","reason":"missed"}}
+{"seq":142,"turn":22,"type":"llm_call","payload":{"player":"green","actor":"runner","model":"scripted-green","access":"local","purpose":"reflect","tokens":{"input":4497,"output":14,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":143,"turn":22,"type":"memory_write","payload":{"player":"green","kind":"self","about":null,"text":"that family keeps catching me out; escalate it next time"}}
+{"seq":144,"turn":23,"type":"turn_started","payload":{"player":"yellow","stage":"stage-06"}}
+{"seq":145,"turn":23,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"attempt","tokens":{"input":4364,"output":12,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":146,"turn":23,"type":"stage_attempted","payload":{"player":"yellow","stage":"stage-06","answer":null,"escalated":false,"correct":false,"ticks_charged":3,"ticks_total":28,"quota_left":0,"note":"nothing left to spend"}}
+{"seq":147,"turn":23,"type":"turn_ended","payload":{"player":"yellow","reason":"passed"}}
+{"seq":148,"turn":23,"type":"llm_call","payload":{"player":"yellow","actor":"runner","model":"scripted-yellow","access":"bedrock","purpose":"reflect","tokens":{"input":4602,"output":14,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":149,"turn":23,"type":"memory_write","payload":{"player":"yellow","kind":"self","about":null,"text":"that family keeps catching me out; escalate it next time"}}
+{"seq":150,"turn":24,"type":"turn_started","payload":{"player":"blue","stage":"stage-06"}}
+{"seq":151,"turn":24,"type":"llm_call","payload":{"player":"blue","actor":"runner","model":"scripted-blue","access":"local","purpose":"attempt","tokens":{"input":4320,"output":7,"cache_read":0,"cache_write":0},"latency_ms":0}}
+{"seq":152,"turn":24,"type":"stage_attempted","payload":{"player":"blue","stage":"stage-06","answer":"dev","escalated":false,"correct":false,"ticks_charged":6,"ticks_total":19,"quota_left":0,"note":null}}
+{"seq":153,"turn":24,"type":"turn_ended","payload":{"player":"blue","reason":"missed"}}
+{"seq":154,"turn":24,"type":"game_ended","payload":{"reason":"turn_cap","turns_played":24,"track_key":[{"id":"stage-01","tier":3,"answer":"71"},{"id":"stage-02","tier":2,"answer":"5"},{"id":"stage-03","tier":1,"answer":"hana"},{"id":"stage-04","tier":2,"answer":"24"},{"id":"stage-05","tier":1,"answer":"sail"},{"id":"stage-06","tier":2,"answer":"ada"},{"id":"stage-07","tier":1,"answer":"cyd"},{"id":"stage-08","tier":2,"answer":"hana"},{"id":"stage-09","tier":3,"answer":"190"},{"id":"stage-10","tier":1,"answer":"reed"}],"standings":[{"player":"red","rank":1,"stages_cleared":6,"ticks":18,"finished":false,"escalations":2,"correct":6,"wrong":0,"passes":0},{"player":"blue","rank":2,"stages_cleared":5,"ticks":19,"finished":false,"escalations":1,"correct":5,"wrong":1,"passes":0},{"player":"yellow","rank":3,"stages_cleared":5,"ticks":28,"finished":false,"escalations":5,"correct":5,"wrong":0,"passes":1},{"player":"green","rank":4,"stages_cleared":2,"ticks":28,"finished":false,"escalations":0,"correct":2,"wrong":4,"passes":0}]}}

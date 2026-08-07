@@ -30,10 +30,10 @@ public final class Track {
     static final List<String> CIPHER_LONG =
             List.of("mariner", "lantern", "kestrel", "harvest", "tundra", "cobalt",
                     "quarry", "silence");
-    static final List<String> ORDER_NAMES =
+    public static final List<String> ORDER_NAMES =
             List.of("ada", "brun", "cyd", "dev", "esme", "fen", "gil", "hana");
     static final int[] ORDER_ITEMS = {0, 3, 4, 5};
-    static final String[] ORDINALS = {"first", "second", "third", "fourth", "fifth"};
+    public static final String[] ORDINALS = {"first", "second", "third", "fourth", "fifth"};
 
     /** How an answer is compared: forgiving about wrapping, strict about the token. */
     public static String normalise(String answer) {

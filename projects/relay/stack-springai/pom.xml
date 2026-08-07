@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.llmeval.relay</groupId>
+  <artifactId>stack-springai</artifactId>
+  <version>0.1.0</version>
+  <packaging>jar</packaging>
+
+  <!-- RELAY's third harness: Spring AI on the Java engine. Depends on the
+       engine by coordinates, so build it into the local repository first:
+
+           ./mvnw -f ../engine-java install
+
+       No tool-calling module, no JDBC, no Boot. RELAY has no tool, and its
+       contract (§8) requires neither compaction nor session persistence — so
+       this stack does not pull in machinery the comparison will not measure.
+       What is left is a chat client, which turns out to be the whole story. -->
+
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <spring-ai.version>1.1.2</spring-ai.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.llmeval.relay</groupId>
+      <artifactId>relay-engine</artifactId>
+      <version>0.1.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-client-chat</artifactId>
+      <version>${spring-ai.version}</version>
+    </dependency>
+
+    <!-- The Anthropic binding: RELAY's anchor is the one pinned live model in
+         this game. Options build keyless; live calls need a key at runtime. -->
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-anthropic</artifactId>
+      <version>${spring-ai.version}</version>
+    </dependency>
+
+    <!-- Reading shared/models.yaml and shared/prompts/relay/manifest.yaml.
+         The Python stacks use pyyaml for exactly the same job. -->
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>2.3</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.11.3</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.2</version>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <configuration>
+          <mainClass>com.llmeval.relay.springai.Demo</mainClass>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

@@ -35,7 +35,7 @@ public final class LadderRunner implements Runner {
         return new Attempt(guess(stage));
     }
 
-    static String solve(PublicStage stage) {
+    public static String solve(PublicStage stage) {
         if (stage.family().equals("chain")) {
             return solveChain(stage.prompt());
         }
@@ -45,7 +45,7 @@ public final class LadderRunner implements Runner {
         return null;
     }
 
-    static String solveChain(String prompt) {
+    public static String solveChain(String prompt) {
         int value = 0;
         for (String sentence : prompt.split("\\. ")) {
             String[] words = stripTail(sentence.strip()).split("\\s+");
@@ -64,7 +64,7 @@ public final class LadderRunner implements Runner {
         return Integer.toString(value);
     }
 
-    static String solveCipher(String prompt) {
+    public static String solveCipher(String prompt) {
         String[] words = prompt.replace(",", " ").strip().split("\\s+");
         int forward = -1;
         for (int i = 0; i < words.length; i++) {
@@ -91,7 +91,7 @@ public final class LadderRunner implements Runner {
      * mentioned — occasionally right, and that lucky clear is worth having in the vectors. For a
      * cipher it hands back the ciphertext, which never is.
      */
-    static String guess(PublicStage stage) {
+    public static String guess(PublicStage stage) {
         String[] words = stage.prompt().replace(",", " ").replace(".", " ").strip().split("\\s+");
         if (stage.family().equals("order")) {
             for (String word : words) {

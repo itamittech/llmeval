@@ -51,6 +51,17 @@ def quota_left(prompt: str) -> int:
     return int(match.group(1)) if match else 0
 
 
+def _is_attempt(prompt: str) -> bool:
+    """Which template is this?
+
+    The first version asked whether the first line began with "Turn" — and both
+    templates do. Every reflect prompt was therefore answered as an attempt,
+    and the notebooks filled with the string "DECISION: answer". A structural
+    marker is the right question: only the attempt prompt carries a stage.
+    """
+    return "## Your stage" in prompt
+
+
 # -- solving ---------------------------------------------------------------
 
 
@@ -129,7 +140,7 @@ def _guess(family: str, text: str) -> str:
 
 def diligent(prompt: str) -> str:
     """Red: does what it can, buys what it cannot. The intended play."""
-    if "Turn" not in prompt.split("\n", 1)[0]:
+    if not _is_attempt(prompt):
         return _reflect(prompt)
     family, text = read_stage(prompt)
     solved = solve_easy(family, text)
@@ -142,7 +153,7 @@ def diligent(prompt: str) -> str:
 
 def thrifty(prompt: str) -> str:
     """Green: never escalates. Frugal with a commons nobody thanks it for."""
-    if "Turn" not in prompt.split("\n", 1)[0]:
+    if not _is_attempt(prompt):
         return _reflect(prompt)
     family, text = read_stage(prompt)
     solved = solve_easy(family, text)
@@ -159,7 +170,7 @@ def spendthrift(prompt: str) -> str:
     it claims engine authority, and the guardrail blocks it while leaving every
     other note alone. Both live in the committed fixture on purpose.
     """
-    if "Turn" not in prompt.split("\n", 1)[0]:
+    if not _is_attempt(prompt):
         return _reflect(prompt)
     family, text = read_stage(prompt)
     if quota_left(prompt) > 0:
@@ -175,7 +186,7 @@ def spendthrift(prompt: str) -> str:
 
 def cautious(prompt: str) -> str:
     """Blue: precise. Escalates ordering puzzles and nothing else."""
-    if "Turn" not in prompt.split("\n", 1)[0]:
+    if not _is_attempt(prompt):
         return _reflect(prompt)
     family, text = read_stage(prompt)
     solved = solve_easy(family, text)
