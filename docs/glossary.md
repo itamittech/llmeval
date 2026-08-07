@@ -50,7 +50,7 @@ Definitions are short on purpose — each links to the doc that goes deeper.
 
 **Agent swarm** — several peer agents with their own goals sharing an environment, with no single coordinator. Ludo's four players are a swarm; they negotiate rather than being directed. → [agent design](projects/ludo/agent-design.md)
 
-**Agents-as-tools** — a multi-agent pattern where one agent invokes another as a callable tool and reads its reply, keeping every exchange directed and pairwise. Ludo evaluated it for negotiation, then [ADR-0009](decisions/adr-0009-swarm-negotiation.md) went the other way: the protocol was redesigned to fit the swarm orchestrator instead. → [capability matrix](architecture/stack-comparison.md)
+**Agents-as-tools** — a multi-agent pattern where one agent invokes another as a callable tool and reads its reply, keeping every exchange directed and pairwise. Ludo evaluated it for negotiation, then [ADR-0009](decisions/adr-0009-swarm-negotiation.md) went the other way: the protocol was redesigned to fit the swarm orchestrator instead. The pattern found its home in project two — ALIBI's archivist is exactly this. → [ALIBI brief](projects/alibi/brief.md)
 
 **Floor / table note** — how Ludo's negotiation works after [ADR-0009](decisions/adr-0009-swarm-negotiation.md). The *floor* is the right to speak: the active player opens holding it, each speaker passes it by addressing one player with a directed message, and the conversation ends when a holder says nothing or the pass cap is hit. A *table note* is a public remark attached to a pass — every player sees it; directed-message content is seen only by its addressee.
 
@@ -98,7 +98,19 @@ Definitions are short on purpose — each links to the doc that goes deeper.
 
 **Observability / tracing** — recording what a system did in enough detail to explain its behaviour afterwards. A *trace* follows one operation end to end; a *span* is one step within it.
 
-**RAG** (retrieval-augmented generation) — fetching relevant documents and putting them in the prompt so the model can answer from them. Not used in LUDO; on the [roadmap](topics/roadmap.md).
+**RAG** (retrieval-augmented generation) — fetching relevant documents and putting them in the prompt so the model can answer from them. Not used in LUDO; **ALIBI is built on it** — its archive can only be read through retrieval, so retrieval quality is measurable as gameplay. → [ALIBI brief](projects/alibi/brief.md)
+
+**Embedding** — a list of numbers representing a text's meaning, produced by a model, such that texts about similar things get nearby numbers. What makes "find documents *about* this" possible without shared keywords.
+
+**Vector store** — a database of embeddings that can answer "which stored texts are nearest to this one?" fast. Each framework has its own abstraction over many products — one of ALIBI's comparison axes.
+
+**Chunking** — splitting documents into retrieval-sized pieces before embedding them. Chunk too large and retrieval drags in noise; too small and answers lose their context. A pinned parameter in ALIBI, because two stacks chunking differently would retrieve different evidence from the same archive.
+
+**Hybrid search** — combining keyword matching and embedding similarity in one retrieval, catching what either alone misses. One of the retrieval *architectures* ALIBI compares.
+
+**Reranking** — a second, more careful pass that reorders an initial retrieval's results before the model sees them. Costs an extra model call; buys precision. Another ALIBI retrieval profile.
+
+**Grounding / citation** — tying a model's answer to the specific documents it came from, so the claim can be checked. ALIBI's archivist must cite document ids; an ungrounded answer is the failure mode under study — the same evidence rule this repo applies to its own matrix and judge.
 
 **Fine-tuning** — further training a model on your own examples to change its behaviour. **Continued pre-training** goes further, training on large unlabelled domain text. Both are on the roadmap, neither is in LUDO.
 
@@ -127,6 +139,34 @@ Full detail in [game rules](projects/ludo/game-rules.md).
 **Block** — two tokens of the same colour on one square. Opponents can neither land on it nor pass it.
 
 **Colour-relative position** — the engine's coordinate system. Every colour counts from its *own* start square, so movement logic is identical for all four players: `-1` base, `0`–`50` circuit, `51`–`55` home column, `56` home.
+
+---
+
+## ALIBI vocabulary
+
+Full detail in the [draft rules](projects/alibi/game-rules.md). Project two is design-only so far; these are the terms its docs already use.
+
+**Case** — one game's mystery, generated deterministically from a seed: the hidden triple, the deal, and the archive.
+
+**Hidden triple** — the sealed answer: who, how, where. The engine knows it; nobody else does until the game ends. It is the eval's ground truth.
+
+**Exhibit** — a case element dealt privately to one detective. Holding an exhibit *proves* that element is not part of the hidden triple — exhibits are facts, unlike anything a witness says.
+
+**Suggestion** — the interrogation move: naming one element per dimension to compel a refutation. Naming elements you secretly hold is legal bluffing.
+
+**Refutation** — the compelled response: the first detective clockwise holding a named element shows exactly one, privately, engine-mediated. *The table is facts; the archive is claims.*
+
+**Accusation** — the final answer, checked by the engine against the hidden triple. Wrong once and you're out of the race — but still refuting.
+
+**Archive** — the public evidence corpus: witness statements, staff logs, records. Readable only through retrieval, and not all of it is true.
+
+**Archivist** — the non-playing retrieval specialist every detective queries; the project's agent-as-tool. Answers must cite document ids.
+
+**Red herring** — an archive document that contradicts the truth: a witness misremembering or covering. Never labelled; found only by cross-checking.
+
+**Notebook** — a detective's agent memory, in this game's fiction. Same machinery as LUDO's beliefs, same property: it records what the detective *believes*, including what it was successfully lied to about.
+
+**Belief calibration** — how well declared confidence tracks actual correctness over time. ALIBI's detectives declare a best-guess triple with confidence every turn; because ground truth exists, calibration is a deterministic score, no judge needed.
 
 ---
 

@@ -36,7 +36,8 @@ One file per decision, `adr-NNNN-short-title.md`:
 | [0007](adr-0007-ui-alongside-first-stack.md) | Build the UI alongside the first stack, against transcript fixtures | **Accepted** |
 | [0008](adr-0008-framework-native-harness.md) | Harness primitives are framework-native; the shared layer is contracts only | **Accepted** · negotiation choice superseded by 0009 |
 | [0009](adr-0009-swarm-negotiation.md) | Negotiation runs on the swarm orchestrator; the protocol redesigned to fit it | **Accepted** |
+| [0010](adr-0010-project-two-alibi.md) | Project two is ALIBI: a deduction game built on retrieval | Proposed |
 
-0002, 0005, 0006, 0007, 0008 and 0009 are ratified. The rest encode reasoning from the [original brief](../roughidea.txt) but have not been explicitly confirmed — see [open questions](../open-questions.md).
+0002, 0005, 0006, 0007, 0008 and 0009 are ratified. 0001, 0003 and 0004 encode reasoning from the [original brief](../roughidea.txt) but have not been explicitly confirmed; 0010 records the maintainer's project-two direction, with the name, theme, and rules baseline awaiting ratification — see [open questions](../open-questions.md).
 
 **0006 is worth reading even if you don't care about seat assignment.** It was drafted asserting that moving first is an advantage in Ludo, that assumption was measured, and it turned out to be false. The decision survived on different grounds, and the record of the wrong turn stayed in.

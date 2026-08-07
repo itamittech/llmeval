@@ -94,3 +94,4 @@ Framework choice is an [open question](../../open-questions.md); the architectur
 - [Evaluation](evaluation.md) — judging an unfinished game
 - [Architecture overview](../../architecture/overview.md)
 - [Open questions](../../open-questions.md)
+- [Project 02 — ALIBI](../alibi/brief.md) — the successor that inherits this template ([ADR-0010](../../decisions/adr-0010-project-two-alibi.md))
