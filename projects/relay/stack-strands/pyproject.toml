@@ -1,0 +1,31 @@
+[project]
+name = "relay-strands"
+version = "0.1.0"
+description = "RELAY on Strands — four runner agents, one shared anchor model, escalation under a common quota."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "strands-agents[anthropic]>=1.50",
+    "pyyaml>=6.0",
+    "relay-engine",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.0", "jsonschema>=4.21"]
+
+[tool.uv.sources]
+# Path dependency, not a copy: one engine, two Python stacks, separate venvs
+# (environment-strategy.md). RELAY's Python stacks never share an environment.
+relay-engine = { path = "../engine-python", editable = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/relay_strands"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
