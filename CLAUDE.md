@@ -94,7 +94,8 @@ The **shared event schema**, **both engines** (Python and Java, cross-checked by
 | `shared/prompts/alibi/` — prompts + archivist pair | ✅ 8 templates v1 + fixed-contract archivist prompts; invariants in `check_prompts.py` cover both games |
 | `docs/projects/alibi/harness-contract.md` | ✅ Spec written — archivist-as-tool binding, privacy MUSTs, scripted tier; compaction/persistence/negotiation deliberately out (§8) |
 | `shared/schemas/alibi-event.schema.json` | ✅ Built — element enums normative; archive rides in the transcript |
-| `projects/alibi/` stacks · eval · ui | ⬜ Not started |
+| `projects/alibi/stack-strands/` | ✅ Feature-complete scripted — archivist as a real framework tool, notebooks on `AgentState`, hook metering, lenient guardrails; 21 tests, schema-valid fixture ([the story](projects/alibi/stack-strands/README.md): red is fooled by both red herrings, cross-checks the witness, solves) |
+| `projects/alibi/` langgraph · springai · eval · ui | ⬜ Not started |
 
 ## Commands
 
@@ -190,6 +191,16 @@ uv run --directory projects/alibi/engine-python python -m alibi_engine.cli play 
 
 ```bash
 uv run --directory projects/alibi/engine-python python -m alibi_engine.cli conformance --check
+```
+
+The ALIBI Strands stack (own venv, never shared):
+
+```bash
+uv run --directory projects/alibi/stack-strands pytest
+```
+
+```bash
+uv run --directory projects/alibi/stack-strands python -m alibi_strands.demo out.jsonl
 ```
 
 The ALIBI Java engine, from `projects/alibi/engine-java`:
