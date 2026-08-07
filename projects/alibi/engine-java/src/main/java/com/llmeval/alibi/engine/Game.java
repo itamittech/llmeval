@@ -58,11 +58,14 @@ public final class Game {
         }
     }
 
-    CaseModel caseModel() {
+    /** Public for parity with the Python engine, where `game.case` and
+     *  `game.archive` are attributes: the harness needs document ids for its
+     *  citation guardrail, and tests need hands. Views stay per-detective. */
+    public CaseModel caseModel() {
         return caseModel;
     }
 
-    Archive archive() {
+    public Archive archive() {
         return archive;
     }
 

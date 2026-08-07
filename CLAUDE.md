@@ -96,7 +96,8 @@ The **shared event schema**, **both engines** (Python and Java, cross-checked by
 | `shared/schemas/alibi-event.schema.json` | ✅ Built — element enums normative; archive rides in the transcript |
 | `projects/alibi/stack-strands/` | ✅ Feature-complete scripted — archivist as a real framework tool, notebooks on `AgentState`, hook metering, lenient guardrails; 21 tests, schema-valid fixture ([the story](projects/alibi/stack-strands/README.md): red is fooled by both red herrings, cross-checks the witness, solves) |
 | `projects/alibi/stack-langgraph/` | ✅ Feature-complete scripted — `create_agent` + archivist tool in the graph, checkpointer threads, Store notebooks, callback metering; 16 tests incl. cross-stack engine-skeleton equality with the Strands fixture |
-| `projects/alibi/` springai · eval · ui | ⬜ Not started |
+| `projects/alibi/stack-springai/` | ✅ Feature-complete scripted — archivist as `FunctionToolCallback` (internal tool execution aggregates the consult round: 20 metered calls where Python stacks emit 22, the finding refixtured), hand-rolled notebook again, prompt digest matched across languages; 11 tests |
+| `projects/alibi/` eval · ui | ⬜ Not started |
 
 ## Commands
 
@@ -229,6 +230,8 @@ The Java engine builds with the committed Maven wrapper — no global Maven need
 ```bash
 ./mvnw -q -B exec:java -Dexec.args="conformance --check"
 ```
+
+The ALIBI Spring AI stack follows the same install-then-test pattern from `projects/alibi`: `cd engine-java && ./mvnw -q -B install -DskipTests`, then `cd stack-springai && ./mvnw -B test`; the fixture regenerates with `./mvnw -q -B exec:java -Dexec.args="../games/scripted-springai-seed7.jsonl"`.
 
 The Spring AI stack depends on the engine by coordinates — install the engine locally once, then test (both from `projects/ludo`):
 
