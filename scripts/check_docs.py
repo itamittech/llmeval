@@ -48,6 +48,12 @@ MERMAID_RESERVED = {
 }
 
 FENCE = re.compile(r"```.*?```", re.S)
+# Inline code too, not just fenced blocks. `HARNESSES[name](...)` inside
+# backticks is prose about a dict lookup, and the link pattern below reads it
+# as a link to a file called "..." — which is exactly the false positive that
+# stopped CI, and which passed on Windows for months because Windows silently
+# strips trailing dots from a path, so "..." resolved to the directory itself.
+INLINE_CODE = re.compile(r"`[^`\n]*`")
 MERMAID = re.compile(r"```mermaid\n(.*?)```", re.S)
 LINK = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
 BLOCK_OPEN = re.compile(r"^(subgraph|loop|alt|opt|par|critical|rect)\b")
@@ -75,7 +81,7 @@ def check_links(files: list[Path]) -> list[str]:
     problems, count = [], 0
 
     for path in files:
-        body = FENCE.sub("", path.read_text(encoding="utf-8"))
+        body = INLINE_CODE.sub("", FENCE.sub("", path.read_text(encoding="utf-8")))
         for match in LINK.finditer(body):
             target = match.group(1)
             if target.startswith(("http://", "https://", "mailto:")):
