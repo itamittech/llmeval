@@ -46,11 +46,11 @@ Not sure what some of those mean? That's expected — **[the glossary](docs/glos
 
 ## The second project: ALIBI
 
-Four LLM detectives race to solve a theft. The truth is sealed at game start; the evidence is split between **private exhibits** and a **public archive of witness statements** that can only be *searched* — and some witnesses are lying. Asking the table compels real evidence but leaks your line of inquiry; searching the archive is private but returns claims, not facts.
+Four LLM detectives race to solve a theft. The truth is sealed at game start; the evidence is split between **private exhibits** and a **public archive of witness statements** that can only be *searched* — and three witnesses are lying. Asking the table compels real evidence but leaks your line of inquiry; searching the archive is private but returns claims, not facts.
 
-ALIBI introduces exactly two new hard things — **RAG** (retrieval as gameplay, measurable against ground truth) and the **agent-as-tool** architecture (the archivist, a retrieval specialist the detectives consult) — and inherits everything else from LUDO. Design phase: brief and rules exist, code doesn't.
+ALIBI's two new hard things are **RAG** (retrieval as gameplay — the corpus is generated deterministically by the engine, red herrings included, and calibration is scored against ground truth) and the **agent-as-tool** architecture (the archivist, consulted through a real framework tool in every stack). Everything else is inherited from LUDO — and **it is built**: both engines agree on 20 conformance vectors *including corpus bytes*, all three stacks replay one scripted story whose engine-event spines match exactly, the eval scores Brier calibration with no judge needed, and the UI replays the mystery without revealing the solution early.
 
-→ **[Read the ALIBI project brief](docs/projects/alibi/brief.md)**
+→ **[Read the ALIBI project brief](docs/projects/alibi/brief.md)** — or just watch the fixture: red gets fed both red herrings on turn 1, cross-checks the witness on turn 5, and closes the case.
 
 ## Documentation
 
@@ -84,8 +84,10 @@ ALIBI introduces exactly two new hard things — **RAG** (retrieval as gameplay,
 - [Environment strategy](docs/architecture/environment-strategy.md) — how two Python stacks and a JVM coexist
 - [Stack capability matrix](docs/architecture/stack-comparison.md) — the running scoreboard of framework gaps
 
-**Project: ALIBI** (design phase)
-- [Brief](docs/projects/alibi/brief.md) · [Game rules (draft)](docs/projects/alibi/game-rules.md) · [ADR-0010](docs/decisions/adr-0010-project-two-alibi.md) — why this game, and why it isn't called Cluedo
+**Project: ALIBI**
+- [Brief](docs/projects/alibi/brief.md) · [Game rules](docs/projects/alibi/game-rules.md) · [Engine design](docs/projects/alibi/engine-design.md) · [Harness contract](docs/projects/alibi/harness-contract.md)
+- [ADR-0010](docs/decisions/adr-0010-project-two-alibi.md) — why this game, and why it isn't called Cluedo
+- [Eval](projects/alibi/eval/README.md) — ground truth makes the judge optional · [UI](projects/alibi/ui/README.md) — the mystery replays honestly
 
 **Project: LUDO**
 - [Brief](docs/projects/ludo/brief.md) · [Game rules](docs/projects/ludo/game-rules.md) · [Agent design](docs/projects/ludo/agent-design.md) · [Evaluation](docs/projects/ludo/evaluation.md)
@@ -124,7 +126,7 @@ ALIBI introduces exactly two new hard things — **RAG** (retrieval as gameplay,
 | ✅ | [LangGraph stack](projects/ludo/stack-langgraph/) — feature-complete on scripted models: the negotiation table **drawn as a StateGraph** (the family's own swarm package rejected on the privacy rule — a headline matrix finding), checkpointer threads, beliefs in the framework Store, compaction on its summarisation middleware, sqlite session persistence with **no save call at all**, [fixture committed](projects/ludo/games/scripted-langgraph-seed7.jsonl). **No live game yet** — same two model IDs |
 | ✅ | [Eval harness](projects/ludo/eval/) — deterministic scoring on every committed game (its replay self-verifies against the engine's own standings), the LLM-judge machinery with its bias mitigations built as code (anonymisation, citation enforcement, multi-run spread), the [judge rubric](shared/prompts/ludo/judge/scoring.md) written and hash-stamped into every result. **Live judging waits on the judge model ID** |
 | ⬜ | live games — two player model IDs and one judge ID away |
-| 🚧 | [ALIBI](docs/projects/alibi/brief.md) — project two in build ([ADR-0010](docs/decisions/adr-0010-project-two-alibi.md)): rules normative with **benched** pace numbers, [both engines built](docs/projects/alibi/engine-design.md) and agreeing on all 20 conformance vectors — **corpus bytes included**, because the generated archive rides inside the transcript. Stacks, eval, UI next |
+| ✅ | [ALIBI](docs/projects/alibi/brief.md) — project two **built at the scripted tier** ([ADR-0010](docs/decisions/adr-0010-project-two-alibi.md)): both engines agree on 20 vectors **corpus bytes included**, three stacks replay [one story](projects/alibi/games/) whose engine spines match event for event (the tool-grain finding visible in the call counts: 22/22/20), [eval](projects/alibi/eval/README.md) scores Brier calibration against ground truth, [UI](projects/alibi/ui/README.md) seals the solution until `game_ended`. Live play waits on the same model IDs as LUDO |
 
 Try it without installing anything but [uv](https://docs.astral.sh/uv/) — no API keys, no cost:
 

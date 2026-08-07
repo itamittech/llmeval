@@ -68,7 +68,7 @@ Deterministic first: accusation correctness, rounds-to-solve, and calibration of
 
 ## Status
 
-🚧 **In build.** The name and channel decisions are ratified (answered questions 20 and 22); [questions 21 and 23](../../open-questions.md) — pace numbers and retrieval parity — stay open until the engine's bench and the stacks answer them with measurements.
+✅ **Built at the scripted tier.** Both engines (20 conformance vectors, corpus bytes included), three feature-complete scripted stacks whose fixtures share one engine-event spine, the deterministic eval, and the UI. Pace was benched (answered [question 21](../../open-questions.md#-21-alibis-pace--case-dimensions-query-allowance-turn-cap)); [question 23](../../open-questions.md#-23-retrieval-parity--what-must-be-pinned-and-what-is-allowed-to-be-the-finding) — retrieval parity — is the live tier's question, gated like everything live on the model ids. The findings so far are in [the matrix's second act](../../architecture/stack-comparison.md#alibi-the-second-act).
 
 ## Related
 

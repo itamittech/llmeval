@@ -144,7 +144,7 @@ Full detail in [game rules](projects/ludo/game-rules.md).
 
 ## ALIBI vocabulary
 
-Full detail in the [draft rules](projects/alibi/game-rules.md). Project two is design-only so far; these are the terms its docs already use.
+Full detail in the [rules](projects/alibi/game-rules.md), which are normative and implemented — both engines, three stacks, eval, and UI.
 
 **Case** — one game's mystery, generated deterministically from a seed: the hidden triple, the deal, and the archive.
 
@@ -167,6 +167,8 @@ Full detail in the [draft rules](projects/alibi/game-rules.md). Project two is d
 **Notebook** — a detective's agent memory, in this game's fiction. Same machinery as LUDO's beliefs, same property: it records what the detective *believes*, including what it was successfully lied to about.
 
 **Belief calibration** — how well declared confidence tracks actual correctness over time. ALIBI's detectives declare a best-guess triple with confidence every turn; because ground truth exists, calibration is a deterministic score, no judge needed.
+
+**Brier score** — the calibration ruler the eval uses: (confidence − outcome)², averaged. 0 is clairvoyant, 0.25 is a hedged coin flip, 1 is confidently wrong. Being sure and wrong costs the most — which is exactly what a red herring makes happen. → [alibi-eval](../projects/alibi/eval/README.md)
 
 ---
 

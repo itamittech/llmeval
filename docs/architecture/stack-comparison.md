@@ -216,6 +216,36 @@ So `models.yaml` pins settings **per provider** — the honest shape — rather 
 
 A related consequence: on Claude 5, thinking is on by default and its tokens count against `max_output_tokens`, so a budget sized for the answer alone truncates mid-response. `max_output_tokens` is set with that headroom included.
 
+## ALIBI: the second act
+
+Project two ([ADR-0010](../decisions/adr-0010-project-two-alibi.md)) moved the comparison's weight from orchestration to **tools and retrieval** — answered [question 22](../open-questions.md#-22-does-alibi-keep-ludos-negotiation-channels) removed negotiation, so each detective is a single-agent loop and the swarm machinery that dominated LUDO's findings has nothing to do. What differs now is grain, and every rating links to the code that proves it.
+
+| Capability | Strands | LangGraph | Spring AI | Notes |
+|---|---|---|---|---|
+| Archivist tool (agent-as-tool seam) | **Native** — [players.py](../../projects/alibi/stack-strands/src/alibi_strands/players.py) `@tool` | **Native** — [players.py](../../projects/alibi/stack-langgraph/src/alibi_langgraph/players.py) `@tool` + `ToolNode` | **Native** — [Harness.java](../../projects/alibi/stack-springai/src/main/java/com/llmeval/alibi/springai/Harness.java) `FunctionToolCallback` | All three express the tool seam natively; scripted tier backs it with the engine's baseline retriever. The archivist as a live *sub-agent* (the full agent-as-tool architecture) waits on model ids, like every live feature |
+| Tool execution grain | **2 visible calls** per consult — hooks fire around each | **2 visible calls** — the tool is a graph step | **1 aggregated call** — internal execution, usage summed | The LUDO finding, refixtured and now countable: the same story meters 22/22/**20** `llm_call`s. See [the eval's compare](../../projects/alibi/eval/README.md) |
+| Notebook (belief store) | **Native** — `AgentState` | **Native** — framework `Store`, `limit` footgun honoured | **Manual** — [Notebook.java](../../projects/alibi/stack-springai/src/main/java/com/llmeval/alibi/springai/Notebook.java) | Same three answers as LUDO's long-term-memory row. The missing primitive is still missing in game two |
+| Conversation carrier | Sliding window, pinned at 12 | Checkpointer thread, unbounded | Framework `ChatMemory` window, pinned at 24 | The 2.8× token spread below is this row's cost, measured |
+| Retrieval (baseline profile) | engine retriever behind the tool | same | same | Deliberately shared: retrieval *inputs* are pinned, per [question 23](../open-questions.md#-23-retrieval-parity--what-must-be-pinned-and-what-is-allowed-to-be-the-finding); framework-native embedding retrieval is the live-tier experiment that question governs |
+
+**ALIBI quantitative** (scripted tier, same seed-7 story, measured by [`alibi_eval compare`](../../projects/alibi/eval/README.md) — engine spines proven identical first):
+
+| Metric | Strands | LangGraph | Spring AI |
+|---|---|---|---|
+| `llm_call` events | **22** | **22** | **20** |
+| Tokens sent (chars//4 est.) | **11,974** | **33,790** | **32,707** |
+| Transcript events | 53 | 53 | 51 |
+
+The spread is architecture, not noise, and it is the *same* architecture LUDO measured: a small pinned window against growing framework-held conversations. Two games, one lesson, independently reproduced.
+
+### Finding: three loaders, two languages, one hash — again, and now load-bearing
+
+The ALIBI prompt set is loaded by three independent implementations (two Python stacks, one Java), and all three record the same `prompt_set.hash` in `game_started` — [pinned by a Spring AI test](../../projects/alibi/stack-springai/src/test/java/com/llmeval/alibi/springai/HarnessTest.java) that reads the committed Python fixtures and compares digests. The same property LUDO's coordinated bump earned, achieved here on day one because the loaders were ports of proven code.
+
+### Finding: remove the protocol and the orchestration axis vanishes
+
+LUDO's biggest per-framework differences lived in multi-agent orchestration — `Swarm` semantics, a rejected swarm package, a hand-rolled table. ALIBI cut negotiation ([question 22](../open-questions.md#-22-does-alibi-keep-ludos-negotiation-channels)) and those differences simply left the board: no stack hand-rolled anything to orchestrate, because there was nothing to orchestrate. What a chooser should take from the pair of games: **which framework differences you experience is decided by your protocol, not by the framework list** — the same three frameworks produce a swarm-shaped comparison in one game and a tool-shaped comparison in the next.
+
 ## Quantitative comparison
 
 Filled from recorded games. Same seeds, same models, same rules — so these numbers mean something.

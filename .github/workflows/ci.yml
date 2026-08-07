@@ -60,6 +60,98 @@ jobs:
           uv sync --directory projects/ludo/eval
           uv run --directory projects/ludo/eval pytest
 
+  alibi:
+    name: ALIBI (Python side)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Engine tests
+        run: |
+          uv sync --directory projects/alibi/engine-python
+          uv run --directory projects/alibi/engine-python pytest
+
+      - name: Cross-engine conformance vectors
+        # Corpus bytes included — the archive rides in the transcript, so a
+        # template drift IS a conformance failure. Never regenerate to pass.
+        run: uv run --directory projects/alibi/engine-python python -m alibi_engine.cli conformance --check
+
+      - name: Validate recorded transcripts against the shared schema
+        run: uv run --directory projects/alibi/engine-python python -m alibi_engine.cli validate "../games/*.jsonl"
+
+      - name: Strands stack
+        run: |
+          uv sync --directory projects/alibi/stack-strands
+          uv run --directory projects/alibi/stack-strands pytest
+
+      - name: LangGraph stack
+        run: |
+          uv sync --directory projects/alibi/stack-langgraph
+          uv run --directory projects/alibi/stack-langgraph pytest
+
+      - name: Eval harness
+        # Deterministic only — ground truth exists. Its spine check proves the
+        # three committed fixtures tell one story.
+        run: |
+          uv sync --directory projects/alibi/eval
+          uv run --directory projects/alibi/eval pytest
+
+  alibi-java:
+    name: ALIBI (Java side)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Engine tests
+        # ConformanceTest replays all 20 shared vectors, generated prose and
+        # all — the two-language corpus generator's whole guarantee.
+        working-directory: projects/alibi/engine-java
+        run: ./mvnw -B test
+
+      - name: Install the engine locally
+        working-directory: projects/alibi/engine-java
+        run: ./mvnw -q -B install -DskipTests
+
+      - name: Spring AI stack
+        working-directory: projects/alibi/stack-springai
+        run: ./mvnw -B test
+
+  alibi-ui:
+    name: ALIBI UI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: projects/alibi/ui/package-lock.json
+
+      - name: Install
+        working-directory: projects/alibi/ui
+        run: npm ci
+
+      - name: Tests
+        # ADR-0007's rules, third application, plus ALIBI's own seal rule:
+        # the solution and the red herrings never render before game_ended.
+        working-directory: projects/alibi/ui
+        run: npx vitest run
+
+      - name: Static build
+        working-directory: projects/alibi/ui
+        run: npm run build
+
   engine-java:
     name: Java engine
     runs-on: ubuntu-latest

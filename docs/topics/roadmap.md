@@ -16,15 +16,15 @@ This page tracks which project covers what, so gaps are visible and projects don
 | 6 | Observability & monitoring | LUDO | 📋 Planned |
 | 7 | Prompt tuning & templates | LUDO — [shared versioned prompts](../../shared/prompts/README.md) built; tuning waits for a stack | 🔲 Partial |
 | 8 | Agentic AI | LUDO — three feature-complete agent harnesses over one contract, scripted tier | 🔲 Partial |
-| 9 | Agentic architectures | LUDO covers **swarm**; ALIBI claims **agent-as-tool** ([ADR-0010](../decisions/adr-0010-project-two-alibi.md)) | 🔲 Partial |
+| 9 | Agentic architectures | LUDO covers **swarm**; ALIBI's **agent-as-tool** seam is built in all three stacks (the archivist tool, scripted tier) — the live sub-agent waits on model ids | 🔲 Partial |
 | 10 | Voice agents | — | 🔲 Unassigned |
-| 11 | RAG | ALIBI — the [archive](../projects/alibi/brief.md) is the game's evidence source | 📋 Planned |
-| 12 | RAG architectures | ALIBI — same game replayed under different retrieval profiles | 📋 Planned |
+| 11 | RAG | ALIBI — retrieval as gameplay, built: generated corpus in the transcript, baseline retriever behind a real tool in all three stacks, red-herring exposure scored by the eval | 🔲 Partial |
+| 12 | RAG architectures | ALIBI — retrieval profiles defined ([question 23](../open-questions.md#-23-retrieval-parity--what-must-be-pinned-and-what-is-allowed-to-be-the-finding)); baseline built, embedding/hybrid/rerank are the live-tier experiment | 🔲 Partial |
 | 13 | AWS Bedrock features | LUDO (invocation, Guardrails) | 🔲 Partial |
 | 14 | AWS SageMaker features | — | 🔲 Unassigned |
 | 15 | LLM fine-tuning | — | 🔲 Unassigned |
 | 16 | Continued pre-training | — | 🔲 Unassigned |
-| 17 | LLM evals | LUDO — [deterministic scoring + judge machinery built](../projects/ludo/evaluation.md#status), rubric hash-stamped; live judging waits on the judge id | 🔲 Partial |
+| 17 | LLM evals | LUDO — [deterministic scoring + judge machinery built](../projects/ludo/evaluation.md#status), rubric hash-stamped; live judging waits on the judge id. ALIBI adds the ground-truth flavour: [Brier calibration, no judge needed](../../projects/alibi/eval/README.md) | 🔲 Partial |
 
 Beyond the original list, LUDO also covers **harness engineering** — agent memory, context compaction, prompt caching — which the brief calls out separately as a requirement.
 
