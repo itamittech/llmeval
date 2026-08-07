@@ -1,6 +1,6 @@
 # ADR-0011 — Project three is RELAY: an escalation race between small models and one big one
 
-**Status:** Proposed — the direction (an edge-agent game as project three) is the maintainer's (2026-08-07); the name, shape, and mechanics below are proposals and have **not** been ratified
+**Status:** Accepted — the direction (an edge-agent game as project three) is the maintainer's (2026-08-07); the maintainer then delegated the remaining decisions ("continue and complete, best judgement"), and the name, mechanics, and benched numbers were ratified under that delegation the same day
 **Date:** 2026-08-07
 
 ## Context
@@ -29,7 +29,7 @@ Project three is **RELAY** — four small models race along a track of engine-ge
 1. **Edge hosting** (topic 9's last unclaimed architecture, and topic 2 extended into open-weight small models) — a model running as a local process, bound three different ways, with no API key in sight.
 2. **Escalation policy under a shared budget** (topics 4 and 5) — when to spend, measured. This is where the matrix's empty operations rows get filled: cost attribution because cost is the currency, fallback-model machinery because escalation *is* a fallback chain, rate limiting because the quota is one.
 
-**Everything else is inherited, deliberately:** the shared event stream ([ADR-0003](adr-0003-shared-event-stream.md)), one engine per language held together by conformance vectors ([ADR-0002](adr-0002-engine-per-language.md)), framework-native harnesses over a behavioural contract ([ADR-0008](adr-0008-framework-native-harness.md)), seat rotation ([ADR-0006](adr-0006-seat-rotation.md)) with lanes in place of colours, shared verbatim prompts, lenient in-fiction guardrails ([ADR-0004](adr-0004-structural-guardrails.md)), the UI built against transcript fixtures ([ADR-0007](adr-0007-ui-alongside-first-stack.md)), and the eval's deterministic-first split. Normative rules will live at `docs/projects/relay/game-rules.md` and the project's shape at `docs/projects/relay/brief.md`; neither is written, and neither should be until this ADR is ratified.
+**Everything else is inherited, deliberately:** the shared event stream ([ADR-0003](adr-0003-shared-event-stream.md)), one engine per language held together by conformance vectors ([ADR-0002](adr-0002-engine-per-language.md)), framework-native harnesses over a behavioural contract ([ADR-0008](adr-0008-framework-native-harness.md)), seat rotation ([ADR-0006](adr-0006-seat-rotation.md)) with lanes in place of colours, shared verbatim prompts, lenient in-fiction guardrails ([ADR-0004](adr-0004-structural-guardrails.md)), the UI built against transcript fixtures ([ADR-0007](adr-0007-ui-alongside-first-stack.md)), and the eval's deterministic-first split. The normative rules are [game-rules.md](../projects/relay/game-rules.md) and the project's shape is the [brief](../projects/relay/brief.md).
 
 The name follows the house pun: a relay is what you run, and what you do when the small model can't. It is a generic sports term with no cast, no board, and nothing owned — the trademark care [ADR-0010](adr-0010-project-two-alibi.md) had to spend on Cluedo costs nothing here.
 
@@ -61,3 +61,13 @@ The name follows the house pun: a relay is what you run, and what you do when th
 - **Hosted small models as "the edge"** (a small frontier-vendor model instead of a local one). Cheaper to operate and needs no daemon, but then "edge" means nothing: cold start, hardware sensitivity, and the no-key property — the three findings the project exists to produce — all vanish. Kept as the degraded fallback if local hosting proves impractical on the target machine, and recorded as such rather than silently substituted.
 - **The arena** (deployment: Lambda, API Gateway, AgentCore). Still a strong standalone project ([question 11](../open-questions.md)), still teaching infrastructure rather than agent behaviour, and the games it hosts would be reruns.
 - **The apprentice** (fine-tune a small model on committed transcripts). Still blocked on a live corpus that does not exist. Worth noting the direction of the dependency: RELAY's runners are precisely the models the apprentice would fine-tune, so building RELAY brings that project closer rather than competing with it.
+
+## Postscript — the bench answered, and not the way this ADR guessed
+
+Recorded at ratification, because the risk this ADR called out first is the one that got measured first.
+
+*"If the runners solve every stage or none, escalation is trivial and there is no game"* — benched, and the mechanic survives: four equal runners with unequal insight produce win shares from 17% to 32% against a 25% baseline ([the numbers](../projects/relay/game-rules.md#does-the-escalation-decision-actually-matter)). Knowing your own limits is worth roughly two to one.
+
+**But only above a competence floor.** For the weak profile the effect runs *backwards* — perfect insight wins less often than none at all. Spending a scarce pool precisely on the two hardest stages is a losing move for a runner that also fails the easy ones, because an indiscriminate escalation lands on a tier-1 stage it would have missed anyway and gets rescued. The right escalation threshold is a function of your own competence, not of the stage's difficulty.
+
+Nobody predicted that, and it is the sharpest argument for the project that exists: a benchmark harness measuring "when does the small model need help?" would have reported the average and missed the inversion entirely.

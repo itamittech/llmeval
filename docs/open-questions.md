@@ -52,21 +52,13 @@ LUDO pinned prompts and inference settings so the framework was the only variabl
 
 ---
 
-## 🟢 25. RELAY's difficulty ladder — can a small model tell what it can't do?
-
-[ADR-0011](decisions/adr-0011-project-three-relay.md) makes one decision the whole game: *should I answer this myself, or spend from the table's quota?* That decision is only real if the stages span a band where the runners sometimes succeed and sometimes fail. Solve everything and nobody escalates; solve nothing and everybody does — either way there is no game, and no amount of rules tuning fixes it, because the variable is model competence rather than arithmetic.
-
-> **Recommendation:** bench before writing a line of the rules, the same discipline [question 7](#-7-turn-cap-negotiation-budget-and-game-length) and [question 21](#-21-alibis-pace--case-dimensions-query-allowance-turn-cap) used. Generate candidate stage families across candidate tiers, run each candidate runner over a few hundred of them locally — free, no keys — and keep only the families whose solve rates land in a usable band. If no generator family produces a real gradient across the models available, RELAY's central decision is fake, and the honest outcome is to reject ADR-0011 rather than patch it.
-
-Gated on ratifying ADR-0011; the moment it is ratified this becomes 🔴, because the rules spec cannot be written without the numbers.
-
----
-
-## 🟢 26. RELAY's edge tier — which small models, hosted how, and what must be pinned?
+## 🟡 26. RELAY's edge tier — which small models, hosted how, and what must be pinned?
 
 [Question 3](#-3-which-four-models-and-which-two-on-bedrock) picked LUDO's families; RELAY needs the same decision one tier down, plus a new one LUDO never faced. A locally hosted model has knobs no hosted API exposes — quantisation, context length, the runtime's own version — and it runs on *this* machine, so latency and cold start are properties of the hardware as much as the model. [Question 23](#-23-retrieval-parity--what-must-be-pinned-and-what-is-allowed-to-be-the-finding)'s shape, moved from retrieval to hosting: pin too little and the comparison means nothing, pin too much and [ADR-0008](decisions/adr-0008-framework-native-harness.md) is broken.
 
 > **Recommendation:** pin the *inputs* — model id, quantisation, context length, sampling settings, and the runtime version — in shared config, and record the host (CPU/GPU, RAM, runtime build) in `game_started` beside the existing `framework` block, since a latency number without a machine attached is not a result. Let each stack bind to the local runtime with its own native model provider and record the binding differences as matrix findings. Three small open-weight families across four lanes, one of them on both a local and a hosted route, per [ADR-0005](decisions/adr-0005-model-access-control.md)'s control.
+
+**Half-built already:** the schema carries `game_started.host` and per-player `quantisation`, and `access` gained a third value, `local`. What is undecided is which models go in, not where the facts go. This is now the *only* thing between RELAY and a live game — no model id in it is TBD.
 
 ---
 
@@ -100,9 +92,19 @@ The mechanism now exists — `FileSessionManager` persists each agent's beliefs 
 
 ## Answered
 
+### ✅ 25. RELAY's difficulty ladder — can a small model tell what it can't do?
+
+**Answered by the bench, and it found something the question did not ask for.** The experiment was the one the recommendation described, sharpened: rather than measuring solve rates in isolation, four runners of equal skill and *unequal insight* race each other, with the insight-to-lane assignment rotating per seed so turn order is not what gets measured ([ADR-0006](decisions/adr-0006-seat-rotation.md)'s logic).
+
+The mechanic survives: over 300 races per row, win share runs 17% → 32% against a 25% baseline — a runner that knows its own limits wins about twice as often as one that doesn't ([the numbers](projects/relay/game-rules.md#does-the-escalation-decision-actually-matter)).
+
+**And for weak runners the effect runs backwards** — 27% at zero insight, 21% at perfect. Spending a scarce pool precisely on the hardest stages is a losing move if you also fail the easy ones, because an indiscriminate escalation lands on a tier-1 stage you would have missed anyway and rescues you. The right escalation threshold is a function of your own competence, not the stage's difficulty. That inversion is now the headline teaching result of project three.
+
+The same runs sized the rest: shared quota **8** (above ~12 the pool stops binding at all — quota 12 and quota 20 play identically), turn caps **48** `dev` and **104** `headline`, both recorded in [game-rules.md → The numbers](projects/relay/game-rules.md#the-numbers).
+
 ### ✅ 24. What is project three?
 
-**Answered: RELAY — an escalation race between four small local models and one shared frontier model.** Direction chosen by the maintainer 2026-08-07 and written up as [ADR-0011](decisions/adr-0011-project-three-relay.md), which stays **Proposed** until the game's shape is ratified. Chosen the same way project two was — after the [matrix](architecture/stack-comparison.md) existed, from what it showed — and what it shows now is an empty back half: cost attribution, fallback and retry, rate limiting, and every model-access row, none of which a scripted game can ever fill. It takes the last unclaimed agentic architecture (edge agent) plus topics 4 and 5, and it is the only candidate **not blocked on an undecided model id**, because local runners need no key. The roadmap's named candidate, Werewolf/Mafia, was deferred to project four for the reason [ADR-0010](decisions/adr-0010-project-two-alibi.md) already recorded and ALIBI's own finding sharpened. Successors: [25](#-25-relays-difficulty-ladder--can-a-small-model-tell-what-it-cant-do), [26](#-26-relays-edge-tier--which-small-models-hosted-how-and-what-must-be-pinned).
+**Answered: RELAY — an escalation race between four small local models and one shared frontier model.** Direction chosen by the maintainer 2026-08-07 and written up as [ADR-0011](decisions/adr-0011-project-three-relay.md), which stays **Proposed** until the game's shape is ratified. Chosen the same way project two was — after the [matrix](architecture/stack-comparison.md) existed, from what it showed — and what it shows now is an empty back half: cost attribution, fallback and retry, rate limiting, and every model-access row, none of which a scripted game can ever fill. It takes the last unclaimed agentic architecture (edge agent) plus topics 4 and 5, and it is the only candidate **not blocked on an undecided model id**, because local runners need no key. The roadmap's named candidate, Werewolf/Mafia, was deferred to project four for the reason [ADR-0010](decisions/adr-0010-project-two-alibi.md) already recorded and ALIBI's own finding sharpened. **Ratified the same day** under the maintainer's delegation of the remaining decisions, together with the name, the mechanics, and the benched numbers. Successors: [25](#-25-relays-difficulty-ladder--can-a-small-model-tell-what-it-cant-do) (answered by the bench), [26](#-26-relays-edge-tier--which-small-models-hosted-how-and-what-must-be-pinned).
 
 ### ✅ 21. ALIBI's pace — case dimensions, query allowance, turn cap
 

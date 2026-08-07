@@ -2,7 +2,9 @@
 
 [ADR-0002](../../docs/decisions/adr-0002-engine-per-language.md) keeps **one engine per language** — Python shared by both Python stacks, Java for Spring AI — rather than one per stack. These vectors are what stop the two engines drifting apart.
 
-Two files, one per game: [`vectors.json`](vectors.json) holds LUDO's twenty (the file predates project two, so no prefix), [`alibi-vectors.json`](alibi-vectors.json) holds ALIBI's twenty. ALIBI's raise the stakes: its archive rides inside the transcript, so **the digest covers generated prose** — a Java template rendering one comma differently from the Python one fails every vector, which is exactly the guarantee a two-language corpus generator needs.
+Three files, one per game: [`vectors.json`](vectors.json) holds LUDO's twenty (the file predates project two, so no prefix), [`alibi-vectors.json`](alibi-vectors.json) holds ALIBI's twenty, [`relay-vectors.json`](relay-vectors.json) holds RELAY's twenty. ALIBI's raised the stakes: its archive rides inside the transcript, so **the digest covers generated prose** — a Java template rendering one comma differently from the Python one fails every vector, which is exactly the guarantee a two-language corpus generator needs.
+
+RELAY's go one step further, because its bot has to *read* that prose. The whole track is in the transcript, and `ladder-runner` solves the mechanical stages by parsing the prompt it was shown rather than by peeking at the answer — so the vectors pin two ports agreeing about generated text **and** about how it tokenises. They also carry a free invariant nobody wrote a test for: four identical bots on one track must produce four identical lanes, so a port that breaks lane symmetry fails without anyone having to predict how.
 
 ## How they work
 

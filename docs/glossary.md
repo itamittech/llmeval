@@ -182,6 +182,30 @@ Full detail in the [rules](projects/alibi/game-rules.md), which are normative an
 
 ---
 
+## RELAY vocabulary
+
+Full detail in the [rules](projects/relay/game-rules.md), which are normative.
+
+**Runner** — one of the four racers, and the small local model behind it. Its lane colour is the in-game identity, rotating between races like every other seat in this repo.
+
+**Anchor** — the one shared frontier model a runner may hand a stage to. A *model*, not an agent: one call, no memory, no tools. What separates escalation from ALIBI's [[archivist]]-style consultation.
+
+**Stage** — one puzzle on the track, generated from the seed: a prompt, an answer, and a tier. The runner sees the prompt.
+
+**Tier** — a stage's difficulty, 1 to 3. Never shown to anyone during play, shuffled across the track so position leaks nothing, revealed only in `game_ended`. Judging it unaided is the game.
+
+**Escalate** — spend one unit of the shared quota to have the anchor answer. Performed by the engine, so it is a receipt rather than a claim, and you are charged for asking rather than for using.
+
+**Quota (shared)** — one pool of escalations for the whole table, its level public. Spending it denies it to three rivals, which is where the game's adversarial pressure lives.
+
+**Tick** — the deterministic clock. Every action costs a fixed number, so two runs of one seed produce identical clocks; real latency is measured beside it and decides nothing.
+
+**Stall** — failing the same stage more than three times. A table where every runner is stalled *and* the pool is empty ends the race early rather than burning the cap.
+
+**Escalation precision / recall** — the eval's headline pair, scored against the revealed tier: what share of your escalations went on genuinely hard stages, and what share of the hard stages you escalated. Deliberately reported side by side, because the bench found neither is good on its own.
+
+---
+
 ## Missing something?
 
 If a doc used a term that isn't here, that's a bug in the docs — [open an issue](https://github.com/itamittech/llmeval/issues). Explaining as we go is a [stated goal](vision.md), not a nice-to-have.

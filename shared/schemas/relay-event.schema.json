@@ -1,0 +1,396 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/llmeval/llmeval/shared/schemas/relay-event.schema.json",
+  "title": "RELAY Event",
+  "description": "One event in a RELAY game transcript. A transcript is a JSON Lines file: one event object per line, ordered by seq. Same contract discipline as LUDO's and ALIBI's (ADR-0003): the UI and the eval harness consume only this. RELAY's own rule on top — a stage's tier and answer appear ONLY in game_ended, so a replay cannot leak what the runners were not allowed to know.",
+  "type": "object",
+  "required": ["seq", "type", "payload"],
+  "additionalProperties": false,
+
+  "properties": {
+    "seq": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Monotonic index within the transcript, starting at 0. Gaps are an error."
+    },
+    "turn": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Turn number this event belongs to. 0 before the first turn starts."
+    },
+    "type": { "$ref": "#/$defs/eventType" },
+    "ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional wall-clock timestamp. Never emitted by the engine: same-seed transcripts must diff cleanly. Agent-layer events may set it."
+    },
+    "payload": { "type": "object" }
+  },
+
+  "allOf": [
+    { "if": { "properties": { "type": { "const": "game_started" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/gameStarted" } } } },
+    { "if": { "properties": { "type": { "const": "track_generated" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/trackGenerated" } } } },
+    { "if": { "properties": { "type": { "const": "turn_started" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/turnStarted" } } } },
+    { "if": { "properties": { "type": { "const": "stage_attempted" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/stageAttempted" } } } },
+    { "if": { "properties": { "type": { "const": "runner_finished" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/runnerFinished" } } } },
+    { "if": { "properties": { "type": { "const": "invalid_action" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/invalidAction" } } } },
+    { "if": { "properties": { "type": { "const": "turn_ended" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/turnEnded" } } } },
+    { "if": { "properties": { "type": { "const": "game_ended" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/gameEnded" } } } },
+    { "if": { "properties": { "type": { "const": "agent_reasoning" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/agentReasoning" } } } },
+    { "if": { "properties": { "type": { "const": "memory_write" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/memoryWrite" } } } },
+    { "if": { "properties": { "type": { "const": "context_compacted" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/contextCompacted" } } } },
+    { "if": { "properties": { "type": { "const": "llm_call" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/llmCall" } } } },
+    { "if": { "properties": { "type": { "const": "guardrail_triggered" } }, "required": ["type"] },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/guardrailTriggered" } } } }
+  ],
+
+  "$defs": {
+    "eventType": {
+      "description": "Engine events are emitted by engine-python / engine-java. Agent events are emitted by the stack implementations. An engine-only run (profile bots, no models) is a valid transcript with no agent events at all.",
+      "enum": [
+        "game_started", "track_generated", "turn_started", "stage_attempted",
+        "runner_finished", "invalid_action", "turn_ended", "game_ended",
+        "agent_reasoning", "memory_write", "context_compacted", "llm_call",
+        "guardrail_triggered"
+      ]
+    },
+
+    "color": {
+      "enum": ["red", "green", "yellow", "blue"],
+      "description": "A runner's lane colour — the in-game identity. The seat-to-colour mapping rotates between games (ADR-0006), exactly as in LUDO and ALIBI."
+    },
+
+    "stageId": { "type": "string", "pattern": "^stage-[0-9]{2}$" },
+
+    "family": {
+      "enum": ["chain", "cipher", "order"],
+      "description": "Which generator produced the stage. Normative — the three families are named in game-rules.md, and adding one is a corpus-byte change that regenerates the conformance vectors."
+    },
+
+    "tier": {
+      "type": "integer", "minimum": 1, "maximum": 3,
+      "description": "Difficulty, 1 easiest. NEVER visible during play — it appears only in game_ended.track_key. A runner that could read it would be playing a lookup, not a judgement."
+    },
+
+    "access": { "enum": ["bedrock", "direct", "local"] },
+
+    "gameStarted": {
+      "type": "object",
+      "required": ["seed", "max_turns", "players", "engine", "track"],
+      "additionalProperties": false,
+      "properties": {
+        "seed": { "type": "integer", "description": "Track RNG seed. Same seed + same decisions replays the race exactly." },
+        "max_turns": { "type": "integer", "minimum": 1 },
+        "escalation_quota": { "type": "integer", "minimum": 0, "description": "The shared pool, at kick-off. One pool for the table: spending it denies it to everyone." },
+        "max_stalls": { "type": "integer", "minimum": 1, "description": "Failed attempts at one stage before a runner counts as stalled." },
+        "max_note_chars": { "type": "integer", "minimum": 0 },
+        "ruleset": { "type": "string", "default": "baseline" },
+        "engine": {
+          "type": "object",
+          "required": ["language", "version"],
+          "properties": {
+            "language": { "enum": ["python", "java"] },
+            "version": { "type": "string" }
+          }
+        },
+        "stack": { "enum": ["strands", "langgraph", "springai", "none"] },
+        "track": {
+          "type": "object",
+          "required": ["stages", "tiers"],
+          "additionalProperties": false,
+          "description": "Shape of this game's track, so a reader of the transcript alone knows the arithmetic. The tier COUNTS are public; which stage carries which tier is not.",
+          "properties": {
+            "stages": { "type": "integer", "minimum": 1 },
+            "tiers": {
+              "type": "object",
+              "required": ["1", "2", "3"],
+              "additionalProperties": false,
+              "properties": {
+                "1": { "type": "integer", "minimum": 0 },
+                "2": { "type": "integer", "minimum": 0 },
+                "3": { "type": "integer", "minimum": 0 }
+              }
+            }
+          }
+        },
+        "ticks": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The deterministic clock's price list, recorded so a transcript is readable without the rules file.",
+          "properties": {
+            "answer": { "type": "integer", "minimum": 0 },
+            "escalate": { "type": "integer", "minimum": 0 },
+            "wrong": { "type": "integer", "minimum": 0 },
+            "pass": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "profile": { "type": "string", "description": "Named profile from shared/models.yaml. Absent on engine-only runs." },
+        "prompt_set": {
+          "type": "object",
+          "required": ["version", "hash"],
+          "additionalProperties": false,
+          "properties": {
+            "version": { "type": "integer", "minimum": 1 },
+            "hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+          }
+        },
+        "framework": {
+          "type": "object",
+          "required": ["name", "version"],
+          "additionalProperties": false,
+          "properties": {
+            "name": { "enum": ["strands", "langgraph", "springai"] },
+            "version": { "type": "string" }
+          }
+        },
+        "host": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The machine a live game ran on. RELAY is the first project whose numbers are hardware-dependent (ADR-0011), so a latency figure without this is not a result. Absent on scripted and engine-only runs.",
+          "properties": {
+            "cpu": { "type": "string" },
+            "gpu": { "type": "string" },
+            "ram_gb": { "type": "number", "minimum": 0 },
+            "runtime": { "type": "string", "description": "Local model server and version, e.g. 'ollama 0.x.y'." }
+          }
+        },
+        "players": {
+          "type": "array", "minItems": 4, "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["color"],
+            "properties": {
+              "color": { "$ref": "#/$defs/color" },
+              "agent": { "type": "string" },
+              "seat": { "type": "integer", "minimum": 1, "maximum": 4 },
+              "model": { "type": "string" },
+              "access": { "$ref": "#/$defs/access" },
+              "quantisation": { "type": "string", "description": "Pinned for local models — the knob a hosted API does not expose (question 26)." }
+            }
+          }
+        },
+        "anchor": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The one shared frontier model escalation routes to. A MODEL, not an agent — that is what separates RELAY's escalation from ALIBI's archivist. Absent on engine-only runs, where the bots' escalations are adjudicated by the engine itself.",
+          "properties": {
+            "model": { "type": "string" },
+            "access": { "$ref": "#/$defs/access" }
+          }
+        }
+      }
+    },
+
+    "trackGenerated": {
+      "type": "object",
+      "required": ["stages"],
+      "additionalProperties": false,
+      "description": "The whole track, embedded so the transcript is self-contained. Deliberately WITHOUT tiers and answers: those are sealed until game_ended, because a UI that rendered them would show the viewer what the runners were forbidden to see.",
+      "properties": {
+        "stages": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "family", "prompt"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "$ref": "#/$defs/stageId" },
+              "family": { "$ref": "#/$defs/family" },
+              "prompt": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "turnStarted": {
+      "type": "object", "required": ["player", "stage"], "additionalProperties": false,
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "stage": { "$ref": "#/$defs/stageId" }
+      }
+    },
+
+    "stageAttempted": {
+      "type": "object",
+      "required": ["player", "stage", "answer", "escalated", "correct", "ticks_charged", "ticks_total", "quota_left"],
+      "additionalProperties": false,
+      "description": "The move. `escalated` is a harness fact, not an agent claim: the agent chooses, the harness routes, and the engine charges the quota on what the harness reports. `answer` null means the runner passed. The note is public table talk and may be a lie.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "stage": { "$ref": "#/$defs/stageId" },
+        "answer": { "type": ["string", "null"] },
+        "escalated": { "type": "boolean" },
+        "correct": { "type": "boolean" },
+        "ticks_charged": { "type": "integer", "minimum": 0 },
+        "ticks_total": { "type": "integer", "minimum": 0, "description": "This runner's clock after the charge. Low is good." },
+        "quota_left": { "type": "integer", "minimum": 0, "description": "The shared pool after this move. Everyone sees it." },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+
+    "runnerFinished": {
+      "type": "object", "required": ["player", "ticks"], "additionalProperties": false,
+      "description": "A runner cleared the last stage. Ends the race.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "ticks": { "type": "integer", "minimum": 0 }
+      }
+    },
+
+    "invalidAction": {
+      "type": "object",
+      "required": ["player", "phase", "reason", "attempt"],
+      "additionalProperties": false,
+      "description": "The engine rejects rather than corrects (ADR-0004). Escalating on an empty quota lands here.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "phase": { "enum": ["attempt", "escalate", "note"] },
+        "reason": { "type": "string" },
+        "attempt": { "type": "integer", "minimum": 1 }
+      }
+    },
+
+    "turnEnded": {
+      "type": "object", "required": ["player", "reason"], "additionalProperties": false,
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "reason": {
+          "enum": ["cleared", "missed", "passed", "finished", "error"],
+          "description": "'cleared' = right answer, advanced; 'missed' = wrong; 'passed' = no answer offered; 'finished' = that clear was the last stage."
+        }
+      }
+    },
+
+    "gameEnded": {
+      "type": "object",
+      "required": ["reason", "turns_played", "track_key", "standings"],
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "enum": ["finished", "turn_cap", "all_stalled"],
+          "description": "'turn_cap' is a normal outcome — progress is scored, not just victory. 'all_stalled' means every runner is out of quota and stuck."
+        },
+        "turns_played": { "type": "integer", "minimum": 0 },
+        "track_key": {
+          "type": "array",
+          "description": "The seal, opened. Per stage: its tier and its answer — revealed only now, so the eval can score every escalation decision against the difficulty the runner was never shown.",
+          "items": {
+            "type": "object",
+            "required": ["id", "tier", "answer"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "$ref": "#/$defs/stageId" },
+              "tier": { "$ref": "#/$defs/tier" },
+              "answer": { "type": "string" }
+            }
+          }
+        },
+        "standings": {
+          "type": "array", "minItems": 4, "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["player", "rank", "stages_cleared", "ticks", "finished"],
+            "additionalProperties": false,
+            "properties": {
+              "player": { "$ref": "#/$defs/color" },
+              "rank": { "type": "integer", "minimum": 1, "maximum": 4 },
+              "stages_cleared": { "type": "integer", "minimum": 0 },
+              "ticks": { "type": "integer", "minimum": 0 },
+              "finished": { "type": "boolean" },
+              "escalations": { "type": "integer", "minimum": 0 },
+              "correct": { "type": "integer", "minimum": 0 },
+              "wrong": { "type": "integer", "minimum": 0 },
+              "passes": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+
+    "agentReasoning": {
+      "type": "object", "required": ["player", "text"], "additionalProperties": false,
+      "description": "Private to the runner; other runners never see it. Shown to the viewer.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "text": { "type": "string" }
+      }
+    },
+
+    "memoryWrite": {
+      "type": "object", "required": ["player", "kind", "text"], "additionalProperties": false,
+      "description": "The runner's own notes — private and deliberately unreliable. In RELAY the useful ones are self-knowledge: 'I get cipher stages wrong'.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "kind": { "enum": ["self", "rival", "plan", "observation"] },
+        "about": { "oneOf": [{ "$ref": "#/$defs/family" }, { "$ref": "#/$defs/color" }, { "type": "null" }] },
+        "text": { "type": "string" }
+      }
+    },
+
+    "contextCompacted": {
+      "type": "object", "required": ["player", "tokens_before", "tokens_after"], "additionalProperties": false,
+      "description": "Defined for schema symmetry with LUDO; the RELAY v1 harness contract does not require compaction — a stage prompt plus a short history does not outgrow a window.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "tokens_before": { "type": "integer", "minimum": 0 },
+        "tokens_after": { "type": "integer", "minimum": 0 },
+        "turns_summarised": { "type": "integer", "minimum": 0 },
+        "summary": { "type": "string" }
+      }
+    },
+
+    "llmCall": {
+      "type": "object",
+      "required": ["player", "model", "access", "tokens"],
+      "additionalProperties": false,
+      "description": "One model invocation. Anchor calls carry the escalating runner's colour — cost lands on the lane that spent the quota — with actor: 'anchor' and the anchor's own model. This event is where RELAY's whole point gets measured, so latency_ms is expected on live runs rather than optional decoration.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "actor": { "enum": ["runner", "anchor"], "default": "runner" },
+        "model": { "type": "string" },
+        "model_version": { "type": "string" },
+        "access": { "$ref": "#/$defs/access" },
+        "purpose": { "enum": ["attempt", "escalate", "reflect", "compact"] },
+        "tokens": {
+          "type": "object",
+          "required": ["input", "output"],
+          "properties": {
+            "input": { "type": "integer", "minimum": 0 },
+            "output": { "type": "integer", "minimum": 0 },
+            "cache_read": { "type": "integer", "minimum": 0 },
+            "cache_write": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "latency_ms": { "type": "number", "minimum": 0 },
+        "cold_start": { "type": "boolean", "description": "First call to a local model, which pays for loading it. Invisible on a hosted API; unmissable at the edge." },
+        "cost_usd": { "type": "number", "minimum": 0 },
+        "retries": { "type": "integer", "minimum": 0 }
+      }
+    },
+
+    "guardrailTriggered": {
+      "type": "object", "required": ["player", "rule", "action"], "additionalProperties": false,
+      "description": "Fires only on out-of-fiction attacks (ADR-0004). A note lying about a stage's difficulty is in-fiction cunning and must never appear here.",
+      "properties": {
+        "player": { "$ref": "#/$defs/color" },
+        "rule": { "type": "string" },
+        "action": { "enum": ["blocked", "flagged", "rewritten"] },
+        "source": { "enum": ["bedrock_guardrails", "harness"] },
+        "detail": { "type": "string" }
+      }
+    }
+  }
+}

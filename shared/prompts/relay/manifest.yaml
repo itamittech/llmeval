@@ -1,0 +1,33 @@
+# The RELAY prompt set every stack sends. Data, not code — same law as ludo/
+# and alibi/: literal {{name}} substitution, no logic, declared variables
+# checked both ways by check_prompts.py.
+#
+# anchor/ sits deliberately outside this manifest, like ludo's judge/ and
+# alibi's archivist/. The anchor is not a seat: it is one shared model with a
+# fixed one-variable contract, invoked for a single call and given no memory,
+# no tools, and no idea a race is happening.
+
+version: 1
+game: relay
+
+# Concatenated in this order, once per race. Never varies within a race, which
+# is what makes it prompt-cacheable.
+system:
+  - file: system/identity.md
+    variables: [color]
+
+  - file: system/rules.md
+    variables: []
+
+  - file: system/race.md
+    variables: [escalation_quota, max_turns, max_note_chars]
+
+# Rendered fresh each time. Never cached.
+turn:
+  attempt:
+    file: turn/attempt.md
+    variables: [turn, color, stage, lanes, quota_left, notes, history, memory]
+
+  reflect:
+    file: turn/reflect.md
+    variables: [turn, turn_summary, memory]

@@ -2,7 +2,9 @@
 
 The prompts every stack sends, byte-for-byte identical. If Strands and Spring AI ran different prompts, the framework comparison would measure the prompts instead — so these live here, outside all three stacks, and no stack may edit them for itself.
 
-Project-scoped: [`ludo/`](ludo/) and [`alibi/`](alibi/) — same law, two games. ALIBI's [`archivist/`](alibi/archivist/) sits outside its manifest the way LUDO's `judge/` does: one shared instrument with a fixed variable contract enforced by `check_prompts.py`, not a per-seat player prompt. ALIBI's rules-briefing numbers are checked against the ALIBI engine's constants, exactly as LUDO's are against LUDO's.
+Project-scoped: [`ludo/`](ludo/), [`alibi/`](alibi/) and [`relay/`](relay/) — same law, three games. Each has one fixed-contract outsider sitting beside its manifest: LUDO's `judge/`, ALIBI's [`archivist/`](alibi/archivist/), RELAY's [`anchor/`](relay/anchor/). They are shared instruments with a fixed variable contract enforced by `check_prompts.py`, not per-seat player prompts. Every set's rules-briefing numbers are checked against its own engine's constants.
+
+RELAY adds one rule the other two have no use for: **no prompt may tell a runner how hard its stage is.** A briefing that named a tier — or a manifest that declared a `{{tier}}` variable — would delete the only decision that game contains, and it would pass every other check in the file. Both are now failures.
 
 ## Layout mirrors the cache boundary
 

@@ -31,6 +31,11 @@ what it says it is.
      rules, its rules-briefing numbers checked against the ALIBI engine, and
      its archivist prompts (outside the manifest, like ludo's judge/) held to a
      fixed variable contract. Its budgets in models.yaml must exist per profile.
+ 10. The RELAY set (shared/prompts/relay/) likewise, with its anchor prompt as
+     the fixed-contract outsider — and one rule the other two games cannot
+     have: no prompt may mention a stage's tier. A briefing that leaked
+     difficulty would delete the only decision the game contains, and it would
+     pass every other check in this file.
 
 Exits non-zero on failure, so it can gate CI.
 """
@@ -50,6 +55,7 @@ MODELS = ROOT / "shared" / "models.yaml"
 # Both engines are standard-library only, so they import without being installed.
 sys.path.insert(0, str(ROOT / "projects" / "ludo" / "engine-python" / "src"))
 sys.path.insert(0, str(ROOT / "projects" / "alibi" / "engine-python" / "src"))
+sys.path.insert(0, str(ROOT / "projects" / "relay" / "engine-python" / "src"))
 from ludo_engine.board import (  # noqa: E402
     BASE, COLORS, HOME, HOME_ENTRY, LAST_CIRCUIT, SAFE_SQUARES, START,
     TOKENS_PER_PLAYER,
@@ -58,8 +64,15 @@ from ludo_engine.game import MOVE_ATTEMPTS, SIX_LIMIT  # noqa: E402
 from alibi_engine.archive import SEARCH_K  # noqa: E402
 from alibi_engine.case import ALL_ELEMENTS, DIMENSIONS, ELEMENTS  # noqa: E402
 from alibi_engine.game import PHASE_ATTEMPTS  # noqa: E402
+from relay_engine.game import (  # noqa: E402
+    ESCALATION_QUOTA, MAX_STALLS, TICK_ANSWER, TICK_ESCALATE, TICK_PASS,
+    TICK_WRONG,
+)
+from relay_engine.game import PHASE_ATTEMPTS as RELAY_PHASE_ATTEMPTS  # noqa: E402
+from relay_engine.track import TRACK_STAGES  # noqa: E402
 
 PROMPTS_ALIBI = ROOT / "shared" / "prompts" / "alibi"
+PROMPTS_RELAY = ROOT / "shared" / "prompts" / "relay"
 
 VARIABLE = re.compile(r"\{\{(\w+)\}\}")
 # Anything a template engine would treat as control flow.
@@ -203,27 +216,33 @@ ARCHIVIST_VARIABLES = {
 }
 
 
-def check_alibi_prompts() -> None:
-    manifest = yaml.safe_load((PROMPTS_ALIBI / "manifest.yaml").read_text(encoding="utf-8"))
+def check_game_set(root, game: str, outsider: str, contracts: dict,
+                   rule_numbers: dict) -> None:
+    """The whole law, applied to one game's prompt set.
+
+    Shared by ALIBI and RELAY rather than copied twice more: a rule that exists
+    in three versions is a rule that will be fixed in one of them.
+    """
+    manifest = yaml.safe_load((root / "manifest.yaml").read_text(encoding="utf-8"))
     declared = entries(manifest)
 
     listed = {e["file"] for e in declared}
     on_disk = {
-        str(p.relative_to(PROMPTS_ALIBI)).replace("\\", "/")
-        for p in PROMPTS_ALIBI.rglob("*.md")
-        if not str(p.relative_to(PROMPTS_ALIBI)).replace("\\", "/").startswith("archivist/")
+        str(p.relative_to(root)).replace("\\", "/")
+        for p in root.rglob("*.md")
+        if not str(p.relative_to(root)).replace("\\", "/").startswith(f"{outsider}/")
     }
     for orphan in sorted(on_disk - listed):
-        fail(f"alibi/{orphan} is not in manifest.yaml — no stack would ever load it")
+        fail(f"{game}/{orphan} is not in manifest.yaml — no stack would ever load it")
     for missing in sorted(listed - on_disk):
-        fail(f"alibi/manifest.yaml lists {missing}, which does not exist")
+        fail(f"{game}/manifest.yaml lists {missing}, which does not exist")
 
     for entry in declared:
-        path = PROMPTS_ALIBI / entry["file"]
+        path = root / entry["file"]
         if not path.exists():
             continue
         text = path.read_text(encoding="utf-8")
-        name = f"alibi/{entry['file']}"
+        name = f"{game}/{entry['file']}"
 
         if LOGIC.search(text):
             fail(f"{name}: template logic found — Python and Java would diverge; "
@@ -236,37 +255,142 @@ def check_alibi_prompts() -> None:
         for unused in sorted(want - used):
             fail(f"{name}: manifest.yaml declares '{unused}' but the template never uses it")
 
-    for path in PROMPTS_ALIBI.rglob("*.md"):
+    for path in root.rglob("*.md"):
         for color in COLORS:
             if color in path.stem.lower():
-                fail(f"alibi/{path.name}: per-colour prompt file — personas are "
-                     f"not hand-coded, in either game")
+                fail(f"{game}/{path.name}: per-colour prompt file — personas are "
+                     f"not hand-coded, in any game")
 
-    for filename, expected in ARCHIVIST_VARIABLES.items():
-        path = PROMPTS_ALIBI / "archivist" / filename
+    for filename, expected in contracts.items():
+        path = root / outsider / filename
         if not path.exists():
-            fail(f"alibi/archivist/{filename} is missing")
+            fail(f"{game}/{outsider}/{filename} is missing")
             continue
         text = path.read_text(encoding="utf-8")
         if LOGIC.search(text):
-            fail(f"alibi/archivist/{filename}: template logic found — same law as every prompt")
+            fail(f"{game}/{outsider}/{filename}: template logic found — same law as every prompt")
         used = set(VARIABLE.findall(text))
         if used != expected:
-            fail(f"alibi/archivist/{filename}: uses {sorted(used)}, the stacks render "
+            fail(f"{game}/{outsider}/{filename}: uses {sorted(used)}, the stacks render "
                  f"{sorted(expected)} — they must match exactly")
 
-    rules = PROMPTS_ALIBI / "system" / "rules.md"
+    rules = root / "system" / "rules.md"
     if not rules.exists():
-        fail("alibi/system/rules.md is missing")
+        fail(f"{game}/system/rules.md is missing")
         return
     table = {m.group(1).strip().lower(): int(m.group(2))
              for m in ROW.finditer(rules.read_text(encoding="utf-8"))}
-    for label, expected in ALIBI_RULE_NUMBERS.items():
+    for label, expected in rule_numbers.items():
         if label not in table:
-            fail(f"alibi/system/rules.md: numbers table has no row '{label}'")
+            fail(f"{game}/system/rules.md: numbers table has no row '{label}'")
         elif table[label] != expected:
-            fail(f"alibi/system/rules.md: '{label}' says {table[label]}, "
+            fail(f"{game}/system/rules.md: '{label}' says {table[label]}, "
                  f"engine says {expected}")
+
+
+def check_alibi_prompts() -> None:
+    check_game_set(PROMPTS_ALIBI, "alibi", "archivist", ARCHIVIST_VARIABLES,
+                   ALIBI_RULE_NUMBERS)
+
+
+# -- the RELAY set ---------------------------------------------------------
+
+#: RELAY rules-briefing row label -> the engine constant it must equal.
+RELAY_RULE_NUMBERS = {
+    "stages on the track": TRACK_STAGES,
+    "shared escalation quota": ESCALATION_QUOTA,
+    "ticks to answer it yourself": TICK_ANSWER,
+    "ticks to escalate": TICK_ESCALATE,
+    "extra ticks for a wrong answer": TICK_WRONG,
+    "ticks to pass": TICK_PASS,
+    "attempts per action before the engine decides for you": RELAY_PHASE_ATTEMPTS,
+    "failures at one stage before you count as stalled": MAX_STALLS,
+}
+
+#: The stacks render exactly this into the anchor prompt. One variable, because
+#: the anchor is a model doing one call — not an agent with a situation.
+ANCHOR_VARIABLES = {"solve.md": {"stage"}}
+
+#: A template naming a PARTICULAR tier. Explaining that tiers exist is required
+#: — the runners have to know what they are judging; naming which one they are
+#: looking at is the leak. The first draft of this check banned the phrase
+#: "difficulty tier" and immediately failed the briefing that has to teach it.
+TIER_WORDS = ("tier 1", "tier 2", "tier 3", "tier-1", "tier-2", "tier-3",
+              "this stage is hard", "this stage is easy")
+
+#: A variable is the other way difficulty could reach a runner, and the more
+#: likely one: a harness that renders {{tier}} deletes the game and every other
+#: check in this file passes.
+FORBIDDEN_VARIABLES = {"tier", "difficulty", "answer", "solution", "track_key"}
+
+
+def check_relay_prompts() -> None:
+    check_game_set(PROMPTS_RELAY, "relay", "anchor", ANCHOR_VARIABLES,
+                   RELAY_RULE_NUMBERS)
+
+    for path in PROMPTS_RELAY.rglob("*.md"):
+        text = path.read_text(encoding="utf-8")
+        lowered = text.lower()
+        for word in TIER_WORDS:
+            if word in lowered:
+                fail(f"relay/{path.name}: names '{word}' — a prompt that tells a "
+                     f"runner how hard its stage is deletes the only decision the "
+                     f"game has (game-rules.md: the tier is never visible)")
+        for variable in sorted(set(VARIABLE.findall(text)) & FORBIDDEN_VARIABLES):
+            fail(f"relay/{path.name}: renders {{{{{variable}}}}} — that is the seal, "
+                 f"and no stack has anything to put in it (harness-contract §4)")
+
+
+def check_relay_models(config: dict) -> None:
+    """RELAY's budgets, its runner tier, and the one anchor they share."""
+    relay = config.get("relay")
+    if not relay:
+        fail("models.yaml: no 'relay' section — RELAY budgets and anchor are unconfigured")
+        return
+
+    profiles = set((config.get("profiles") or {}).keys())
+    budgets = relay.get("budgets") or {}
+    if set(budgets.keys()) != profiles:
+        fail(f"models.yaml: relay.budgets covers {sorted(budgets)} but profiles are "
+             f"{sorted(profiles)} — every profile needs RELAY budgets")
+    for profile, values in budgets.items():
+        for field in ("max_turns", "escalation_quota", "max_note_chars",
+                      "max_tokens_per_game"):
+            if field not in (values or {}):
+                fail(f"models.yaml: relay.budgets.{profile} is missing {field}")
+
+    anchor = relay.get("anchor") or {}
+    for field in ("provider", "access", "model"):
+        if field not in anchor:
+            fail(f"models.yaml: relay.anchor is missing {field}")
+    if anchor.get("model") in (None, "TBD"):
+        fail("models.yaml: relay.anchor.model is unpinned — the anchor is the one "
+             "paid model in this game, and it is the reason RELAY can be played "
+             "before the other two")
+
+    lanes = relay.get("lanes") or []
+    if len(lanes) != 4:
+        fail(f"models.yaml: relay has {len(lanes)} lanes, needs 4")
+        return
+    for lane in lanes:
+        for field in ("lane", "access", "provider", "model"):
+            if field not in lane:
+                fail(f"models.yaml: relay lane {lane.get('lane')} is missing {field}")
+
+    # ADR-0005's control, moved down a tier: one runner model on two routes, so
+    # "what does running it locally buy?" is answerable rather than confounded.
+    by_route: dict[str, set] = {}
+    for lane in lanes:
+        model = str(lane.get("model", ""))
+        by_route.setdefault(lane.get("access"), set()).add(model.split(".", 1)[-1])
+    shared = set.intersection(*by_route.values()) if len(by_route) > 1 else set()
+    if len(shared) != 1:
+        fail(f"models.yaml: relay has {len(shared)} model(s) on more than one route, "
+             f"needs exactly 1 — without it, local-vs-hosted differences cannot be "
+             f"told apart from model differences (ADR-0005, one tier down)")
+    if "local" not in by_route:
+        fail("models.yaml: no relay lane runs on access 'local' — a RELAY without a "
+             "local runner is not an edge-agent project (ADR-0011)")
 
 
 def check_alibi_models(config: dict) -> None:
@@ -390,8 +514,11 @@ def check_judge(profile: str, spec: dict, seats: list[dict]) -> None:
 def main() -> int:
     check_prompts()
     check_alibi_prompts()
+    check_relay_prompts()
     check_models()
-    check_alibi_models(yaml.safe_load(MODELS.read_text(encoding="utf-8")))
+    config = yaml.safe_load(MODELS.read_text(encoding="utf-8"))
+    check_alibi_models(config)
+    check_relay_models(config)
 
     for note in notes:
         print(f"note: {note}")
@@ -406,8 +533,11 @@ def main() -> int:
         (PROMPTS / "manifest.yaml").read_text(encoding="utf-8"))))
     alibi_templates = len(entries(yaml.safe_load(
         (PROMPTS_ALIBI / "manifest.yaml").read_text(encoding="utf-8"))))
+    relay_templates = len(entries(yaml.safe_load(
+        (PROMPTS_RELAY / "manifest.yaml").read_text(encoding="utf-8"))))
     print(f"prompts ok — ludo: {templates} templates, {len(RULE_NUMBERS)} rule numbers; "
-          f"alibi: {alibi_templates} templates, {len(ALIBI_RULE_NUMBERS)} rule numbers")
+          f"alibi: {alibi_templates} templates, {len(ALIBI_RULE_NUMBERS)} rule numbers; "
+          f"relay: {relay_templates} templates, {len(RELAY_RULE_NUMBERS)} rule numbers")
     print("Reminder: this checks invariants, not whether the prompts are any good.")
     return 0
 

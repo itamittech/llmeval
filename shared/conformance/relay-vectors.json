@@ -1,0 +1,787 @@
+{
+  "schema": "relay-conformance/1",
+  "engine_version": "0.1.0",
+  "note": "Regenerate only when the rules or the stage generators change deliberately. An unexpected diff here is a bug, not a refresh.",
+  "vectors": [
+    {
+      "seed": 1,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "finished",
+      "turns_played": 37,
+      "events": 119,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 10,
+          "ticks": 26,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 9,
+          "ticks": 24,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 9,
+          "ticks": 24,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 9,
+          "ticks": 24,
+          "escalations": 2
+        }
+      ],
+      "digest": "098c718badcb61a5c381202ae1559aaaca1be39eeacd2f6c901264b485038750"
+    },
+    {
+      "seed": 2,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 36,
+      "events": 131,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 5,
+          "ticks": 40,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 5,
+          "ticks": 40,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 5,
+          "ticks": 40,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 5,
+          "ticks": 40,
+          "escalations": 2
+        }
+      ],
+      "digest": "8f36ae49c304aee22c83b66e5a35da4b7f7fae40f6da0301b5b15be55ff3511b"
+    },
+    {
+      "seed": 3,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 40,
+      "events": 143,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 6,
+          "ticks": 42,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 6,
+          "ticks": 42,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 6,
+          "ticks": 42,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 6,
+          "ticks": 42,
+          "escalations": 2
+        }
+      ],
+      "digest": "daa8298bd5137b9d68e76860f82aa2a6d364ef8c1e69ec33b66876325ee749ea"
+    },
+    {
+      "seed": 4,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 44,
+      "events": 155,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 7,
+          "ticks": 44,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 7,
+          "ticks": 44,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 7,
+          "ticks": 44,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 7,
+          "ticks": 44,
+          "escalations": 2
+        }
+      ],
+      "digest": "709cd74da84f58339ffa5219e786e89f45cf04859db5cff254b23ce0e12e5e15"
+    },
+    {
+      "seed": 5,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 52,
+      "events": 183,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 9,
+          "ticks": 48,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 9,
+          "ticks": 48,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 9,
+          "ticks": 48,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 9,
+          "ticks": 48,
+          "escalations": 2
+        }
+      ],
+      "digest": "3a04b6cedb0c9c414f3b51dd604e70b9d26f294881216c42f836b8b594113cd1"
+    },
+    {
+      "seed": 6,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 32,
+      "events": 115,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 4,
+          "ticks": 38,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 4,
+          "ticks": 38,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 4,
+          "ticks": 38,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 4,
+          "ticks": 38,
+          "escalations": 2
+        }
+      ],
+      "digest": "a2a71b34324955e9540f689c5e6bccc240cd34eacfc4a143a6fbd76ea4a32a63"
+    },
+    {
+      "seed": 7,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 40,
+      "events": 139,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 6,
+          "ticks": 42,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 6,
+          "ticks": 42,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 6,
+          "ticks": 42,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 6,
+          "ticks": 42,
+          "escalations": 2
+        }
+      ],
+      "digest": "9f8a01e09b862444725b726316589d22ebd758c4624f11798762dde361678835"
+    },
+    {
+      "seed": 8,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 24,
+      "events": 91,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 2,
+          "ticks": 34,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 2,
+          "ticks": 34,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 2,
+          "ticks": 34,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 2,
+          "ticks": 34,
+          "escalations": 2
+        }
+      ],
+      "digest": "7ec627e11af581681bb8bd4ebf818e34f711ec8d4d06c2f9d4f524238cb99dc1"
+    },
+    {
+      "seed": 9,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 52,
+      "events": 175,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 9,
+          "ticks": 48,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 9,
+          "ticks": 48,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 9,
+          "ticks": 48,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 9,
+          "ticks": 48,
+          "escalations": 2
+        }
+      ],
+      "digest": "b90daf63553ee3527efcf1714e6e37a2dc3e3455a9b6edded757a150f36b4cbd"
+    },
+    {
+      "seed": 10,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 52,
+      "events": 175,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 9,
+          "ticks": 48,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 9,
+          "ticks": 48,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 9,
+          "ticks": 48,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 9,
+          "ticks": 48,
+          "escalations": 2
+        }
+      ],
+      "digest": "fd6e39cecc69382b5dc3e1dbd50b4d059f245d9dc1067c4b48c8fd8ca55ea6b6"
+    },
+    {
+      "seed": 11,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 44,
+      "events": 151,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 7,
+          "ticks": 44,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 7,
+          "ticks": 44,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 7,
+          "ticks": 44,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 7,
+          "ticks": 44,
+          "escalations": 2
+        }
+      ],
+      "digest": "4b46585b2bd104c580b00f4e30223130f45936fe6525b24a2e10c48ffee695c2"
+    },
+    {
+      "seed": 12,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 32,
+      "events": 115,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 4,
+          "ticks": 38,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 4,
+          "ticks": 38,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 4,
+          "ticks": 38,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 4,
+          "ticks": 38,
+          "escalations": 2
+        }
+      ],
+      "digest": "471a5eb6e8db65e3ab7e409d925ad440f73c24a6f3cd91213c6cf3714c52959b"
+    },
+    {
+      "seed": 13,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 40,
+      "events": 143,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 6,
+          "ticks": 42,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 6,
+          "ticks": 42,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 6,
+          "ticks": 42,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 6,
+          "ticks": 42,
+          "escalations": 2
+        }
+      ],
+      "digest": "d84f8f1f9137d4b8630c1b44c67358ccbe8765d7c600ad87dfd303ad8469ddbe"
+    },
+    {
+      "seed": 14,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 24,
+      "events": 91,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 2,
+          "ticks": 34,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 2,
+          "ticks": 34,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 2,
+          "ticks": 34,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 2,
+          "ticks": 34,
+          "escalations": 2
+        }
+      ],
+      "digest": "652d477df1c4dfae12799d89f9d04efdba286fb0b4235ca0403e1403884bb5b1"
+    },
+    {
+      "seed": 15,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 36,
+      "events": 127,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 5,
+          "ticks": 40,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 5,
+          "ticks": 40,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 5,
+          "ticks": 40,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 5,
+          "ticks": 40,
+          "escalations": 2
+        }
+      ],
+      "digest": "d573850fbe9d108d0d629d231cac73d3a174622f1b743e5c83908271e8cb455a"
+    },
+    {
+      "seed": 16,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 32,
+      "events": 115,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 4,
+          "ticks": 38,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 4,
+          "ticks": 38,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 4,
+          "ticks": 38,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 4,
+          "ticks": 38,
+          "escalations": 2
+        }
+      ],
+      "digest": "9f1b920da10b76faea56ec1a8058b8e49f64d3c8f2753f50d5d7c1212b291fbd"
+    },
+    {
+      "seed": 17,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 24,
+      "events": 91,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 2,
+          "ticks": 34,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 2,
+          "ticks": 34,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 2,
+          "ticks": 34,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 2,
+          "ticks": 34,
+          "escalations": 2
+        }
+      ],
+      "digest": "4c2b7a17a17b71df22bf060914edc91a560ca3cab6d545194ea740483c4d0593"
+    },
+    {
+      "seed": 18,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 24,
+      "events": 91,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 2,
+          "ticks": 34,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 2,
+          "ticks": 34,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 2,
+          "ticks": 34,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 2,
+          "ticks": 34,
+          "escalations": 2
+        }
+      ],
+      "digest": "bb63252b21a291ea2dc2ba78b404c4c8b63bd073a45c9d7157ed60e9204751d4"
+    },
+    {
+      "seed": 19,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 32,
+      "events": 115,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 4,
+          "ticks": 38,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 4,
+          "ticks": 38,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 4,
+          "ticks": 38,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 4,
+          "ticks": 38,
+          "escalations": 2
+        }
+      ],
+      "digest": "2092481f5e3c66cae4fe0fb0f8dd7bdd71966c65a16e548ae40d124069de92c4"
+    },
+    {
+      "seed": 20,
+      "max_turns": 80,
+      "decider": "ladder-runner",
+      "reason": "all_stalled",
+      "turns_played": 48,
+      "events": 163,
+      "standings": [
+        {
+          "player": "red",
+          "rank": 1,
+          "stages_cleared": 8,
+          "ticks": 46,
+          "escalations": 2
+        },
+        {
+          "player": "green",
+          "rank": 2,
+          "stages_cleared": 8,
+          "ticks": 46,
+          "escalations": 2
+        },
+        {
+          "player": "yellow",
+          "rank": 3,
+          "stages_cleared": 8,
+          "ticks": 46,
+          "escalations": 2
+        },
+        {
+          "player": "blue",
+          "rank": 4,
+          "stages_cleared": 8,
+          "ticks": 46,
+          "escalations": 2
+        }
+      ],
+      "digest": "4fdaaa2a02146a2aba1b598eaddef97dbf554a0a069deae59747e27fdc82242a"
+    }
+  ]
+}

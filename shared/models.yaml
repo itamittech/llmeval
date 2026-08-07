@@ -154,3 +154,65 @@ alibi:
     access: direct
     model: claude-haiku-4-5-20251001
     retrieval_profile: baseline   # engine keyword retriever; embedding profiles are live-tier (question 23)
+
+# --- RELAY (project three, ADR-0011) ---------------------------------------
+# The first game in this repo that does NOT use the four seats above. Its
+# runners are small models on local hardware, so "seat" and "access route" mean
+# something different: a lane, and whether the weights are on this machine.
+#
+# ADR-0005's control moves down a tier with them. Lanes 1 and 3 run the SAME
+# small model, one locally and one hosted, so the question "what does running
+# it at the edge actually buy?" is answerable rather than confounded with a
+# model change. check_prompts.py fails if that pairing is broken.
+#
+# Note what is NOT TBD here: the anchor. RELAY needs no undecided model id, and
+# that is why it is the one project that could be played today.
+relay:
+  budgets:
+    # Sized by the sweep and the 500-game bench (game-rules.md "The numbers").
+    # A generous cap is cheap in this game: runner calls are local and free, so
+    # the paid surface is the quota — 8 anchor calls — however long the race
+    # runs. That is why headline sits above the WEAKEST profile's p99 (101)
+    # rather than the middling one's.
+    dev:
+      max_turns: 48
+      escalation_quota: 8
+      max_note_chars: 240
+      max_tokens_per_game: 120000
+    headline:
+      max_turns: 104
+      escalation_quota: 8
+      max_note_chars: 400
+      max_tokens_per_game: 400000
+
+  # The one shared frontier model escalation routes to. A model, not an agent:
+  # it is handed a stage prompt, given no memory and no tools, and asked once.
+  # Pinned, not TBD — it is the Anthropic model already pinned for LUDO.
+  anchor:
+    provider: anthropic
+    access: direct
+    model: claude-sonnet-5
+
+  # Three small open-weight families across four lanes. Ids and quantisation
+  # are the live-tier decision (question 26) — the SHAPE is settled here, and
+  # the scripted tier needs no ids at all.
+  lanes:
+    - lane: 1
+      access: local
+      provider: meta
+      model: llama-small           # <- the control, run on this machine
+      quantisation: TBD
+    - lane: 2
+      access: local
+      provider: alibaba
+      model: qwen-small
+      quantisation: TBD
+    - lane: 3
+      access: bedrock
+      provider: meta
+      model: meta.llama-small      # SAME model as lane 1  <- the control, hosted
+    - lane: 4
+      access: local
+      provider: google
+      model: gemma-small
+      quantisation: TBD
