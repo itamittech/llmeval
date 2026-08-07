@@ -7,6 +7,7 @@ The integration contract between the three stack implementations, the UI, and th
 | [`event.schema.json`](event.schema.json) | One LUDO transcript event. JSON Schema 2020-12. (Predates project two, so the filename carries no project prefix — kept, because renaming a published contract breaks its consumers.) |
 | [`alibi-event.schema.json`](alibi-event.schema.json) | One ALIBI transcript event. Same discipline, second game: deduction events (`suggestion_made`, `refutation_made`, `belief_declared`…) replace board events, and the element enums are normative — they mirror [game-rules.md](../../docs/projects/alibi/game-rules.md), and renaming one regenerates conformance vectors. |
 | [`eval-result.schema.json`](eval-result.schema.json) | One LUDO game's evaluation: deterministic scores always, judge scores when a judge ran. Produced by [`projects/ludo/eval`](../../projects/ludo/eval/README.md), which validates every result against this before emitting it. |
+| [`alibi-eval-result.schema.json`](alibi-eval-result.schema.json) | One ALIBI game's evaluation — all deterministic, because ground truth exists: accusation accuracy, Brier calibration, red-herring exposure, and the fold's self-verification against the engine's standings. Produced by [`projects/alibi/eval`](../../projects/alibi/eval/README.md). |
 
 ## Transcript format
 

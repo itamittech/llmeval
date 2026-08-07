@@ -97,7 +97,8 @@ The **shared event schema**, **both engines** (Python and Java, cross-checked by
 | `projects/alibi/stack-strands/` | ✅ Feature-complete scripted — archivist as a real framework tool, notebooks on `AgentState`, hook metering, lenient guardrails; 21 tests, schema-valid fixture ([the story](projects/alibi/stack-strands/README.md): red is fooled by both red herrings, cross-checks the witness, solves) |
 | `projects/alibi/stack-langgraph/` | ✅ Feature-complete scripted — `create_agent` + archivist tool in the graph, checkpointer threads, Store notebooks, callback metering; 16 tests incl. cross-stack engine-skeleton equality with the Strands fixture |
 | `projects/alibi/stack-springai/` | ✅ Feature-complete scripted — archivist as `FunctionToolCallback` (internal tool execution aggregates the consult round: 20 metered calls where Python stacks emit 22, the finding refixtured), hand-rolled notebook again, prompt digest matched across languages; 11 tests |
-| `projects/alibi/` eval · ui | ⬜ Not started |
+| `projects/alibi/eval/` | ✅ Built — deterministic only, no judge needed (ground truth exists): Brier calibration, red-herring exposure, standings self-verification, `score`/`compare` CLI proving the three fixtures share one engine spine (22/22/20 calls, the tool-grain finding in numbers); 10 tests, committed `.eval.json` per fixture |
+| `projects/alibi/ui/` | ⬜ Not started |
 
 ## Commands
 
@@ -213,6 +214,16 @@ uv run --directory projects/alibi/stack-langgraph pytest
 
 ```bash
 uv run --directory projects/alibi/stack-langgraph python -m alibi_langgraph.demo out.jsonl
+```
+
+The ALIBI eval (own venv; transcripts only — free, no keys):
+
+```bash
+uv run --directory projects/alibi/eval pytest
+```
+
+```bash
+uv run --directory projects/alibi/eval python -m alibi_eval compare projects/alibi/games/scripted-strands-seed7.jsonl projects/alibi/games/scripted-langgraph-seed7.jsonl projects/alibi/games/scripted-springai-seed7.jsonl
 ```
 
 The ALIBI Java engine, from `projects/alibi/engine-java`:

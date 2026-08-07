@@ -1,0 +1,128 @@
+{
+  "game": {
+    "file": "scripted-langgraph-seed7.jsonl",
+    "seed": 7,
+    "stack": "langgraph",
+    "profile": "dev",
+    "prompt_set": {
+      "version": 1,
+      "hash": "sha256:882ea1a0509b38f81c37152ee7735526c784d93811c9a6c6e098a5b482494e64"
+    },
+    "reason": "solved",
+    "turns_played": 5,
+    "solution": {
+      "who": "photographer",
+      "how": "service-hatch",
+      "where": "cloakroom"
+    },
+    "red_herrings": [
+      "doc-002",
+      "doc-013",
+      "doc-016"
+    ]
+  },
+  "detectives": [
+    {
+      "player": "red",
+      "seat": 1,
+      "rank": 1,
+      "solved": true,
+      "eliminated": false,
+      "accusation": {
+        "turn": 5,
+        "correct": true
+      },
+      "beliefs": {
+        "declared": 1,
+        "final_dimensions_correct": 0,
+        "mean_brier": 0.0642
+      },
+      "suggestions_made": 1,
+      "refutations_given": 0,
+      "searches_made": 2,
+      "red_herrings_read": 3,
+      "invalid_actions": 0,
+      "memory_writes": 3,
+      "tokens": {
+        "input": 16031,
+        "output": 301,
+        "calls": 9
+      }
+    },
+    {
+      "player": "green",
+      "seat": 2,
+      "rank": 3,
+      "solved": false,
+      "eliminated": false,
+      "accusation": null,
+      "beliefs": {
+        "declared": 1,
+        "final_dimensions_correct": 1,
+        "mean_brier": 0.2319
+      },
+      "suggestions_made": 0,
+      "refutations_given": 1,
+      "searches_made": 0,
+      "red_herrings_read": 0,
+      "invalid_actions": 0,
+      "memory_writes": 0,
+      "tokens": {
+        "input": 6742,
+        "output": 60,
+        "calls": 5
+      }
+    },
+    {
+      "player": "yellow",
+      "seat": 3,
+      "rank": 2,
+      "solved": false,
+      "eliminated": false,
+      "accusation": null,
+      "beliefs": {
+        "declared": 1,
+        "final_dimensions_correct": 2,
+        "mean_brier": 0.4074
+      },
+      "suggestions_made": 0,
+      "refutations_given": 0,
+      "searches_made": 0,
+      "red_herrings_read": 0,
+      "invalid_actions": 0,
+      "memory_writes": 1,
+      "tokens": {
+        "input": 5279,
+        "output": 66,
+        "calls": 4
+      }
+    },
+    {
+      "player": "blue",
+      "seat": 4,
+      "rank": 4,
+      "solved": false,
+      "eliminated": false,
+      "accusation": null,
+      "beliefs": {
+        "declared": 1,
+        "final_dimensions_correct": 1,
+        "mean_brier": 0.2807
+      },
+      "suggestions_made": 0,
+      "refutations_given": 0,
+      "searches_made": 0,
+      "red_herrings_read": 0,
+      "invalid_actions": 0,
+      "memory_writes": 0,
+      "tokens": {
+        "input": 5273,
+        "output": 38,
+        "calls": 4
+      }
+    }
+  ],
+  "checks": {
+    "standings_match": true
+  }
+}

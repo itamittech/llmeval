@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/llmeval/llmeval/shared/schemas/alibi-eval-result.schema.json",
+  "title": "ALIBI Evaluation Result",
+  "description": "One ALIBI game's deterministic evaluation. Ground truth exists (game_ended.solution), so everything here is computed, not judged: accusation accuracy, belief calibration (Brier), red-herring exposure, and the self-verification that the fold agrees with the engine's own standings. Produced by projects/alibi/eval, which validates every result against this before emitting it.",
+  "type": "object",
+  "required": ["game", "detectives", "checks"],
+  "additionalProperties": false,
+
+  "properties": {
+    "game": {
+      "type": "object",
+      "required": ["file", "seed", "stack", "reason", "turns_played", "solution"],
+      "additionalProperties": false,
+      "properties": {
+        "file": { "type": "string" },
+        "seed": { "type": "integer" },
+        "stack": { "enum": ["strands", "langgraph", "springai", "none"] },
+        "profile": { "type": "string" },
+        "prompt_set": {
+          "type": "object",
+          "required": ["version", "hash"],
+          "additionalProperties": false,
+          "properties": {
+            "version": { "type": "integer" },
+            "hash": { "type": "string" }
+          }
+        },
+        "reason": { "enum": ["solved", "all_eliminated", "turn_cap"] },
+        "turns_played": { "type": "integer", "minimum": 0 },
+        "solution": {
+          "type": "object",
+          "required": ["who", "how", "where"],
+          "additionalProperties": false,
+          "properties": {
+            "who": { "type": "string" },
+            "how": { "type": "string" },
+            "where": { "type": "string" }
+          }
+        },
+        "red_herrings": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "detectives": {
+      "type": "array", "minItems": 4, "maxItems": 4,
+      "items": {
+        "type": "object",
+        "required": ["player", "rank", "solved", "eliminated", "beliefs",
+                     "suggestions_made", "refutations_given", "searches_made",
+                     "red_herrings_read", "invalid_actions", "memory_writes", "tokens"],
+        "additionalProperties": false,
+        "properties": {
+          "player": { "enum": ["red", "green", "yellow", "blue"] },
+          "seat": { "type": ["integer", "null"] },
+          "rank": { "type": "integer", "minimum": 1, "maximum": 4 },
+          "solved": { "type": "boolean" },
+          "eliminated": { "type": "boolean" },
+          "accusation": {
+            "type": ["object", "null"],
+            "required": ["turn", "correct"],
+            "additionalProperties": false,
+            "properties": {
+              "turn": { "type": "integer", "minimum": 1 },
+              "correct": { "type": "boolean" }
+            }
+          },
+          "beliefs": {
+            "type": "object",
+            "required": ["declared", "final_dimensions_correct", "mean_brier"],
+            "additionalProperties": false,
+            "description": "Calibration against the sealed truth. mean_brier: (confidence - outcome)^2 averaged over every declared dimension; 0 is clairvoyant, 0.25 is coin-flip-with-half-confidence, 1 is confidently wrong. Null when no belief was ever declared.",
+            "properties": {
+              "declared": { "type": "integer", "minimum": 0 },
+              "final_dimensions_correct": { "type": "integer", "minimum": 0, "maximum": 3 },
+              "mean_brier": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
+            }
+          },
+          "suggestions_made": { "type": "integer", "minimum": 0 },
+          "refutations_given": { "type": "integer", "minimum": 0 },
+          "searches_made": { "type": "integer", "minimum": 0 },
+          "red_herrings_read": {
+            "type": "integer", "minimum": 0,
+            "description": "How many distinct red-herring documents this detective's searches returned — exposure, not necessarily belief. Cross-read with beliefs to see who was actually fooled."
+          },
+          "invalid_actions": { "type": "integer", "minimum": 0 },
+          "memory_writes": { "type": "integer", "minimum": 0 },
+          "tokens": {
+            "type": "object",
+            "required": ["input", "output", "calls"],
+            "additionalProperties": false,
+            "properties": {
+              "input": { "type": "integer", "minimum": 0 },
+              "output": { "type": "integer", "minimum": 0 },
+              "calls": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+
+    "checks": {
+      "type": "object",
+      "required": ["standings_match"],
+      "additionalProperties": false,
+      "description": "The fold's self-verification: solved/eliminated/belief_dimensions_correct and the per-detective counters recomputed from events must equal the engine's own game_ended.standings. False means the transcript or this scorer is broken — the result is emitted anyway, flagged, because a scorer that hides its own disagreement is worse than one that admits it.",
+      "properties": {
+        "standings_match": { "type": "boolean" }
+      }
+    }
+  }
+}
