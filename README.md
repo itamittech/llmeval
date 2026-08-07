@@ -108,6 +108,7 @@ ALIBI's two new hard things are **RAG** (retrieval as gameplay — the corpus is
 - [Contributing](CONTRIBUTING.md) — setup, and the six rules that are easy to break by accident
 - [Topic roadmap](docs/topics/roadmap.md) — the 17 topics and which project covers each
 - [Architecture decisions (ADRs)](docs/decisions/) — what we chose and why
+- [ADR-0011](docs/decisions/adr-0011-project-three-relay.md) — project three, **proposed**: the edge-agent game, and why it isn't Werewolf
 - [docs/roughidea.txt](docs/roughidea.txt) — the original napkin sketch everything grew from
 
 ## Status
@@ -128,6 +129,7 @@ ALIBI's two new hard things are **RAG** (retrieval as gameplay — the corpus is
 | ✅ | [LangGraph stack](projects/ludo/stack-langgraph/) — feature-complete on scripted models: the negotiation table **drawn as a StateGraph** (the family's own swarm package rejected on the privacy rule — a headline matrix finding), checkpointer threads, beliefs in the framework Store, compaction on its summarisation middleware, sqlite session persistence with **no save call at all**, [fixture committed](projects/ludo/games/scripted-langgraph-seed7.jsonl). **No live game yet** — same two model IDs |
 | ✅ | [Eval harness](projects/ludo/eval/) — deterministic scoring on every committed game (its replay self-verifies against the engine's own standings), the LLM-judge machinery with its bias mitigations built as code (anonymisation, citation enforcement, multi-run spread), the [judge rubric](shared/prompts/ludo/judge/scoring.md) written and hash-stamped into every result. **Live judging waits on the judge model ID** |
 | ⬜ | live games — two player model IDs and one judge ID away |
+| ⬜ | [RELAY](docs/decisions/adr-0011-project-three-relay.md) — project three, **written up but not ratified**: four small local models racing, escalating to one shared frontier model out of a quota they all draw from. Claims the last unhoused agentic architecture and the matrix's empty back half (cost, fallback, rate limits, both access routes) — and needs no undecided model id to play |
 | ✅ | [ALIBI](docs/projects/alibi/brief.md) — project two **built at the scripted tier** ([ADR-0010](docs/decisions/adr-0010-project-two-alibi.md)): both engines agree on 20 vectors **corpus bytes included**, three stacks replay [one story](projects/alibi/games/) whose engine spines match event for event (the tool-grain finding visible in the call counts: 22/22/20), [eval](projects/alibi/eval/README.md) scores Brier calibration against ground truth, [UI](projects/alibi/ui/README.md) seals the solution until `game_ended`. Live play waits on the same model IDs as LUDO |
 
 Try it without installing anything but [uv](https://docs.astral.sh/uv/) — no API keys, no cost:

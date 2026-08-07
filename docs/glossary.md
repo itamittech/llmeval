@@ -40,6 +40,12 @@ Definitions are short on purpose — each links to the doc that goes deeper.
 
 **Inference** — one run of a model producing output. "Inference latency" is how long that takes.
 
+**Open-weight model** — a model whose weights you can download and run yourself, rather than only call through someone's API. What makes local hosting possible at all, and therefore what an edge agent is built from.
+
+**Quantisation** — storing a model's weights at lower precision so it fits in less memory and runs faster, at some cost to quality. A locally hosted model has this knob and a hosted API does not, which is why it has to be pinned before two runs are comparable. → [question 26](open-questions.md#-26-relays-edge-tier--which-small-models-hosted-how-and-what-must-be-pinned)
+
+**Cold start** — the first call's extra delay while a model is loaded and warmed. Invisible on a hosted API that keeps one running for you; unmissable when the model lives on your machine.
+
 **Agent** — an LLM that can take actions through tools and run over multiple steps, rather than answering once. Here, each Ludo player is an agent.
 
 **Agent loop** — the cycle inside a framework `Agent`: ask the model; if it answers with a tool call, run the tool and ask again; stop when it answers with text. One agent invocation can therefore mean several model calls — which is why costs are metered per *call*, not per invocation. → [learning/strands/00](../learning/strands/00-the-agent-loop.md)
@@ -51,6 +57,10 @@ Definitions are short on purpose — each links to the doc that goes deeper.
 **Agent swarm** — several peer agents with their own goals sharing an environment, with no single coordinator. Ludo's four players are a swarm; they negotiate rather than being directed. → [agent design](projects/ludo/agent-design.md)
 
 **Agents-as-tools** — a multi-agent pattern where one agent invokes another as a callable tool and reads its reply, keeping every exchange directed and pairwise. Ludo evaluated it for negotiation, then [ADR-0009](decisions/adr-0009-swarm-negotiation.md) went the other way: the protocol was redesigned to fit the swarm orchestrator instead. The pattern found its home in project two — ALIBI's archivist is exactly this. → [ALIBI brief](projects/alibi/brief.md)
+
+**Edge agent** — an agent whose everyday model runs small, cheap, and close by — often on your own machine — calling out to a larger one only when it judges it can't cope. The last of the brief's four agentic architectures without a project; **RELAY** claims it, and makes the judgement itself the game. → [ADR-0011](decisions/adr-0011-project-three-relay.md)
+
+**Escalation / model fallback** — swapping in a different (usually larger) model for a call the current one shouldn't handle. Frameworks package this as a *fallback chain*; RELAY turns it into a move with a price, which is what makes the policy measurable rather than assumed.
 
 **Floor / table note** — how Ludo's negotiation works after [ADR-0009](decisions/adr-0009-swarm-negotiation.md). The *floor* is the right to speak: the active player opens holding it, each speaker passes it by addressing one player with a directed message, and the conversation ends when a holder says nothing or the pass cap is hit. A *table note* is a public remark attached to a pass — every player sees it; directed-message content is seen only by its addressee.
 

@@ -11,12 +11,12 @@ This page tracks which project covers what, so gaps are visible and projects don
 | 1 | LLM invocation | LUDO — [Strands binding](../../projects/ludo/stack-strands/README.md) built, both access routes wired; no live call yet | 🔲 Partial |
 | 2 | LLM comparison | LUDO — seats, routes and the dual-route control are configured ([ADR-0005](../decisions/adr-0005-model-access-control.md)); waits on model ids | 🔲 Partial |
 | 3 | Guardrails | LUDO (lenient, game-scoped) | 📋 Planned |
-| 4 | Cost analysis | LUDO — per-agent token accounting and a per-game ceiling built | 🔲 Partial |
-| 5 | Inference analysis | LUDO (latency, cold start) | 📋 Planned |
+| 4 | Cost analysis | LUDO — per-agent token accounting and a per-game ceiling built. RELAY makes cost the *currency*: a shared escalation quota agents compete over ([ADR-0011](../decisions/adr-0011-project-three-relay.md), proposed) | 🔲 Partial |
+| 5 | Inference analysis | LUDO (latency, cold start) · RELAY — local versus hosted on the same model, measured beside the game ([ADR-0011](../decisions/adr-0011-project-three-relay.md), proposed) | 📋 Planned |
 | 6 | Observability & monitoring | LUDO | 📋 Planned |
 | 7 | Prompt tuning & templates | LUDO — [shared versioned prompts](../../shared/prompts/README.md) built; tuning waits for a stack | 🔲 Partial |
 | 8 | Agentic AI | LUDO — three feature-complete agent harnesses over one contract, scripted tier | 🔲 Partial |
-| 9 | Agentic architectures | LUDO covers **swarm**; ALIBI's **agent-as-tool** seam is built in all three stacks (the archivist tool, scripted tier) — the live sub-agent waits on model ids | 🔲 Partial |
+| 9 | Agentic architectures | LUDO covers **swarm**; ALIBI's **agent-as-tool** seam is built in all three stacks (the archivist tool, scripted tier) — the live sub-agent waits on model ids; RELAY claims **edge agent** ([ADR-0011](../decisions/adr-0011-project-three-relay.md), proposed), leaving graph agents the last unhoused | 🔲 Partial |
 | 10 | Voice agents | — | 🔲 Unassigned |
 | 11 | RAG | ALIBI — retrieval as gameplay, built: generated corpus in the transcript, baseline retriever behind a real tool in all three stacks, red-herring exposure scored by the eval | 🔲 Partial |
 | 12 | RAG architectures | ALIBI — retrieval profiles defined ([question 23](../open-questions.md#-23-retrieval-parity--what-must-be-pinned-and-what-is-allowed-to-be-the-finding)); baseline built, embedding/hybrid/rerank are the live-tier experiment | 🔲 Partial |
@@ -36,10 +36,10 @@ The brief names four. LUDO takes one; the rest need homes:
 |---|---|---|
 | **Agent swarm** | LUDO | Four peers, no coordinator, negotiation between them |
 | **Agent as tool** | ALIBI | The [archivist](../projects/alibi/brief.md#the-archivist--agent-as-tool): a retrieval specialist each detective consults via tool call |
-| **Graph agents** | — | Explicit state-machine flow; LangGraph's home turf. Werewolf/Mafia is the parked candidate ([ADR-0010](../decisions/adr-0010-project-two-alibi.md) alternatives) |
-| **Edge agent** | — | Local/small model at the edge, escalating to a larger one |
+| **Graph agents** | — | Explicit state-machine flow; LangGraph's home turf. Werewolf/Mafia is the parked candidate ([ADR-0010](../decisions/adr-0010-project-two-alibi.md) alternatives), now a project-**four** candidate |
+| **Edge agent** | RELAY (proposed) | Small local models racing, escalating to one shared frontier model when they judge they can't solve a stage — and the tier is hidden, so judging that *is* the move ([ADR-0011](../decisions/adr-0011-project-three-relay.md)) |
 
-Project two was chosen exactly as this section demanded — after the matrix existed, from what it showed. Graph and edge agents still need homes.
+Projects two and three were both chosen as this section demanded — after the matrix existed, from what it showed. **Graph agents are the last architecture without a home.**
 
 ## Candidate follow-ups
 
@@ -51,9 +51,9 @@ Ideas parked with a reason, so they aren't lost or started too early:
 | **Same model in all four seats** | Isolates framework effects better than anything else available, but makes for a duller game. Good as a dedicated controlled run once LUDO works — see [ADR-0005](../decisions/adr-0005-model-access-control.md). |
 | **Rule-variant adaptation** | Flip a rule mid-experiment and measure whether agents adapt. Needs the engine's config seam — [open question 14](../open-questions.md). |
 | **Commentary booth** — voice agents narrating committed transcripts | Consumes only the event stream, so it needs no game and no keys beyond TTS — a strong mini-project any time. Parked because it exercises no agent architecture (topic 10 only). [ADR-0010](../decisions/adr-0010-project-two-alibi.md) alternatives. |
-| **Werewolf/Mafia** — day/night phases as an explicit state machine | Graph agents' natural home, but deception is ground LUDO already owns. Project-three candidate. [ADR-0010](../decisions/adr-0010-project-two-alibi.md) alternatives. |
-| **Blitz quiz** — an edge/small model answering fast, escalating to a frontier model when stuck | Edge-agent architecture plus inference and cost analysis, with latency as a game mechanic. Needs a local-model story none of the stacks has exercised yet. |
-| **The apprentice** — fine-tune a small model on game transcripts, seat it as a fifth family | Topics 14–16, and a lovely closed loop — the repo's games become its training data. Parked until enough live games exist to be a corpus. |
+| **Werewolf/Mafia** — day/night phases as an explicit state machine | Graph agents' natural home, but deception is ground LUDO already owns, and LangGraph's table-as-`StateGraph` claimed part of the graph story already. Passed over for project three ([ADR-0011](../decisions/adr-0011-project-three-relay.md) alternatives); now the project-**four** candidate. |
+| ~~**Blitz quiz**~~ — an edge/small model answering fast, escalating when stuck | **Absorbed into RELAY** ([ADR-0011](../decisions/adr-0011-project-three-relay.md)), which keeps the escalation mechanic and adds what a quiz lacked: one shared quota the runners compete over, so escalating costs rivals too. The local-model story it needed is now the project's first hard thing. |
+| **The apprentice** — fine-tune a small model on game transcripts, seat it as a fifth family | Topics 14–16, and a lovely closed loop — the repo's games become its training data. Parked until enough live games exist to be a corpus. RELAY moves it closer rather than competing with it: its runners are exactly the models this would fine-tune. |
 
 ## AWS services
 
@@ -72,6 +72,8 @@ LUDO runs locally against real model APIs. Deployment is a later project's subje
 Each project should introduce **at most two genuinely new hard things**. LUDO already carries a lot: swarm agents, three-stack parity, LLM-as-judge, and the harness features. Adding deployment, RAG, or fine-tuning to it would produce something nobody could learn from.
 
 Project two picked up where LUDO's [capability matrix](../architecture/stack-comparison.md) showed the most interesting gap: **[ALIBI](../projects/alibi/brief.md)** ([ADR-0010](../decisions/adr-0010-project-two-alibi.md)) — a deduction game whose two new hard things are RAG and agent-as-tool, with everything else inherited. The matrix logic ran in reverse of LUDO's: Spring AI, weakest at multi-agent orchestration, has the strongest retrieval story of the three.
+
+Project three reads the same matrix and finds a different kind of gap — not a row where the stacks differ, but a whole half nobody has filled: cost attribution, fallback and retry, rate limiting, and every model-access row are still `—`, because scripted models cost nothing and never fail. **RELAY** ([ADR-0011](../decisions/adr-0011-project-three-relay.md), proposed) fills them by making cost the game's currency, and its two new hard things are edge hosting and escalation policy. It also breaks the deadlock the other candidates share: local runners need no API key and no undecided model id, so it is the one project that could be *played* before the ids land.
 
 ## Legend
 

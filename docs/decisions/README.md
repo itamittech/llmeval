@@ -37,7 +37,8 @@ One file per decision, `adr-NNNN-short-title.md`:
 | [0008](adr-0008-framework-native-harness.md) | Harness primitives are framework-native; the shared layer is contracts only | **Accepted** · negotiation choice superseded by 0009 |
 | [0009](adr-0009-swarm-negotiation.md) | Negotiation runs on the swarm orchestrator; the protocol redesigned to fit it | **Accepted** |
 | [0010](adr-0010-project-two-alibi.md) | Project two is ALIBI: a deduction game built on retrieval | **Accepted** |
+| [0011](adr-0011-project-three-relay.md) | Project three is RELAY: an escalation race between small models and one big one | Proposed |
 
-0002, 0005, 0006, 0007, 0008, 0009 and 0010 are ratified — 0010 under the maintainer's explicit delegation of ALIBI's remaining decisions. 0001, 0003 and 0004 encode reasoning from the [original brief](../roughidea.txt) but have not been explicitly confirmed — see [open questions](../open-questions.md).
+0002, 0005, 0006, 0007, 0008, 0009 and 0010 are ratified — 0010 under the maintainer's explicit delegation of ALIBI's remaining decisions. 0001, 0003 and 0004 encode reasoning from the [original brief](../roughidea.txt) but have not been explicitly confirmed — see [open questions](../open-questions.md). 0011 is a different kind of Proposed: the *direction* is the maintainer's, while the game's name, shape, and mechanics are a written-up proposal awaiting ratification — nothing in `docs/projects/relay/` should exist until it gets one.
 
 **0006 is worth reading even if you don't care about seat assignment.** It was drafted asserting that moving first is an advantage in Ludo, that assumption was measured, and it turned out to be false. The decision survived on different grounds, and the record of the wrong turn stayed in.
