@@ -1,0 +1,29 @@
+{
+  "name": "alibi-ui",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Transcript player for ALIBI event streams. Consumes shared/schemas/alibi-event.schema.json and nothing else (ADR-0003); built against committed fixtures, stack-independent by test (ADR-0007).",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/react": "^16.1.0",
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^26.0.0",
+    "typescript": "~5.7.2",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4"
+  }
+}

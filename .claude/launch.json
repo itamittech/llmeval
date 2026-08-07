@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--prefix", "projects/ludo/ui"],
       "port": 5173
+    },
+    {
+      "name": "alibi-ui",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "projects/alibi/ui", "--", "--port", "5174"],
+      "port": 5174
     }
   ]
 }
