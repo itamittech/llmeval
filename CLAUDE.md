@@ -95,7 +95,8 @@ The **shared event schema**, **both engines** (Python and Java, cross-checked by
 | `docs/projects/alibi/harness-contract.md` | ✅ Spec written — archivist-as-tool binding, privacy MUSTs, scripted tier; compaction/persistence/negotiation deliberately out (§8) |
 | `shared/schemas/alibi-event.schema.json` | ✅ Built — element enums normative; archive rides in the transcript |
 | `projects/alibi/stack-strands/` | ✅ Feature-complete scripted — archivist as a real framework tool, notebooks on `AgentState`, hook metering, lenient guardrails; 21 tests, schema-valid fixture ([the story](projects/alibi/stack-strands/README.md): red is fooled by both red herrings, cross-checks the witness, solves) |
-| `projects/alibi/` langgraph · springai · eval · ui | ⬜ Not started |
+| `projects/alibi/stack-langgraph/` | ✅ Feature-complete scripted — `create_agent` + archivist tool in the graph, checkpointer threads, Store notebooks, callback metering; 16 tests incl. cross-stack engine-skeleton equality with the Strands fixture |
+| `projects/alibi/` springai · eval · ui | ⬜ Not started |
 
 ## Commands
 
@@ -201,6 +202,16 @@ uv run --directory projects/alibi/stack-strands pytest
 
 ```bash
 uv run --directory projects/alibi/stack-strands python -m alibi_strands.demo out.jsonl
+```
+
+The ALIBI LangGraph stack (own venv and lockfile):
+
+```bash
+uv run --directory projects/alibi/stack-langgraph pytest
+```
+
+```bash
+uv run --directory projects/alibi/stack-langgraph python -m alibi_langgraph.demo out.jsonl
 ```
 
 The ALIBI Java engine, from `projects/alibi/engine-java`:
