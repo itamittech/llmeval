@@ -123,3 +123,34 @@ profiles:
       access: direct
       provider: openai
       model: TBD
+
+# --- ALIBI (project two, ADR-0010) -----------------------------------------
+# Same seats, same judge discipline, same ADR-0005 control: the four detectives
+# are the four seats above, per profile. Only what ALIBI adds is configured here.
+alibi:
+  budgets:
+    # Derived from the 500-game bench (game-rules.md "The numbers"): median 21,
+    # p99 45 turns to a solve. dev sits just above the median so cheap runs
+    # mostly end mid-game — belief scoring covers that; headline sits above the
+    # benched p99, so an unsolved full game is the detectives' fault, not the cap's.
+    dev:
+      max_turns: 24
+      max_searches_per_turn: 2
+      max_note_chars: 240
+      max_tokens_per_game: 120000
+    headline:
+      max_turns: 48
+      max_searches_per_turn: 2
+      max_note_chars: 400
+      max_tokens_per_game: 500000
+  # The archivist is one shared instrument serving all four seats identically —
+  # a records clerk with citations over 3 retrieved documents, not a scorer, so
+  # the judge's family-conflict rule does not apply. The small Anthropic tier is
+  # chosen for cost; recorded here so the choice is visible and attackable.
+  # The scripted tier never calls it: bots and scripted models use the engine's
+  # baseline retriever directly.
+  archivist:
+    provider: anthropic
+    access: direct
+    model: claude-haiku-4-5-20251001
+    retrieval_profile: baseline   # engine keyword retriever; embedding profiles are live-tier (question 23)

@@ -1,0 +1,44 @@
+# The ALIBI prompt set every stack sends. Data, not code — same law as ludo/:
+# literal {{name}} substitution, no logic, declared variables checked both ways
+# by check_prompts.py.
+#
+# archivist/ sits deliberately outside this manifest, like ludo's judge/ — the
+# archivist is one shared instrument with a fixed variable contract, not a
+# per-seat player prompt.
+
+version: 1
+game: alibi
+
+# Concatenated in this order, once per game. Never varies within a game, which
+# is what makes it prompt-cacheable.
+system:
+  - file: system/identity.md
+    variables: [color]
+
+  - file: system/rules.md
+    variables: []
+
+  - file: system/archive.md
+    variables: [max_searches_per_turn, max_note_chars]
+
+# Rendered fresh each time. Never cached.
+turn:
+  suggest:
+    file: turn/suggest.md
+    variables: [turn, color, hand, eliminated, table, memory]
+
+  show:
+    file: turn/show.md
+    variables: [suggester, suggestion, options]
+
+  accuse:
+    file: turn/accuse.md
+    variables: [outcome, memory]
+
+  conclude:
+    file: turn/conclude.md
+    variables: [candidates, memory]
+
+  reflect:
+    file: turn/reflect.md
+    variables: [turn, turn_summary, memory]

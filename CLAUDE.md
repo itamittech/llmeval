@@ -91,6 +91,8 @@ The **shared event schema**, **both engines** (Python and Java, cross-checked by
 | `docs/projects/alibi/` — project two design | ✅ [Brief](docs/projects/alibi/brief.md) · [normative rules](docs/projects/alibi/game-rules.md) with benched numbers · [engine design](docs/projects/alibi/engine-design.md) ([ADR-0010](docs/decisions/adr-0010-project-two-alibi.md), Accepted) |
 | `projects/alibi/engine-python/` | ✅ Built — deal, archive generator, referee, baseline retriever, CLI, 37 tests; 500-game bench answered question 21 |
 | `projects/alibi/engine-java/` | ✅ Built, 9 tests; **matches Python on all 20 vectors, corpus bytes included** |
+| `shared/prompts/alibi/` — prompts + archivist pair | ✅ 8 templates v1 + fixed-contract archivist prompts; invariants in `check_prompts.py` cover both games |
+| `docs/projects/alibi/harness-contract.md` | ✅ Spec written — archivist-as-tool binding, privacy MUSTs, scripted tier; compaction/persistence/negotiation deliberately out (§8) |
 | `shared/schemas/alibi-event.schema.json` | ✅ Built — element enums normative; archive rides in the transcript |
 | `projects/alibi/` stacks · eval · ui | ⬜ Not started |
 

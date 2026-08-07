@@ -27,6 +27,10 @@ what it says it is.
   8. The judge prompt (judge/, deliberately outside the manifest — it is the
      eval's, not the stacks') obeys the same template law, with its variables
      checked against the eval's fixed contract instead of a manifest entry.
+  9. The ALIBI set (shared/prompts/alibi/) obeys every law above: same template
+     rules, its rules-briefing numbers checked against the ALIBI engine, and
+     its archivist prompts (outside the manifest, like ludo's judge/) held to a
+     fixed variable contract. Its budgets in models.yaml must exist per profile.
 
 Exits non-zero on failure, so it can gate CI.
 """
@@ -43,13 +47,19 @@ ROOT = Path(__file__).resolve().parent.parent
 PROMPTS = ROOT / "shared" / "prompts" / "ludo"
 MODELS = ROOT / "shared" / "models.yaml"
 
-# The engine is standard-library only, so it imports without being installed.
+# Both engines are standard-library only, so they import without being installed.
 sys.path.insert(0, str(ROOT / "projects" / "ludo" / "engine-python" / "src"))
+sys.path.insert(0, str(ROOT / "projects" / "alibi" / "engine-python" / "src"))
 from ludo_engine.board import (  # noqa: E402
     BASE, COLORS, HOME, HOME_ENTRY, LAST_CIRCUIT, SAFE_SQUARES, START,
     TOKENS_PER_PLAYER,
 )
 from ludo_engine.game import MOVE_ATTEMPTS, SIX_LIMIT  # noqa: E402
+from alibi_engine.archive import SEARCH_K  # noqa: E402
+from alibi_engine.case import ALL_ELEMENTS, DIMENSIONS, ELEMENTS  # noqa: E402
+from alibi_engine.game import PHASE_ATTEMPTS  # noqa: E402
+
+PROMPTS_ALIBI = ROOT / "shared" / "prompts" / "alibi"
 
 VARIABLE = re.compile(r"\{\{(\w+)\}\}")
 # Anything a template engine would treat as control flow.
@@ -172,6 +182,117 @@ def check_rule_numbers() -> None:
                  f"engine says {expected}")
 
 
+# -- the ALIBI set ---------------------------------------------------------
+
+#: ALIBI rules-briefing row label -> the engine value it must equal.
+ALIBI_RULE_NUMBERS = {
+    "suspects": len(ELEMENTS["who"]),
+    "methods": len(ELEMENTS["how"]),
+    "places": len(ELEMENTS["where"]),
+    "exhibits in your hand": (len(ALL_ELEMENTS) - len(DIMENSIONS)) // 4,
+    "red herrings in the archive": len(DIMENSIONS),
+    "results per archive search": SEARCH_K,
+    "attempts per action before the engine decides for you": PHASE_ATTEMPTS,
+}
+
+#: The stacks render exactly these into the archivist prompts — a fixed
+#: contract, like ludo's judge prompt: one shared instrument, no manifest entry.
+ARCHIVIST_VARIABLES = {
+    "system.md": set(),
+    "answer.md": {"query", "documents"},
+}
+
+
+def check_alibi_prompts() -> None:
+    manifest = yaml.safe_load((PROMPTS_ALIBI / "manifest.yaml").read_text(encoding="utf-8"))
+    declared = entries(manifest)
+
+    listed = {e["file"] for e in declared}
+    on_disk = {
+        str(p.relative_to(PROMPTS_ALIBI)).replace("\\", "/")
+        for p in PROMPTS_ALIBI.rglob("*.md")
+        if not str(p.relative_to(PROMPTS_ALIBI)).replace("\\", "/").startswith("archivist/")
+    }
+    for orphan in sorted(on_disk - listed):
+        fail(f"alibi/{orphan} is not in manifest.yaml — no stack would ever load it")
+    for missing in sorted(listed - on_disk):
+        fail(f"alibi/manifest.yaml lists {missing}, which does not exist")
+
+    for entry in declared:
+        path = PROMPTS_ALIBI / entry["file"]
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        name = f"alibi/{entry['file']}"
+
+        if LOGIC.search(text):
+            fail(f"{name}: template logic found — Python and Java would diverge; "
+                 f"render it in code and pass the result in as one variable")
+
+        used = set(VARIABLE.findall(text))
+        want = set(entry.get("variables") or [])
+        for extra in sorted(used - want):
+            fail(f"{name}: uses {{{{{extra}}}}} but manifest.yaml does not declare it")
+        for unused in sorted(want - used):
+            fail(f"{name}: manifest.yaml declares '{unused}' but the template never uses it")
+
+    for path in PROMPTS_ALIBI.rglob("*.md"):
+        for color in COLORS:
+            if color in path.stem.lower():
+                fail(f"alibi/{path.name}: per-colour prompt file — personas are "
+                     f"not hand-coded, in either game")
+
+    for filename, expected in ARCHIVIST_VARIABLES.items():
+        path = PROMPTS_ALIBI / "archivist" / filename
+        if not path.exists():
+            fail(f"alibi/archivist/{filename} is missing")
+            continue
+        text = path.read_text(encoding="utf-8")
+        if LOGIC.search(text):
+            fail(f"alibi/archivist/{filename}: template logic found — same law as every prompt")
+        used = set(VARIABLE.findall(text))
+        if used != expected:
+            fail(f"alibi/archivist/{filename}: uses {sorted(used)}, the stacks render "
+                 f"{sorted(expected)} — they must match exactly")
+
+    rules = PROMPTS_ALIBI / "system" / "rules.md"
+    if not rules.exists():
+        fail("alibi/system/rules.md is missing")
+        return
+    table = {m.group(1).strip().lower(): int(m.group(2))
+             for m in ROW.finditer(rules.read_text(encoding="utf-8"))}
+    for label, expected in ALIBI_RULE_NUMBERS.items():
+        if label not in table:
+            fail(f"alibi/system/rules.md: numbers table has no row '{label}'")
+        elif table[label] != expected:
+            fail(f"alibi/system/rules.md: '{label}' says {table[label]}, "
+                 f"engine says {expected}")
+
+
+def check_alibi_models(config: dict) -> None:
+    """ALIBI's budgets and archivist ride in models.yaml beside LUDO's profiles."""
+    alibi = config.get("alibi")
+    if not alibi:
+        fail("models.yaml: no 'alibi' section — ALIBI budgets and archivist are unconfigured")
+        return
+
+    profiles = set((config.get("profiles") or {}).keys())
+    budgets = alibi.get("budgets") or {}
+    if set(budgets.keys()) != profiles:
+        fail(f"models.yaml: alibi.budgets covers {sorted(budgets)} but profiles are "
+             f"{sorted(profiles)} — every profile needs ALIBI budgets")
+    for profile, values in budgets.items():
+        for field in ("max_turns", "max_searches_per_turn", "max_note_chars",
+                      "max_tokens_per_game"):
+            if field not in (values or {}):
+                fail(f"models.yaml: alibi.budgets.{profile} is missing {field}")
+
+    archivist = alibi.get("archivist") or {}
+    for field in ("provider", "access", "model", "retrieval_profile"):
+        if field not in archivist:
+            fail(f"models.yaml: alibi.archivist is missing {field}")
+
+
 # -- models ----------------------------------------------------------------
 
 
@@ -268,7 +389,9 @@ def check_judge(profile: str, spec: dict, seats: list[dict]) -> None:
 
 def main() -> int:
     check_prompts()
+    check_alibi_prompts()
     check_models()
+    check_alibi_models(yaml.safe_load(MODELS.read_text(encoding="utf-8")))
 
     for note in notes:
         print(f"note: {note}")
@@ -281,8 +404,10 @@ def main() -> int:
 
     templates = len(entries(yaml.safe_load(
         (PROMPTS / "manifest.yaml").read_text(encoding="utf-8"))))
-    print(f"prompts ok — {templates} templates, "
-          f"{len(RULE_NUMBERS)} rule numbers matched against the engine")
+    alibi_templates = len(entries(yaml.safe_load(
+        (PROMPTS_ALIBI / "manifest.yaml").read_text(encoding="utf-8"))))
+    print(f"prompts ok — ludo: {templates} templates, {len(RULE_NUMBERS)} rule numbers; "
+          f"alibi: {alibi_templates} templates, {len(ALIBI_RULE_NUMBERS)} rule numbers")
     print("Reminder: this checks invariants, not whether the prompts are any good.")
     return 0
 

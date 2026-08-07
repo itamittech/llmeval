@@ -2,7 +2,7 @@
 
 The prompts every stack sends, byte-for-byte identical. If Strands and Spring AI ran different prompts, the framework comparison would measure the prompts instead — so these live here, outside all three stacks, and no stack may edit them for itself.
 
-Project-scoped: [`ludo/`](ludo/). A second project gets its own directory.
+Project-scoped: [`ludo/`](ludo/) and [`alibi/`](alibi/) — same law, two games. ALIBI's [`archivist/`](alibi/archivist/) sits outside its manifest the way LUDO's `judge/` does: one shared instrument with a fixed variable contract enforced by `check_prompts.py`, not a per-seat player prompt. ALIBI's rules-briefing numbers are checked against the ALIBI engine's constants, exactly as LUDO's are against LUDO's.
 
 ## Layout mirrors the cache boundary
 

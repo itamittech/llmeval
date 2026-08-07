@@ -113,6 +113,7 @@ The caps derive from that distribution, and live in [`shared/models.yaml`](../..
 
 - [Brief](brief.md) — what this project demonstrates and why
 - [Engine design](engine-design.md) — how the built engine implements this spec
+- [Harness contract](harness-contract.md) — how the stacks bind to it
 - [ADR-0010](../../decisions/adr-0010-project-two-alibi.md) — the decision record, including the naming question
 - [LUDO game rules](../ludo/game-rules.md) — the sibling spec this one's shape follows
 - [Open questions](../../open-questions.md) — 21 (pace) and 23 (retrieval parity) still open; 20 (name) and 22 (channels) answered
