@@ -32,7 +32,7 @@ This project exists to teach. A doc describing code that no longer exists is *wo
 | A project claimed a topic | [topics/roadmap.md](docs/topics/roadmap.md) |
 | The UI | [its README](projects/ludo/ui/README.md) · ADR-0007's rules are UI **tests** — if adding a stack's transcript forces a UI source change, that is the failure the fixture set exists to catch, not something to code around |
 | Eval scoring, judge machinery, or the rubric | [evaluation.md](docs/projects/ludo/evaluation.md) Status · the eval [README](projects/ludo/eval/README.md) design + status table · [schemas README](shared/schemas/README.md) if the result shape changed · the judge prompt's hash makes rubric edits visible — bump nothing, the hash IS the version |
-| RELAY's rules, track generator, or escalation seam | [docs/projects/relay/game-rules.md](docs/projects/relay/game-rules.md) **first** (normative — stage prompts are corpus bytes inside the conformance digest), then the engines, then regenerate vectors · [engine-design.md](docs/projects/relay/engine-design.md) if the seal or the desk moved · [harness-contract.md](docs/projects/relay/harness-contract.md) if a stack's obligations changed · a change to the two-new-hard-things scope means revisiting [ADR-0011](docs/decisions/adr-0011-project-three-relay.md) · **the tier must never reach a prompt, a view, or a memory** — that is the game |
+| RELAY's rules, track generator, or escalation seam | [docs/projects/relay/game-rules.md](docs/projects/relay/game-rules.md) **first** (normative — stage prompts are corpus bytes inside the conformance digest), then the engines, then regenerate vectors · [engine-design.md](docs/projects/relay/engine-design.md) if the seal or the desk moved · [harness-contract.md](docs/projects/relay/harness-contract.md) if a stack's obligations changed · a change to the two-new-hard-things scope means revisiting [ADR-0011](docs/decisions/adr-0011-project-three-relay.md) · **the tier must never reach a prompt, a view, or a memory** — that is the game · **[learning/relay](learning/relay/)** — 00 quotes the sweep's numbers, 01 the three fallback seams, 02 the four layers of the seal, 03 the eval's three columns, so a change to the bench, the anchor wiring, the checker, or the metrics makes them teach code that no longer exists · all three stack READMEs carry the ratings |
 | ALIBI's rules, case model, or archive design | [docs/projects/alibi/game-rules.md](docs/projects/alibi/game-rules.md) **first** (normative — element names are baked into corpus bytes), then [the brief](docs/projects/alibi/brief.md) if the project's shape moved; a change to the two-new-hard-things scope means revisiting [ADR-0010](docs/decisions/adr-0010-project-two-alibi.md) · **[learning/alibi](learning/alibi/)** — 00 hand-computes the retriever's actual scores, 01 counts the fixtures' calls (22/22/20), 03 quotes the RNG loops and the confidence table, so a change to the retriever spec, the tool seam, the archive templates, or the bot confidences makes them teach code that no longer exists |
 | Added a new doc | Link it from [README.md](README.md) and from the Related section of any sibling doc |
 
@@ -104,7 +104,12 @@ The **shared event schema**, **both engines** (Python and Java, cross-checked by
 | `shared/prompts/relay/` — prompts + anchor | ✅ 5 templates v1 + fixed-contract anchor prompt; `check_prompts.py` covers all three games and enforces RELAY's seal (no tier in any prompt, no `{{tier}}` variable) |
 | `shared/schemas/relay-event.schema.json` | ✅ Built — the seal is in the contract: tiers and answers appear only in `game_ended.track_key` |
 | `projects/relay/engine-java/` | ✅ Built, 15 tests; **matches Python on all 20 vectors**, and a seed-7 transcript differs on exactly one field — `engine.language`, the one the digest excludes |
-| `projects/relay/stack-*/`, `eval/`, `ui/` | ⬜ Not started |
+| `projects/relay/stack-strands/` | ✅ Feature-complete scripted — runner agents, `AgentState` notebooks, hook metering, anchor as a second `Agent`; 35 tests, schema-valid fixture |
+| `projects/relay/stack-langgraph/` | ✅ Feature-complete scripted — `create_agent` per lane, checkpointer threads, `Store` notebooks, callback metering; 16 tests incl. cross-stack engine-spine equality with the Strands fixture |
+| `projects/relay/stack-springai/` | ✅ Feature-complete scripted — `ChatClient` per lane, `ChatMemory` conversations, hand-rolled notebook again; 19 tests incl. cross-stack equality against **both** Python fixtures |
+| `projects/relay/eval/` | ✅ Built — deterministic only, no judge: escalation precision/recall **and fit**, solo accuracy by tier, commons share, self-verifying fold, `score`/`compare` CLI; 17 tests, committed `.eval.json` per fixture |
+| `projects/relay/ui/` | ✅ Transcript player (React + Vite) — draining commons meter, lane track, race feed, eval panel; 39 tests: ADR-0007's three rules plus the seal rule at **every** sequence number |
+| `learning/relay/` | ✅ Topic folder two — knowing what you don't know, fallback vs. escalation, the seal, measuring a decision |
 | `projects/alibi/ui/` | ✅ Transcript player (React + Vite, own package.json) — case panel, investigation feed, archive with post-game herring reveal, eval panel; 18 tests: ADR-0007's three rules plus the seal rule (solution and herrings never render before `game_ended`) |
 
 ## Commands
@@ -323,7 +328,7 @@ Some foundational decisions are still open — read [docs/open-questions.md](doc
 
 **Settled:** three parallel games (each stack runs its own full 4-agent game); two engines, one per language ([ADR-0002](docs/decisions/adr-0002-engine-per-language.md)); one model invoked via *both* Bedrock and direct API as a control ([ADR-0005](docs/decisions/adr-0005-model-access-control.md)); seat→colour rotates between games ([ADR-0006](docs/decisions/adr-0006-seat-rotation.md)); React + Vite for the UI, built to completion *alongside the first stack* and proven stack-independent by transcript fixtures ([ADR-0007](docs/decisions/adr-0007-ui-alongside-first-stack.md)); Maven for the Java stack; Apache-2.0; **Python 3.12** for both stacks; model *families* (Anthropic ×2 routes, Amazon Nova, DeepSeek; OpenAI judges and therefore does not play); negotiation is a **floor-passing table conversation designed to fit the swarm orchestrator** — directed messages + public table notes, opened by the active agent, capped by floor passes, no cross-reading of reasoning ([ADR-0009](docs/decisions/adr-0009-swarm-negotiation.md) revising question 6); harness primitives are **framework-native** — the shared layer is contracts and data only, and hand-rolling where the framework has a primitive breaks the comparison ([ADR-0008](docs/decisions/adr-0008-framework-native-harness.md)).
 
-**RELAY (project three, [ADR-0011](docs/decisions/adr-0011-project-three-relay.md), Accepted):** small local models race a track of hidden-difficulty puzzles, escalating to one shared frontier model out of a common pool. Rules are benched (question 25 answered — the mechanic discriminates ~2:1, and for weak runners *insight runs backwards*), the Python engine and prompt set are built, and the anchor is already pinned — **no undecided model id blocks live play here**, only [question 26](docs/open-questions.md) (which small models, hosted how).
+**RELAY (project three, [ADR-0011](docs/decisions/adr-0011-project-three-relay.md), Accepted) is built at the scripted tier:** small models race a track of hidden-difficulty puzzles, escalating to one shared frontier model out of a common pool. Rules benched (question 25 answered — the mechanic discriminates ~2:1, and for weak runners *insight runs backwards*); both engines agree on 20 vectors with generated stage prompts inside the digest; all three stacks replay one race with identical engine spines; the eval scores the *decision* against a tier nobody was shown and needs no judge; the UI seals that tier until `game_ended`. Its matrix findings: **every framework has a fallback for failure and none for judgement**, the token spread is a window setting rather than a framework property (LangGraph and Spring AI agree to the token), and removing the tool removed the metering axis too. **No undecided model id blocks live play here** — only [question 26](docs/open-questions.md) (which small models, hosted how).
 
 **Still open:** concrete model IDs for Nova, DeepSeek, and the OpenAI judge (the Anthropic pair is pinned — `claude-sonnet-5` on `dev`, `claude-opus-5` on `headline`), turn/token budgets — provisional values sit in `shared/models.yaml` and get replaced by measured ones after the first stack runs. For ALIBI: pace numbers and retrieval parity (questions 21 and 23) — the name and the no-negotiation decision are ratified (answered questions 20 and 22). **Project three is written up but not ratified:** [ADR-0011](docs/decisions/adr-0011-project-three-relay.md) proposes RELAY — small local models racing, escalating to one shared frontier model out of a common quota — claiming the edge-agent architecture and the matrix's empty operations rows; questions 25 and 26 (difficulty ladder, edge tier) are gated behind that ratification, and **nothing under `docs/projects/relay/` or `projects/relay/` should be created until it happens**. ADRs 0001, 0003, 0004, and 0011 remain **Proposed** — 0001/0003/0004 encode reasoning from the brief that hasn't been explicitly confirmed; 0011 has the maintainer's direction but not its shape.
 
@@ -369,6 +374,32 @@ First project: **LUDO**, four LLM agents playing the Indian board game, two invo
 Full planned structure is in [docs/architecture/repository-layout.md](docs/architecture/repository-layout.md). Directories not listed in the status table above do not exist yet.
 
 Two conventions the engine already relies on: positions are **colour-relative** (`-1` base, `0`–`50` circuit, `51`–`55` home column, `56` home), and `shared/` holds contracts and data only — never executable code.
+
+The **RELAY UI** (own package.json under `projects/relay/ui`):
+
+```bash
+npm ci --prefix projects/relay/ui
+```
+
+```bash
+npm test --prefix projects/relay/ui
+```
+
+The RELAY stacks and eval (each its own venv, never shared):
+
+```bash
+uv run --directory projects/relay/stack-strands pytest
+```
+
+```bash
+uv run --directory projects/relay/stack-langgraph pytest
+```
+
+```bash
+uv run --directory projects/relay/eval python -m relay_eval compare ../games/scripted-strands-seed7.jsonl ../games/scripted-langgraph-seed7.jsonl ../games/scripted-springai-seed7.jsonl
+```
+
+The RELAY Spring AI stack follows the install-then-test pattern from `projects/relay`: `cd engine-java && ./mvnw -q -B install -DskipTests`, then `cd stack-springai && ./mvnw -B test`; the fixture regenerates with `./mvnw -q -B compile exec:java -Dexec.args="../games/scripted-springai-seed7.jsonl"`.
 
 `learning/` is standalone teaching material — not imported by anything, not part of any build. `learning/python` and `learning/java` examples must stay dependency-free so they run with a bare interpreter/JDK. The three framework folders — `learning/strands`, `learning/springai`, `learning/langgraph` — have **no examples folders for exactly that reason**: a framework example needs the framework, so each teaches against its stack's own tests, which run in the stack's environment. `learning/alibi` is the first *topic* folder — project two's lessons (retrieval, agent-as-tool, answer-key evals, cross-language determinism) taught across all three stacks, against ALIBI's own code and CLIs, under the same no-examples rule.
 

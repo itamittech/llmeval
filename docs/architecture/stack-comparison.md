@@ -246,6 +246,70 @@ The ALIBI prompt set is loaded by three independent implementations (two Python 
 
 LUDO's biggest per-framework differences lived in multi-agent orchestration — `Swarm` semantics, a rejected swarm package, a hand-rolled table. ALIBI cut negotiation ([question 22](../open-questions.md#-22-does-alibi-keep-ludos-negotiation-channels)) and those differences simply left the board: no stack hand-rolled anything to orchestrate, because there was nothing to orchestrate. What a chooser should take from the pair of games: **which framework differences you experience is decided by your protocol, not by the framework list** — the same three frameworks produce a swarm-shaped comparison in one game and a tool-shaped comparison in the next.
 
+## RELAY: the third act
+
+Project three ([ADR-0011](../decisions/adr-0011-project-three-relay.md)) moved the weight again — off orchestration, off retrieval, onto **model access and cost**. Every rating links to the code that proves it.
+
+| Capability | Strands | LangGraph | Spring AI | Notes |
+|---|---|---|---|---|
+| Escalation to a second model | **Adapter** — [players.py](../../projects/relay/stack-strands/src/relay_strands/players.py) `build_anchor` | **Adapter** — [players.py](../../projects/relay/stack-langgraph/src/relay_langgraph/players.py) `ask_anchor` | **Adapter** — [Harness.java](../../projects/relay/stack-springai/src/main/java/com/llmeval/relay/springai/Harness.java) `callAnchor` | Three frameworks, one verdict, and the reason is the same in all three — see the finding below |
+| Runner agents | **Native** — one `Agent` per lane | **Native** — `create_agent`, no tools | **Native** — one `ChatClient` per lane | Nothing to orchestrate, so nothing to compare |
+| Conversation carrier | Sliding window, pinned at 12 | Checkpointer thread, unbounded | `ChatMemory` window at 24 | The token spread below is this row, and only this row |
+| Notebook (belief store) | **Native** — `AgentState` | **Native** — framework `Store` | **Manual** — [Notebook.java](../../projects/relay/stack-springai/src/main/java/com/llmeval/relay/springai/Notebook.java) | Third game, third time. The missing primitive is still missing |
+| Metering | **Native** — lifecycle hooks | **Native** — callback handler | **Native** — usage on the `ChatResponse` | With no tool in the game, all three agree on what "one call" means |
+| Budget ceiling | Hook cancels the call | Middleware jumps past the model | Harness gate before the call | Same behaviour, three seams |
+
+**RELAY quantitative** (scripted tier, same seed-7 race, measured by [`relay_eval compare`](../../projects/relay/eval/README.md) — engine spines proven identical first):
+
+| Metric | Strands | LangGraph | Spring AI |
+|---|---|---|---|
+| `llm_call` events | **56** | **55** | **55** |
+| Tokens sent (chars//4 est.) | **75,626** | **123,067** | **123,067** |
+| Transcript events | 157 | 155 | 155 |
+
+### Finding: every framework has a fallback for failure; none has one for judgement
+
+The row above says **Adapter** three times, which looks like three frameworks being equally mediocre. It is not. They are equally mediocre at the *same specific thing*, and the thing is interesting.
+
+RELAY needs one call to a different model, with no memory and no tools, **chosen deliberately** while the primary model is working perfectly and has just judged that it cannot do this stage.
+
+- **LangChain ships the closest primitive**: `Runnable.with_fallbacks`. It triggers on an **exception**. Wiring a policy decision through it would mean raising on purpose to route a call — a lie in the shape of a design pattern.
+- **Strands has none at all**: `Agent` binds one model at construction, and there is no chain of alternates. The anchor is a second `Agent` with its messages wiped between calls.
+- **Spring AI has none either**; retry lives in `RetryTemplate` and is, again, about failure. The anchor is a second `ChatClient`.
+
+So the escalation seam is harness code everywhere, and legitimately so under [ADR-0008](../decisions/adr-0008-framework-native-harness.md) — the frameworks genuinely offer nothing. **What a chooser should take from it:** "does it support model fallback?" is the wrong question to ask a framework. Every one of them says yes, and every one of them means *when the call fails*. If your application chooses between models on purpose — by cost, by confidence, by a policy — that is your code in all three.
+
+One trap worth naming, recorded in [the Strands stack](../../projects/relay/stack-strands/README.md): the obvious shortcut is to call the model object directly rather than through the framework's agent. It works, and it skips the lifecycle hooks — so the anchor's tokens vanish from the meter in the one project where measuring them is the entire point. Same shape as the [summariser trap](#finding-strands-summariser-bypasses-strands-own-hook-system) LUDO recorded: the shortcut past the framework is the shortcut past the instrumentation.
+
+### Finding: the token spread is a setting, not a framework
+
+Both earlier games measured a 2.6–2.9× token spread and attributed it to architecture — a small pinned window against growing framework-held conversations. RELAY isolates it, and the attribution needs sharpening.
+
+**LangGraph and Spring AI produce the identical token count: 123,067.** Not close — identical, to the token, from two different memory primitives: an unbounded checkpointer thread and a 24-message window that never fills in a 24-turn race. Strands differs only because its window is pinned at 12.
+
+So the framework contributes nothing to that number here. **The window size does, and it is a line of configuration.** That does not overturn the earlier measurements — those stacks really did carry more context — but it renames the cause: what looked like a property of frameworks is a default that nobody changed.
+
+And it is not only a bill. Both stacks cross the per-game ceiling on the final turn, so the budget gate fires and the last reflection never happens: 23 reflect calls against Strands' 24. The same configuration choice, showing up as behaviour.
+
+### Finding: remove the tool and the metering axis vanishes too
+
+ALIBI's sharpest per-framework number was 22/22/**20** — Spring AI executed tools *inside* the `ChatModel` and handed the caller one response for two invocations.
+
+RELAY has no tool. Escalation is performed by the **engine**, which charges the shared quota and invokes the anchor, so there is no model→tool→model loop to fold and nothing to aggregate. All three stacks meter the same calls.
+
+This is the third time the same lesson has arrived, and the third different axis it has arrived on: LUDO's orchestration differences vanished when ALIBI dropped negotiation; ALIBI's tool-grain difference vanishes when RELAY drops the tool. **Which framework differences you experience is decided by your protocol, not by the framework list** — and a chooser reading a matrix should ask which rows their own application will actually light up.
+
+### Finding: `Map.of` is randomised per JVM run, and it breaks reproducibility twice
+
+A Java trap, hit in two different places on the same day, worth recording because the failure modes were different.
+
+`Map.of` is documented as unordered. What is easier to miss is that its iteration order is **randomised per JVM run** — so a payload built from one is stable within a process and different the next time.
+
+- In [the engine](../../projects/relay/engine-java/README.md), it scrambled `track_generated`'s key order against Python's. **Conformance still passed**, because the digest sorts keys. Only diffing the two transcript files found it.
+- In [the Spring AI stack](../../projects/relay/stack-springai/README.md), it scrambled the `players` block, and the fixture test caught it immediately: regenerate, compare bytes, fail.
+
+Both are now built key by key. The general lesson outlives Java: **a guarantee that only holds when someone remembers to check it is not a guarantee** — and the check that found the first one was a file diff, not a test, which is why there is now a test.
+
 ## Quantitative comparison
 
 Filled from recorded games. Same seeds, same models, same rules — so these numbers mean something.

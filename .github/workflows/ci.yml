@@ -152,6 +152,104 @@ jobs:
         working-directory: projects/alibi/ui
         run: npm run build
 
+  relay:
+    name: RELAY (Python side)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Engine tests
+        run: |
+          uv sync --directory projects/relay/engine-python
+          uv run --directory projects/relay/engine-python pytest
+
+      - name: Cross-engine conformance vectors
+        # Generated stage prompts are inside the digest, and the bot solves by
+        # PARSING them — so this checks two languages agreeing about text and
+        # about how that text tokenises. Never regenerate to pass.
+        run: uv run --directory projects/relay/engine-python python -m relay_engine.cli conformance --check
+
+      - name: Validate recorded races against the shared schema
+        run: uv run --directory projects/relay/engine-python python -m relay_engine.cli validate "../games/*.jsonl"
+
+      - name: Strands stack
+        run: |
+          uv sync --directory projects/relay/stack-strands
+          uv run --directory projects/relay/stack-strands pytest
+
+      - name: LangGraph stack
+        # Includes the cross-stack test: it reads the Strands fixture and
+        # asserts the engine spines are identical, event for event.
+        run: |
+          uv sync --directory projects/relay/stack-langgraph
+          uv run --directory projects/relay/stack-langgraph pytest
+
+      - name: Eval harness
+        # Deterministic only, no judge. Its self-check replays every race and
+        # rebuilds the engine's standings, so this step cross-checks every
+        # committed fixture as a side effect.
+        run: |
+          uv sync --directory projects/relay/eval
+          uv run --directory projects/relay/eval pytest
+
+  relay-java:
+    name: RELAY (Java side)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Engine tests
+        working-directory: projects/relay/engine-java
+        run: ./mvnw -B test
+
+      - name: Install the engine locally
+        working-directory: projects/relay/engine-java
+        run: ./mvnw -q -B install -DskipTests
+
+      - name: Spring AI stack
+        # CrossStackTest reads the PYTHON-written fixtures and asserts this
+        # stack's engine events match them. That is what makes every
+        # cross-stack number in the matrix mean anything.
+        working-directory: projects/relay/stack-springai
+        run: ./mvnw -B test
+
+  relay-ui:
+    name: RELAY UI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: projects/relay/ui/package-lock.json
+
+      - name: Install
+        working-directory: projects/relay/ui
+        run: npm ci
+
+      - name: Tests
+        # ADR-0007's rules, fourth application, plus RELAY's seal rule: the
+        # difficulty key never renders before game_ended, checked at EVERY
+        # sequence number of every committed race.
+        working-directory: projects/relay/ui
+        run: npx vitest run
+
+      - name: Static build
+        working-directory: projects/relay/ui
+        run: npm run build
+
   engine-java:
     name: Java engine
     runs-on: ubuntu-latest
