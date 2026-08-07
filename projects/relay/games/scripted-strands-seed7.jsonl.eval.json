@@ -1,0 +1,146 @@
+{
+  "schema": "relay-eval/1",
+  "version": 1,
+  "seed": 7,
+  "stack": "strands",
+  "profile": "dev",
+  "framework": {
+    "name": "strands",
+    "version": "1.50.2"
+  },
+  "prompt_set": {
+    "version": 1,
+    "hash": "sha256:f3acf91771566ef6e2d4fe5abad41f8b08315f4abc79254954e7a3feb3b3774c"
+  },
+  "reason": "turn_cap",
+  "turns_played": 24,
+  "track": {
+    "stages": 10,
+    "tiers": {
+      "1": 4,
+      "2": 4,
+      "3": 2
+    },
+    "hard_tier": 3
+  },
+  "commons": {
+    "quota": 8,
+    "spent": 8,
+    "exhausted": true,
+    "share": {
+      "red": 0.25,
+      "green": 0.0,
+      "yellow": 0.625,
+      "blue": 0.125
+    }
+  },
+  "guardrails_triggered": 2,
+  "lanes": [
+    {
+      "player": "red",
+      "stages_cleared": 6,
+      "ticks": 18,
+      "finished": false,
+      "solo_attempts": 4,
+      "solo_accuracy": 1.0,
+      "solo_accuracy_by_tier": {
+        "1": 1.0,
+        "2": 1.0,
+        "3": 1.0
+      },
+      "solo_accuracy_by_family": {
+        "chain": 1.0,
+        "cipher": 1.0
+      },
+      "escalations": 2,
+      "escalation_precision": 0.0,
+      "escalation_recall": 0.0,
+      "escalation_fit": 1.0,
+      "quota_efficiency": 3.0,
+      "passes": 0,
+      "notes": 2,
+      "tokens": 18549,
+      "calls": 14,
+      "anchor_calls": 2
+    },
+    {
+      "player": "blue",
+      "stages_cleared": 5,
+      "ticks": 19,
+      "finished": false,
+      "solo_attempts": 5,
+      "solo_accuracy": 0.8,
+      "solo_accuracy_by_tier": {
+        "1": 1.0,
+        "2": 0.6667,
+        "3": 1.0
+      },
+      "solo_accuracy_by_family": {
+        "chain": 1.0,
+        "cipher": 1.0,
+        "order": 0.0
+      },
+      "escalations": 1,
+      "escalation_precision": 0.0,
+      "escalation_recall": 0.0,
+      "escalation_fit": 1.0,
+      "quota_efficiency": 5.0,
+      "passes": 0,
+      "notes": 0,
+      "tokens": 18987,
+      "calls": 13,
+      "anchor_calls": 1
+    },
+    {
+      "player": "yellow",
+      "stages_cleared": 5,
+      "ticks": 28,
+      "finished": false,
+      "solo_attempts": 0,
+      "solo_accuracy": null,
+      "solo_accuracy_by_tier": {},
+      "solo_accuracy_by_family": {},
+      "escalations": 5,
+      "escalation_precision": 0.2,
+      "escalation_recall": 1.0,
+      "escalation_fit": 1.0,
+      "quota_efficiency": 1.0,
+      "passes": 1,
+      "notes": 4,
+      "tokens": 19450,
+      "calls": 17,
+      "anchor_calls": 5
+    },
+    {
+      "player": "green",
+      "stages_cleared": 2,
+      "ticks": 28,
+      "finished": false,
+      "solo_attempts": 6,
+      "solo_accuracy": 0.3333,
+      "solo_accuracy_by_tier": {
+        "1": 0.0,
+        "2": 1.0,
+        "3": 1.0
+      },
+      "solo_accuracy_by_family": {
+        "chain": 1.0,
+        "order": 0.0
+      },
+      "escalations": 0,
+      "escalation_precision": null,
+      "escalation_recall": 0.0,
+      "escalation_fit": null,
+      "quota_efficiency": null,
+      "passes": 0,
+      "notes": 4,
+      "tokens": 18640,
+      "calls": 12,
+      "anchor_calls": 0
+    }
+  ],
+  "self_check": {
+    "ok": true,
+    "detail": "replay reproduces the engine's standings"
+  }
+}
