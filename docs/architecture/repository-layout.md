@@ -24,7 +24,9 @@ llmeval/
 ├── learning/                     # standalone teaching material; never imported
 │   ├── python/                   # + dependency-free runnable examples
 │   ├── java/                     # + examples runnable with a bare JDK
-│   └── strands/                  # no examples folder — teaches against the stack's tests
+│   ├── strands/                  # no examples folder — teaches against the stack's tests
+│   └── alibi/                    # project two's lessons, cross-stack: retrieval, agent-as-tool,
+│                                 #   answer-key evals, cross-language determinism
 │
 ├── shared/                       # stack-neutral, language-neutral contracts
 │   ├── schemas/                  # JSON Schema: events, transcripts, eval results

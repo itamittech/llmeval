@@ -32,7 +32,7 @@ This project exists to teach. A doc describing code that no longer exists is *wo
 | A project claimed a topic | [topics/roadmap.md](docs/topics/roadmap.md) |
 | The UI | [its README](projects/ludo/ui/README.md) · ADR-0007's rules are UI **tests** — if adding a stack's transcript forces a UI source change, that is the failure the fixture set exists to catch, not something to code around |
 | Eval scoring, judge machinery, or the rubric | [evaluation.md](docs/projects/ludo/evaluation.md) Status · the eval [README](projects/ludo/eval/README.md) design + status table · [schemas README](shared/schemas/README.md) if the result shape changed · the judge prompt's hash makes rubric edits visible — bump nothing, the hash IS the version |
-| ALIBI's rules, case model, or archive design | [docs/projects/alibi/game-rules.md](docs/projects/alibi/game-rules.md) **first** (normative once ratified — element names will be baked into corpus bytes), then [the brief](docs/projects/alibi/brief.md) if the project's shape moved; a change to the two-new-hard-things scope means revisiting [ADR-0010](docs/decisions/adr-0010-project-two-alibi.md) |
+| ALIBI's rules, case model, or archive design | [docs/projects/alibi/game-rules.md](docs/projects/alibi/game-rules.md) **first** (normative — element names are baked into corpus bytes), then [the brief](docs/projects/alibi/brief.md) if the project's shape moved; a change to the two-new-hard-things scope means revisiting [ADR-0010](docs/decisions/adr-0010-project-two-alibi.md) · **[learning/alibi](learning/alibi/)** — 00 hand-computes the retriever's actual scores, 01 counts the fixtures' calls (22/22/20), 03 quotes the RNG loops and the confidence table, so a change to the retriever spec, the tool seam, the archive templates, or the bot confidences makes them teach code that no longer exists |
 | Added a new doc | Link it from [README.md](README.md) and from the Related section of any sibling doc |
 
 ### Then verify
@@ -331,7 +331,7 @@ Full planned structure is in [docs/architecture/repository-layout.md](docs/archi
 
 Two conventions the engine already relies on: positions are **colour-relative** (`-1` base, `0`–`50` circuit, `51`–`55` home column, `56` home), and `shared/` holds contracts and data only — never executable code.
 
-`learning/` is standalone teaching material — not imported by anything, not part of any build. `learning/python` and `learning/java` examples must stay dependency-free so they run with a bare interpreter/JDK. The three framework folders — `learning/strands`, `learning/springai`, `learning/langgraph` — have **no examples folders for exactly that reason**: a framework example needs the framework, so each teaches against its stack's own tests, which run in the stack's environment.
+`learning/` is standalone teaching material — not imported by anything, not part of any build. `learning/python` and `learning/java` examples must stay dependency-free so they run with a bare interpreter/JDK. The three framework folders — `learning/strands`, `learning/springai`, `learning/langgraph` — have **no examples folders for exactly that reason**: a framework example needs the framework, so each teaches against its stack's own tests, which run in the stack's environment. `learning/alibi` is the first *topic* folder — project two's lessons (retrieval, agent-as-tool, answer-key evals, cross-language determinism) taught across all three stacks, against ALIBI's own code and CLIs, under the same no-examples rule.
 
 ## Docs conventions
 

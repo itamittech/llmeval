@@ -75,6 +75,7 @@ Deterministic first: accusation correctness, rounds-to-solve, and calibration of
 - [Game rules](game-rules.md) — the normative spec
 - [Engine design](engine-design.md) — the built engine, read against LUDO's
 - [Harness contract](harness-contract.md) — what all three stacks must make observable
+- [learning/alibi](../../../learning/alibi/) — the two new hard things taught from the problem up, against this code
 - [ADR-0010](../../decisions/adr-0010-project-two-alibi.md) — why this project, this name, these two new hard things
 - [LUDO brief](../ludo/brief.md) — the template this project inherits from
 - [Capability matrix](../../architecture/stack-comparison.md) — the scoreboard ALIBI's RAG columns will join
