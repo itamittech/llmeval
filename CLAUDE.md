@@ -103,7 +103,7 @@ The **shared event schema**, **both engines** (Python and Java, cross-checked by
 | `projects/relay/engine-python/` | ✅ Built — track generator (3 families × 3 tiers), race loop, escalation desk, two bots, CLI, 49 tests; the sweep answered question 25 and found the weak-runner inversion |
 | `shared/prompts/relay/` — prompts + anchor | ✅ 5 templates v1 + fixed-contract anchor prompt; `check_prompts.py` covers all three games and enforces RELAY's seal (no tier in any prompt, no `{{tier}}` variable) |
 | `shared/schemas/relay-event.schema.json` | ✅ Built — the seal is in the contract: tiers and answers appear only in `game_ended.track_key` |
-| `projects/relay/engine-java/` | ⬜ Not started — must match Python on all 20 vectors, stage prompts included |
+| `projects/relay/engine-java/` | ✅ Built, 15 tests; **matches Python on all 20 vectors**, and a seed-7 transcript differs on exactly one field — `engine.language`, the one the digest excludes |
 | `projects/relay/stack-*/`, `eval/`, `ui/` | ⬜ Not started |
 | `projects/alibi/ui/` | ✅ Transcript player (React + Vite, own package.json) — case panel, investigation feed, archive with post-game herring reveal, eval panel; 18 tests: ADR-0007's three rules plus the seal rule (solution and herrings never render before `game_ended`) |
 
@@ -197,6 +197,36 @@ npm test --prefix projects/ludo/ui
 
 ```bash
 npm run dev --prefix projects/ludo/ui
+```
+
+The RELAY engine (own venv, same pattern):
+
+```bash
+uv run --directory projects/relay/engine-python pytest
+```
+
+```bash
+uv run --directory projects/relay/engine-python python -m relay_engine.cli play --seed 7
+```
+
+The sweep that answered question 25 — does knowing your own limits win races:
+
+```bash
+uv run --directory projects/relay/engine-python python -m relay_engine.cli sweep --games 300
+```
+
+```bash
+uv run --directory projects/relay/engine-python python -m relay_engine.cli conformance --check
+```
+
+The RELAY Java engine, from `projects/relay/engine-java` (note `compile` before `exec:java` — `exec:java` alone runs stale classes):
+
+```bash
+./mvnw -B test
+```
+
+```bash
+./mvnw -q -B compile exec:java -Dexec.args="conformance --check"
 ```
 
 The ALIBI engine (own venv, same pattern):
